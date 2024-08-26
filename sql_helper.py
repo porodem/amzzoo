@@ -19,6 +19,34 @@ def db_check_player_exists(tid):
 
     return result
 
+def db_check_owned_pets(tid):
+    print('- - - check exist player - - -')
+    q = '''SELECT count(*) from pets where owner = %s'''
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    b = cur.fetchone()
+    if b is None:
+        result = 0
+    else:
+        print(b[0])
+        result = b[0]
+
+    return result
+
+def db_check_owned_coins(tid):
+    print('- - - check exist player - - -')
+    q = '''SELECT coins from players where telegram_id = %s'''
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    b = cur.fetchone()
+    if b is None:
+        result = 0
+    else:
+        print(b[0])
+        result = b[0]
+
+    return result
+
 
 
 def db_new_player(tid,username,nickname):
@@ -31,4 +59,11 @@ def db_new_player(tid,username,nickname):
 def db_add_money(tid, value):
     print('- - - write money to DB - - - ')
     q = '''UPDATE players set coins = %s where telegram_id = %s;'''
+
+def db_buy_pet(tid,animal_id):
+    print(' - - write new user to DB - -')
+    q = '''insert into pets( animal_id,  owner /*petname*/) values(%s,%s);'''
+    cur = con.cursor()
+    cur.execute(q,(animal_id,tid))
+    con.commit()
 
