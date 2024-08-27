@@ -47,6 +47,19 @@ def db_check_owned_coins(tid):
 
     return result
 
+def db_check_location(tid):
+    print('- - - check players location - - -')
+    q = '''SELECT h.id from players p join habitat h on h.id = p.game_location where telegram_id = %s'''
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    b = cur.fetchone()
+    if b is None:
+        result = 0
+    else:
+        print(b[0])
+        result = b[0]
+
+    return result
 
 
 def db_new_player(tid,username,nickname):
@@ -60,10 +73,26 @@ def db_add_money(tid, value):
     print('- - - write money to DB - - - ')
     q = '''UPDATE players set coins = %s where telegram_id = %s;'''
 
-def db_buy_pet(tid,animal_id):
+def db_buy_pet(animal_id,tid):
     print(' - - write new user to DB - -')
-    q = '''insert into pets( animal_id,  owner /*petname*/) values(%s,%s);'''
+    q = '''SELECT buy_pet(%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(animal_id,tid))
     con.commit()
 
+# ==================================== SHOW BLOCK
+
+def db_get_owned_pets(tid):
+     print('-- get all players pets --')
+     q = 'select id, animal_id from pets where owner = %s;'
+     tid_list = []
+
+     with con.cursor() as cur:
+          cur.execute(q)
+          b = cur.fetchall()
+          print(type(b))
+          print(list(b))
+          for record in b:
+               tid_list.append(record[0])
+               
+     return tid_list

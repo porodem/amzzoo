@@ -1,5 +1,5 @@
 id;species ;habitat;food_type;price
-1;egg;5;1;1
-2;mouse;5;1;3
-3;spider;5;3;5
-4;cat;5;1;9
+1;Яйцо;5;1;1
+2;Мышь;5;1;3
+3;Паук;5;3;5
+4;Кот;5;1;9

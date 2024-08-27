@@ -59,6 +59,8 @@ def show_pets(message):
 # buttons test
 @bot.message_handler(commands=['show_pets'])
 def show_pets(message):
+    owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
+    print(list(owned_pets))
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🐣 my pet")
     btn2 = types.KeyboardButton("😀 test")
@@ -95,24 +97,40 @@ def attach_ls(message):
     markup.add(types.KeyboardButton('show pets'))
     msg = bot.send_message(message.chat.id, "choose type shit", reply_markup=markup)
 
+
+
 def pet_shop(message):
     print('---------- PET SHOP -----------')
     tid = message.from_user.id
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("🥚 💰 1")
-    btn2 = types.KeyboardButton("🐭 💰 3")
-    btn3 = types.KeyboardButton("🕷 💰 5")
-    btn4 = types.KeyboardButton("🐈 💰 9")
-    markup.add(btn1,btn2,btn3,btn4)
+    # define location to show specific shop
+    location =  sql_helper.db_check_location(tid)
+    if location == 5:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("🥚 Яйцо 💰 1",)
+        btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
+        btn3 = types.KeyboardButton("🕷 Паук 💰 5")
+        btn4 = types.KeyboardButton("🐈 Кот 💰 9")
+        markup.add(btn1,btn2,btn3,btn4)
+    else:
+        print('- - - - UNKNOWN LOCATION  - - - - -')
     bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)  
     bot.register_next_step_handler(message, buy_pet)
 
 def buy_pet(message):
     print(' - - - buy pet - - - ')
-    if re.match('.*9.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 4)
+    if re.match('.*Яйцо.*',message.text):
+        sql_helper.db_buy_pet(message.from_user.id, 1)
+    elif re.match('.*Мышь.*',message.text):
+        sql_helper.db_buy_pet(message.from_user.id, 2)
+    elif re.match('.*Паук.*',message.text):
+        sql_helper.db_buy_pet(message.from_user.id, 3)
+    elif re.match('.*Кот.*',message.text):
+        sql_helper.db_buy_pet(message.from_user.id, 4)  
     else:
         print('noting ...')
+
+def travel(message):
+    print('- - - TO DO ---')
 
 def next_option(message):
     if re.match('.*Питомцы.*',message.text):
@@ -123,6 +141,8 @@ def next_option(message):
         bot.reply_to(message, 'test option')
     elif re.match('.*Магазин.*',message.text):
         bot.register_next_step_handler(message, pet_shop)
+    elif re.match('.*Путешествие.*',message.text):
+        bot.register_next_step_handler(message, travel)
 
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
@@ -142,7 +162,8 @@ def echo_all(message):
     btn2 = types.KeyboardButton("🏫 Имущество")
     btn3 = types.KeyboardButton("⚒ Работа")
     btn4 = types.KeyboardButton("🛒 Магазин")
-    markup.add(btn1,btn2,btn3,btn4)
+    btn5 = types.KeyboardButton("✈ Путешествие")
+    markup.add(btn1,btn2,btn3,btn4,btn5)
     bot.send_message(tid, get_statistics(tid), reply_markup=markup)  
     bot.register_next_step_handler(message, next_option)
 
