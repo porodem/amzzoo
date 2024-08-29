@@ -61,12 +61,14 @@ def begin_game(message):
 def show_pets(message):
     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
     print(list(owned_pets))
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("🐣 my pet")
-    btn2 = types.KeyboardButton("😀 test")
-    markup.add(btn1,btn2)
-    bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
-    bot.register_next_step_handler(message, step_two)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    for p in owned_pets:
+        print(p)
+        e = str(pet_emoji(p))
+        btn = types.KeyboardButton(e)
+        markup.add(btn)
+    bot.send_message(message.from_user.id, "Ваши питомцы на кнопках.", reply_markup=markup)  
+    bot.register_next_step_handler(message, pet_details)
 
 # buttons test
 @bot.message_handler(commands=['earn_money'])
@@ -97,6 +99,18 @@ def attach_ls(message):
     markup.add(types.KeyboardButton('show pets'))
     msg = bot.send_message(message.chat.id, "choose type shit", reply_markup=markup)
 
+def pet_emoji(id):
+    if id == 1:
+        e = "🥚"
+    elif id == 2:
+        e = "🐭"
+    elif id == 3:
+        e = "🕷"
+    elif id == 4:
+        e = "🐈"
+    else:
+        e = "❌"
+    return e
 
 
 def pet_shop(message):

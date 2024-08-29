@@ -109,15 +109,15 @@ def db_buy_pet(animal_id,tid):
 
 def db_get_owned_pets(tid):
      print('-- get all players pets --')
-     q = 'select id, animal_id from pets where owner = %s;'
+     q = '''select id, animal_id from pets where owner = %s;'''
      tid_list = []
 
      with con.cursor() as cur:
-          cur.execute(q)
+          cur.execute(q,(tid,))
           b = cur.fetchall()
           print(type(b))
           print(list(b))
           for record in b:
-               tid_list.append(record[0])
+               tid_list.append(record[1])
                
      return tid_list
