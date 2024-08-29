@@ -47,6 +47,21 @@ def db_check_owned_coins(tid):
 
     return result
 
+def db_get_player_info(tid):
+    print('- - - get player info- - -')
+    q = '''SELECT coins, level from players where telegram_id = %s'''
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    b = cur.fetchone()
+    if b is None:
+        result = 0
+    else:
+        print(b[0])
+        print(b[1])
+        result = b
+
+    return result
+
 def db_check_location(tid):
     print('- - - check players location - - -')
     q = '''SELECT h.id from players p join habitat h on h.id = p.game_location where telegram_id = %s'''

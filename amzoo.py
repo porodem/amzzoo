@@ -32,7 +32,7 @@ bot.set_my_commands([my_pets_command,main_menu])
 
 # buttons test
 @bot.message_handler(commands=['start'])
-def show_pets(message):
+def begin_game(message):
 
     # check if user exists
     if sql_helper.db_check_player_exists(message.from_user.id) is None:
@@ -70,7 +70,7 @@ def show_pets(message):
 
 # buttons test
 @bot.message_handler(commands=['earn_money'])
-def show_pets(message):
+def do_work(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("⛏ Искать клад")
     btn2 = types.KeyboardButton("⚒ Работать")
@@ -91,7 +91,7 @@ def step_two(message):
         bot.reply_to(message, 'test option')
 
 # legacy func from previous project
-@bot.message_handler(regexp=".*(pet|пет).*")
+@bot.message_handler(regexp=".*(shit).*")
 def attach_ls(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup.add(types.KeyboardButton('show pets'))
@@ -134,11 +134,11 @@ def travel(message):
 
 def next_option(message):
     if re.match('.*Питомцы.*',message.text):
-        bot.reply_to(message, '')
+        bot.register_next_step_handler(message, show_pets)
     elif re.match('.*Имущество.*',message.text):
         bot.reply_to(message, 'test option')
     elif re.match('.*Работа.*',message.text):
-        bot.reply_to(message, 'test option')
+        bot.register_next_step_handler(message, do_work)
     elif re.match('.*Магазин.*',message.text):
         bot.register_next_step_handler(message, pet_shop)
     elif re.match('.*Путешествие.*',message.text):
@@ -146,8 +146,10 @@ def next_option(message):
 
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
-    coins = sql_helper.db_check_owned_coins(tid)
-    player_stats = 'Питомцы 🐇: ' + str(pet_cnt) + '\nДеньги 💰: ' + str(coins)
+    pinfo = sql_helper.db_get_player_info(tid)
+    lvl = pinfo[1]
+    coins = pinfo[0]
+    player_stats = 'Уровень 🎓:' + str(lvl) +'\nПитомцы 😺: ' + str(pet_cnt) + '\nДеньги 💰: ' + str(coins)
 
     return player_stats
 
