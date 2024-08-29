@@ -2,11 +2,23 @@ create role pet_master with login createdb;
 
 create database amzoo;
 
-create table players(telegram_id int8 primary key, invite_date date, username text, first_name text, nick_name text, coins smallint default 0);
+grant pg_read_server_files to pet_master;
+
+create table players(telegram_id int8 primary key, invite_date date, username text, first_name text, nick_name text,
+coins smallint default 0, level int default 1,
+game_location int default 5 references habitat(id));
+
+alter table players add column level int default 1;
+
+alter table players drop column levle;
 
 alter table players add constraint pkey_tid primary key (telegram_id)
 
+drop  table players cascade;
+
 select * from players p ;
+
+select buy_pet(775803031,1)
 
 create table animal_list(
 id int8 primary key,
@@ -14,6 +26,8 @@ species text,
 habitat int references habitat(id),
 food_type int references food_type(id), 
 price int)
+
+select * from animal_list al ;
 
 create table tpets(id int references animal_list, species text);
 
@@ -67,3 +81,20 @@ create table food_type(id int primary key , name text)
 insert into food_type values (1,'omnivore'),(2,'herbivore'),(3,'carnivore')
 
 select * from players p ;
+
+create or replace function buy_pet(tid int8, animal int8)
+returns int 
+language plpgsql
+as $$
+declare pet_price int;
+begin
+	select price into pet_price from animal_list where id = animal; 
+	insert into pets(animal_id, owner) values(animal,tid);
+	update players set coins = (coins - pet_price) where telegram_id = tid;
+	return 1;
+end;
+$$;
+end
+
+select 
+
