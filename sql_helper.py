@@ -83,7 +83,29 @@ def db_get_player_info(tid):
 
     return result
 
+def db_pet_info(id):
+    print('--- DB pet_info ---')
+    q = '''SELECT p.id, hunger, health, mood, a.species, habitat, food_type, price from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
+    cur = con.cursor()
+    cur.execute(q,(id,))
+    b = cur.fetchone()
+    result = b
+    print (b)
 
+def db_get_owned_pets(tid):
+     print('-- get all players pets --')
+     q = '''select id, animal_id from pets where owner = %s;'''
+     tid_list = []
+
+     with con.cursor() as cur:
+          cur.execute(q,(tid,))
+          b = cur.fetchall()
+          print(type(b))
+          print(list(b))
+          for record in b:
+               tid_list.append(record)
+               
+     return tid_list
 
 # ==================================== DML BLOCK
 
@@ -107,17 +129,4 @@ def db_buy_pet(animal_id,tid):
 
 # ==================================== SHOW BLOCK
 
-def db_get_owned_pets(tid):
-     print('-- get all players pets --')
-     q = '''select id, animal_id from pets where owner = %s;'''
-     tid_list = []
 
-     with con.cursor() as cur:
-          cur.execute(q,(tid,))
-          b = cur.fetchall()
-          print(type(b))
-          print(list(b))
-          for record in b:
-               tid_list.append(record[1])
-               
-     return tid_list

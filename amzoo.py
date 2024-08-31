@@ -61,14 +61,26 @@ def begin_game(message):
 def show_pets(message):
     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
     print(list(owned_pets))
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    markup = types.InlineKeyboardMarkup()
+    markup.row_width = 2
     for p in owned_pets:
         print(p)
-        e = str(pet_emoji(p))
-        btn = types.KeyboardButton(e)
+        e = str(pet_emoji(p[1]))
+        #btn = types.KeyboardButton(e)
+
+        btn = types.InlineKeyboardButton(e,callback_data=p[0])
         markup.add(btn)
     bot.send_message(message.from_user.id, "Ваши питомцы на кнопках.", reply_markup=markup)  
     bot.register_next_step_handler(message, pet_details)
+
+@bot.callback_query_handler(func=lambda call: True)
+def pet_details(call):
+    print(' - - pet detail func -- : ')
+    #print(call)
+    sql_helper.db_pet_info(call.data)
+    bot.send_message(call.from_user.id, 'What next?')
+    #pet_info = sql_helper.db_pet_info(message.text)
 
 # buttons test
 @bot.message_handler(commands=['earn_money'])
@@ -166,6 +178,7 @@ def get_statistics(tid):
     player_stats = 'Уровень 🎓:' + str(lvl) +'\nПитомцы 😺: ' + str(pet_cnt) + '\nДеньги 💰: ' + str(coins)
 
     return player_stats
+
 
 
 #anything other messages
