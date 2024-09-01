@@ -2,6 +2,7 @@
 
 
 import telebot
+import time # for sleep (don't give dice result in second but wait a little)
 import re
 import sql_helper
 # https://pypi.org/project/emoji/
@@ -96,24 +97,43 @@ def do_work(message):
 @bot.message_handler(regexp=".*Работа.*")
 def do_work(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("⛏ Искать клад")
-    btn2 = types.KeyboardButton("⚒ Работать")
+    btn1 = types.KeyboardButton("⛏ Искать клад 💪x1")
+    btn2 = types.KeyboardButton("⚒ Работать 💪x2")
     btn3 = types.KeyboardButton("🔙 Назад")
     markup.add(btn1,btn2, btn3)
-    bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
+    bot.send_message(message.from_user.id, "Осталось сил :", reply_markup=markup)  
     bot.register_next_step_handler(message, search_money)
 
 def search_money(message):
     if re.match('.*клад.*',message.text):
-        d = types.Dice(2,'🎲')
+        tid = message.from_user.id
+        d = types.Dice(2,'🎯')
         print(d)
-        sql_helper.db_stamina_down(message.from_user.id, 1)
-        bot.send_dice(message.from_user.id,d)
+        sql_helper.db_stamina_down(tid, 1)
+        bot.register_next_step_handler(message, do_work)
+        m = bot.send_dice(tid,'🎲')
+        dig_result = m.dice.value
+        if dig_result < 5:
+            time.sleep(4)
+            bot.send_message(tid,'💩 Неповезло, вы ничего не нашли!')
+        elif dig_result == 5:
+            bot.send_message(tid,'Ура! Клад! 💰 x 1')
+            time.sleep(4)
+            sql_helper.db_add_money(tid,1)
+        elif dig_result == 6:
+            time.sleep(4)
+            bot.send_message(tid,'Ура! Клад! 💰 x 2')
+            sql_helper.db_add_money(tid,1)
+
     elif re.match('.*Работа.*',message.text):
         bot.reply_to(message, 'work option')
     else:
         print('-- search money none --')
         echo_all(message)
+
+def treasure_dice_result(message):
+    print(' - - - treasure dice result ---')
+    print(message.dice)
 
 def step_two(message):
     if re.match('.*pet.*',message.text):
