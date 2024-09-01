@@ -118,7 +118,7 @@ def db_new_player(tid,username,nickname):
 
 def db_add_money(tid, value):
     print('- - - write money to DB - - - ')
-    q = '''UPDATE players set coins = %s where telegram_id = %s;'''
+    q = '''UPDATE players set coins = coins + %s where telegram_id = %s;'''
     cur = con.cursor()
     cur.execute(q,(value,tid))
     con.commit()

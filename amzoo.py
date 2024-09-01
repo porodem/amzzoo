@@ -96,13 +96,24 @@ def do_work(message):
 
 @bot.message_handler(regexp=".*Работа.*")
 def do_work(message):
+    stamina = sql_helper.db_get_player_info(message.from_user.id)[2]
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("⛏ Искать клад 💪x1")
-    btn2 = types.KeyboardButton("⚒ Работать 💪x2")
-    btn3 = types.KeyboardButton("🔙 Назад")
-    markup.add(btn1,btn2, btn3)
-    bot.send_message(message.from_user.id, "Осталось сил :", reply_markup=markup)  
-    bot.register_next_step_handler(message, search_money)
+    if stamina == 1:
+        btn1 = types.KeyboardButton("⛏ Искать клад 💪x1")
+        btn3 = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn3)
+        bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup) 
+        bot.register_next_step_handler(message, search_money)
+    elif stamina > 1:
+        btn1 = types.KeyboardButton("⛏ Искать клад 💪x1")
+        btn2 = types.KeyboardButton("⚒ Работать 💪x2")
+        btn3 = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn2, btn3)
+        bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup)
+        bot.register_next_step_handler(message, search_money) 
+    else:
+        bot.send_message(message.from_user.id, "😪 Ты устал, наберись сил :", reply_markup=markup)  
+        bot.register_next_step_handler(message, echo_all)
 
 def search_money(message):
     if re.match('.*клад.*',message.text):
