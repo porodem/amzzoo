@@ -88,15 +88,29 @@ def do_work(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("⛏ Искать клад")
     btn2 = types.KeyboardButton("⚒ Работать")
-    markup.add(btn1,btn2)
+    btn3 = types.KeyboardButton("🔙 Назад")
+    markup.add(btn1,btn2, btn3)
+    bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
+    bot.register_next_step_handler(message, search_money)
+
+@bot.message_handler(regexp=".*Работа.*")
+def do_work(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("⛏ Искать клад")
+    btn2 = types.KeyboardButton("⚒ Работать")
+    btn3 = types.KeyboardButton("🔙 Назад")
+    markup.add(btn1,btn2, btn3)
     bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
     bot.register_next_step_handler(message, search_money)
 
 def search_money(message):
     if re.match('.*клад.*',message.text):
-        bot.reply_to(message, 'pet option')
+        bot.reply_to(message, 'treasure option')
+    elif re.match('.*Работа.*',message.text):
+        bot.reply_to(message, 'work option')
     else:
-        bot.reply_to(message, 'test option')
+        print('-- search money none --')
+        echo_all(message)
 
 def step_two(message):
     if re.match('.*pet.*',message.text):
@@ -136,7 +150,8 @@ def pet_shop(message):
         btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
         btn3 = types.KeyboardButton("🕷 Паук 💰 5")
         btn4 = types.KeyboardButton("🐈 Кот 💰 9")
-        markup.add(btn1,btn2,btn3,btn4)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn2,btn3,btn4,btn_back)
     else:
         print('- - - - UNKNOWN LOCATION  - - - - -')
     bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)  
@@ -159,12 +174,14 @@ def travel(message):
     print('- - - TO DO ---')
 
 def next_option(message):
+    print('-- -- NEXT option ----')
     if re.match('.*Питомцы.*',message.text):
         bot.register_next_step_handler(message, show_pets)
     elif re.match('.*Имущество.*',message.text):
         bot.reply_to(message, 'test option')
     elif re.match('.*Работа.*',message.text):
-        bot.register_next_step_handler(message, do_work)
+        print(' - - work select - -')
+        do_work(message)
     elif re.match('.*Магазин.*',message.text):
         bot.register_next_step_handler(message, pet_shop)
     elif re.match('.*Путешествие.*',message.text):
@@ -186,6 +203,7 @@ def get_statistics(tid):
 def echo_all(message):
     print('---------- ANYTHING -----------')
     tid = message.from_user.id
+ 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🐇 Питомцы")
     btn2 = types.KeyboardButton("🏫 Имущество")
@@ -193,7 +211,7 @@ def echo_all(message):
     btn4 = types.KeyboardButton("🛒 Магазин")
     btn5 = types.KeyboardButton("✈ Путешествие")
     markup.add(btn1,btn2,btn3,btn4,btn5)
-    bot.send_message(tid, get_statistics(tid), reply_markup=markup)  
+    bot.send_message(tid, get_statistics(tid), reply_markup=markup)
     bot.register_next_step_handler(message, next_option)
 
 bot.infinity_polling()
