@@ -105,7 +105,9 @@ def do_work(message):
 
 def search_money(message):
     if re.match('.*клад.*',message.text):
-        bot.reply_to(message, 'treasure option')
+        d = types.Dice(2,'🎲')
+        print(d)
+        bot.send_dice(message.from_user.id,d)
     elif re.match('.*Работа.*',message.text):
         bot.reply_to(message, 'work option')
     else:
