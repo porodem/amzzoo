@@ -107,6 +107,7 @@ def search_money(message):
     if re.match('.*клад.*',message.text):
         d = types.Dice(2,'🎲')
         print(d)
+        sql_helper.db_stamina_down(message.from_user.id, 1)
         bot.send_dice(message.from_user.id,d)
     elif re.match('.*Работа.*',message.text):
         bot.reply_to(message, 'work option')
@@ -194,7 +195,8 @@ def get_statistics(tid):
     pinfo = sql_helper.db_get_player_info(tid)
     lvl = pinfo[1]
     coins = pinfo[0]
-    player_stats = 'Уровень 🎓:' + str(lvl) +'\nПитомцы 😺: ' + str(pet_cnt) + '\nДеньги 💰: ' + str(coins)
+    stamina = pinfo[2]
+    player_stats = 'Уровень 🎓:' + str(lvl) + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + '\nДеньги 💰: ' + str(coins)
 
     return player_stats
 
