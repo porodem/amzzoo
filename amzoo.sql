@@ -6,11 +6,19 @@ grant pg_read_server_files to pet_master;
 
 create table players(telegram_id int8 primary key, invite_date date, username text, first_name text, nick_name text,
 coins smallint default 0, level int default 1,
-game_location int default 5 references habitat(id));
+game_location int default 5 references habitat(id),
+stamina int default 5 check (stamina > -1 and stamina < 11)
+);
 
 alter table players add column level int default 1;
 
+alter table players add column stamina int default 5 check (stamina > -1 and stamina < 11)
+
+alter table players drop column stamina;
+
 alter table players drop column levle;
+
+alter table players add column last_work timestamp default now();
 
 alter table players add constraint pkey_tid primary key (telegram_id)
 
@@ -19,6 +27,7 @@ drop  table players cascade;
 select * from players p ;
 
 select buy_pet(775803031,1)
+
 
 create table animal_list(
 id int8 primary key,
@@ -96,5 +105,20 @@ end;
 $$;
 end
 
-select 
+-- last work reset
+create or replace function work_reset() returns trigger 
+as $$
+begin 
+	new.last_work =  now() ;
+	return new;
+end;
+$$ language plpgsql;
+
+create trigger t_work_res before update of stamina on players for each row execute function work_reset();
+
+drop trigger t_work_res on  players; 
+
+select * from players p 
+
+insert into players(telegram_id) values(1)
 

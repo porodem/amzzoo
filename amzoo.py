@@ -84,19 +84,36 @@ def pet_details(call):
     #pet_info = sql_helper.db_pet_info(message.text)
 
 # buttons test
-@bot.message_handler(commands=['earn_money'])
-def do_work(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("⛏ Искать клад")
-    btn2 = types.KeyboardButton("⚒ Работать")
-    btn3 = types.KeyboardButton("🔙 Назад")
-    markup.add(btn1,btn2, btn3)
-    bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
-    bot.register_next_step_handler(message, search_money)
+# @bot.message_handler(commands=['earn_money'])
+# def do_work(message):
+#     last_work = sql_helper.db_get_player_info(message.from_user.id)[3]
+#     print(last_work)
+#     print(type(last_work))
+#     print('- ts -')
+#     ts = datetime.fromisoformat(last_work)
+#     print(ts)
+#     time_diff = datetime.now() - last_work
+#     hours_of_rest = datetime(time_diff).hour
+#     print(hours_of_rest)
+#     print('time diff')
+#     print(time_diff)    
+#     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+#     btn1 = types.KeyboardButton("⛏ Искать клад")
+#     btn2 = types.KeyboardButton("⚒ Работать")
+#     btn3 = types.KeyboardButton("🔙 Назад")
+#     markup.add(btn1,btn2, btn3)
+#     bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
+#     bot.register_next_step_handler(message, search_money)
 
 @bot.message_handler(regexp=".*Работа.*")
 def do_work(message):
+    print(' - - - do work - - -')
+    tid = message.from_user.id
     stamina = sql_helper.db_get_player_info(message.from_user.id)[2]
+    if stamina == 0:
+        stamina = check_relax(tid)
+    else:
+        print('nothing')
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     if stamina == 1:
         btn1 = types.KeyboardButton("⛏ Искать клад 💪x1")
@@ -117,6 +134,9 @@ def do_work(message):
 
 def search_money(message):
     if re.match('.*клад.*',message.text):
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn = types.KeyboardButton("Ещё")
+        markup.add(btn)
         tid = message.from_user.id
         d = types.Dice(2,'🎯')
         print(d)
@@ -126,10 +146,10 @@ def search_money(message):
         dig_result = m.dice.value
         if dig_result < 5:
             time.sleep(4)
-            bot.send_message(tid,'💩 Неповезло, вы ничего не нашли!')
+            bot.send_message(tid,'💩 Неповезло, вы ничего не нашли!',  reply_markup=markup)
         elif dig_result == 5:
-            bot.send_message(tid,'Ура! Клад! 💰 x 1')
             time.sleep(4)
+            bot.send_message(tid,'Ура! Клад! 💰 x 1')
             sql_helper.db_add_money(tid,1)
         elif dig_result == 6:
             time.sleep(4)
@@ -145,6 +165,24 @@ def search_money(message):
 def treasure_dice_result(message):
     print(' - - - treasure dice result ---')
     print(message.dice)
+
+def check_relax(tid):
+    last_work = sql_helper.db_get_player_info(tid)[3]
+    print('last work: ' + str(last_work))
+    print('- ts -')
+    #ts = datetime.fromisoformat(last_work)
+    #print(ts)
+    time_diff = datetime.now() - last_work
+    print('time dif:' + str(time_diff))
+    hours_rest = time_diff.days * 24 + time_diff.seconds // 3600
+    print('hours: ' + str(hours_rest))
+    if hours_rest > 0:
+        hours_rest = hours_rest if hours_rest < 11 else 10
+        print('hours rest ' + str(hours_rest))
+        sql_helper.db_stamina_up(tid,hours_rest)
+    else:
+        print('hours rest ' + str(hours_rest) + 'not enough')
+    return hours_rest
 
 def step_two(message):
     if re.match('.*pet.*',message.text):

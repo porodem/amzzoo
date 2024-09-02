@@ -70,7 +70,7 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     print('- - - get player info- - -')
-    q = '''SELECT coins, level, stamina from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -124,14 +124,25 @@ def db_add_money(tid, value):
     con.commit()
 
 def db_stamina_down(tid, value):
-    print('- - - update stamina lvl to DB - - - ')
+    print('- - - update down stamina lvl to DB - - - ')
     q = '''UPDATE players set stamina = stamina - %s where telegram_id = %s;'''
     q2 = '''SELECT stamina FROM players WHERE telegram_id = %s;'''
     cur = con.cursor()
     cur.execute(q,(value,tid))
     cur.execute(q2,(tid,))
     b = cur.fetchone()
-    print(b)
+    print('db stamina down result: ' + str(b))
+    con.commit()
+
+def db_stamina_up(tid, value):
+    print('- - - update up stamina lvl to DB - - - ')
+    q = '''UPDATE players set stamina = stamina + %s where telegram_id = %s;'''
+    q2 = '''SELECT stamina FROM players WHERE telegram_id = %s;'''
+    cur = con.cursor()
+    cur.execute(q,(value,tid))
+    cur.execute(q2,(tid,))
+    b = cur.fetchone()
+    print('db stamina up result: ' + str(b))
     con.commit()
 
 
