@@ -210,6 +210,31 @@ def pet_emoji(id):
         e = "❌"
     return e
 
+@bot.message_handler(regexp=".*Магазин.*")
+def shop_select(message):
+    print('---------- SELECT SHOP -----------')
+    tid = message.from_user.id
+    # define location to show specific shop
+    location =  sql_helper.db_check_location(tid)
+    if location == 5:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("Зоомагазин 🐇",)
+        btn2 = types.KeyboardButton("Рынок 🏪",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn2,btn_back)
+    else:
+        print('- - - - UNKNOWN LOCATION  - - - - -')
+    bot.send_message(tid, 'Куда пойдем?:', reply_markup=markup)  
+    bot.register_next_step_handler(message, to_shop)
+
+def to_shop(message):
+    print('- - to shop - - ')
+    if re.match('.*Зоо.*',message.text):
+        pet_shop(message)
+    elif re.match('.*Рынок.*', message.text):
+        print('- - - bazar selected - - - ')
+    else:
+        echo_all(message)
 
 def pet_shop(message):
     print('---------- PET SHOP -----------')
@@ -240,7 +265,7 @@ def buy_pet(message):
     elif re.match('.*Кот.*',message.text):
         sql_helper.db_buy_pet(message.from_user.id, 4)  
     else:
-        print('noting ...')
+        echo_all(message)
 
 def travel(message):
     print('- - - TO DO ---')
@@ -255,7 +280,7 @@ def next_option(message):
         print(' - - work select - -')
         do_work(message)
     elif re.match('.*Магазин.*',message.text):
-        bot.register_next_step_handler(message, pet_shop)
+        bot.register_next_step_handler(message, shop_select)
     elif re.match('.*Путешествие.*',message.text):
         bot.register_next_step_handler(message, travel)
 
@@ -285,7 +310,8 @@ def echo_all(message):
     btn5 = types.KeyboardButton("✈ Путешествие")
     markup.add(btn1,btn2,btn3,btn4,btn5)
     bot.send_message(tid, get_statistics(tid), reply_markup=markup)
-    bot.register_next_step_handler(message, next_option)
+    #bot.register_next_step_handler(message, next_option)
+    next_option(message)
 
 bot.infinity_polling()
 
