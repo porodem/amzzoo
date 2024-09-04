@@ -10,7 +10,7 @@ import emoji
 
 from datetime import datetime, timedelta
 from telebot import types
-from telebot.util import update_types
+from telebot.util import update_types, quick_markup
 from pprint import pprint # to investigate what inside objects
 
 print('- - - - - S T A R T E D - - - - - - ')
@@ -75,7 +75,33 @@ def show_pets(message):
     bot.send_message(message.from_user.id, "Ваши питомцы на кнопках.", reply_markup=markup)  
     bot.register_next_step_handler(message, pet_details)
 
-@bot.callback_query_handler(func=lambda call: True)
+def sell_pets(message):
+    owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
+    print(list(owned_pets))
+    #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    markup = types.InlineKeyboardMarkup()
+    markup.row_width = 2
+    for p in owned_pets:
+        print(p)
+        e = str(pet_emoji(p[1]))
+        btn = types.InlineKeyboardButton(e,callback_data=p[0])
+        markup.add(btn)
+    bot.send_message(message.from_user.id, "Ваши питомцы на кнопках.", reply_markup=markup)  
+    bot.register_next_step_handler(message, pet_details)
+
+@bot.callback_query_handler(lambda query: query.data == "1")
+def pet_details(query):
+    print(' - - pet sell func -- : ')
+
+    bot.edit_message_text(
+        text='wow',
+        chat_id=query.message.chat.id,
+        message_id=query.message.id,
+        reply_markup=quick_markup({'xox':{'callback_data':'xoxdata'}})
+    )
+    bot.answer_callback_query(query.id,text='i')
+
+@bot.callback_query_handler(func=lambda call: call.data == "5")
 def pet_details(call):
     print(' - - pet detail func -- : ')
     #print(call)
@@ -247,8 +273,9 @@ def pet_shop(message):
         btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
         btn3 = types.KeyboardButton("🕷 Паук 💰 5")
         btn4 = types.KeyboardButton("🐈 Кот 💰 9")
+        btn_sell = types.KeyboardButton("Продать ")
         btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2,btn3,btn4,btn_back)
+        markup.add(btn1,btn2,btn3,btn4,btn_sell,btn_back)
     else:
         print('- - - - UNKNOWN LOCATION  - - - - -')
     bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)  
@@ -263,7 +290,9 @@ def buy_pet(message):
     elif re.match('.*Паук.*',message.text):
         sql_helper.db_buy_pet(message.from_user.id, 3)
     elif re.match('.*Кот.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 4)  
+        sql_helper.db_buy_pet(message.from_user.id, 4)
+    elif re.match('.*Продать.*',message.text):
+        sell_pets(message)  
     else:
         echo_all(message)
 
