@@ -93,6 +93,11 @@ def db_pet_info(id):
     print (b)
 
 def db_get_owned_pets(tid):
+     """
+        :param tid: telegram id of current player.
+
+        :return list: [id, animal_id] from pets table
+        """
      print('-- get all players pets --')
      q = '''select id, animal_id from pets where owner = %s;'''
      tid_list = []

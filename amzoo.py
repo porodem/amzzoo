@@ -57,7 +57,8 @@ def begin_game(message):
         bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
         bot.register_next_step_handler(message, search_money)
 
-# buttons test
+# ----------   SHOW PETS 
+
 @bot.message_handler(commands=['show_pets'])
 def show_pets(message):
     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
@@ -79,12 +80,11 @@ def sell_pets(message):
     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
     print(list(owned_pets))
     #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 2
+    markup = types.InlineKeyboardMarkup(row_width=2)
     for p in owned_pets:
         print(p)
-        e = str(pet_emoji(p[1]))
-        btn = types.InlineKeyboardButton(e,callback_data=p[0])
+        emj = str(pet_emoji(p[1]))
+        btn = types.InlineKeyboardButton(emj,callback_data=p[0])
         markup.add(btn)
     bot.send_message(message.from_user.id, "Ваши питомцы на кнопках.", reply_markup=markup)  
     bot.register_next_step_handler(message, pet_details)
