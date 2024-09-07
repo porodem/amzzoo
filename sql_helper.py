@@ -96,11 +96,11 @@ def db_get_owned_pets(tid):
      """
         :param tid: telegram id of current player.
 
-        :return list: [id, animal_id] from pets table
-        """
+        :return list: [id, animal_id, price] from pets table
+    """
      print('-- get all players pets --')
-     q = '''select id, animal_id from pets where owner = %s;'''
-     tid_list = []
+     q = '''select pets.id, animal_id, price from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
+     pet_list = []
 
      with con.cursor() as cur:
           cur.execute(q,(tid,))
@@ -108,9 +108,9 @@ def db_get_owned_pets(tid):
           print(type(b))
           print(list(b))
           for record in b:
-               tid_list.append(record)
+               pet_list.append(record)
                
-     return tid_list
+     return pet_list
 
 # ==================================== DML BLOCK
 

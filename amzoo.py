@@ -81,11 +81,16 @@ def sell_pets(message):
     print(list(owned_pets))
     #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup = types.InlineKeyboardMarkup(row_width=2)
+    btn_pack = []
     for p in owned_pets:
         print(p)
-        emj = str(pet_emoji(p[1]))
+        pet_price = str(int(p[2] / 2)) # sell price its original price / 2
+        emj = str(pet_emoji(p[1]) + " 💰-" + pet_price)
         btn = types.InlineKeyboardButton(emj,callback_data=p[0])
-        markup.add(btn)
+        btn_pack.append(btn)
+        print(type(btn_pack))
+    # very interesting and useful trick with asterisk (*) operator https://www.geeksforgeeks.org/python-star-or-asterisk-operator/
+    markup.add(*btn_pack)
     bot.send_message(message.from_user.id, "Ваши питомцы на кнопках.", reply_markup=markup)  
     bot.register_next_step_handler(message, pet_details)
 
