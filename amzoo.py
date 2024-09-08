@@ -1,6 +1,5 @@
 #telegram zoo game
 
-
 import telebot
 import time # for sleep (don't give dice result in second but wait a little)
 import re
@@ -22,16 +21,13 @@ print(token, type(token))
 f.close()
 bot = telebot.TeleBot(token, parse_mode=None)
 
-
-
-
 c_start = types.BotCommand('start','Начать')
 my_pets_command = types.BotCommand('show_pets','Показать питомцев')
 main_menu = types.BotCommand('main_menu','Меню')
 main_menu = types.BotCommand('earn_money','Найти деньги')
 bot.set_my_commands([my_pets_command,main_menu])
 
-# buttons test
+# new game
 @bot.message_handler(commands=['start'])
 def begin_game(message):
 
@@ -84,6 +80,79 @@ def pet_details(call):
     bot.send_message(call.from_user.id, 'What next?')
     #pet_info = sql_helper.db_pet_info(message.text)
 
+# - - - - - - SHOP  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+@bot.message_handler(regexp=".*Магазин.*")
+def shop_select(message):
+    print('---------- SELECT SHOP -----------')
+    tid = message.from_user.id
+    # define location to show specific shop
+    location =  sql_helper.db_check_location(tid)
+    if location == 5:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("Зоомагазин 🐇",)
+        btn2 = types.KeyboardButton("Рынок 🏪",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn2,btn_back)
+    else:
+        print('- - - - UNKNOWN LOCATION  - - - - -')
+    bot.send_message(tid, 'Куда пойдем?:', reply_markup=markup)  
+    bot.register_next_step_handler(message, to_shop)
+
+def to_shop(message):
+    print('- - to shop - - ')
+    if re.match('.*Зоо.*',message.text):
+        pet_shop(message)
+    elif re.match('.*Рынок.*', message.text):
+        print('- - - bazar selected - - - ')
+    else:
+        echo_all(message)
+
+def pet_shop(message):
+    print('---------- PET SHOP -----------')
+    tid = message.from_user.id
+    # define location to show specific shop
+    location =  sql_helper.db_check_location(tid)
+
+    if location == 5:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("🥚 Яйцо 💰 1",)
+        btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
+        btn3 = types.KeyboardButton("🕷 Паук 💰 5")
+        btn4 = types.KeyboardButton("🐈 Кот 💰 9")
+        btn_sell = types.KeyboardButton("Продать ")
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn2,btn3,btn4,btn_sell,btn_back)
+    else:
+        print('- - - - UNKNOWN LOCATION  - - - - -')
+    bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)  
+    bot.register_next_step_handler(message, buy_pet)
+
+def buy_pet(message):
+    print(' - - - buy pet - - - ')
+    if re.match('.*Яйцо.*',message.text):
+        sql_helper.db_buy_pet(message.from_user.id, 1)
+        bot.send_message(message.from_user.id, "Петомец куплен!")
+    elif re.match('.*Мышь.*',message.text):
+        sql_helper.db_buy_pet(message.from_user.id, 2)
+        bot.send_message(message.from_user.id, "Петомец куплен!")
+    elif re.match('.*Паук.*',message.text):
+        sql_helper.db_buy_pet(message.from_user.id, 3)
+        bot.send_message(message.from_user.id, "Петомец куплен!")
+    elif re.match('.*Кот.*',message.text):
+        sql_helper.db_buy_pet(message.from_user.id, 4)
+        bot.send_message(message.from_user.id, "Петомец куплен!")
+    elif re.match('.*Продать.*',message.text):
+        pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
+        if len(pet_list) == 0:
+            bot.send_message(message.from_user.id, "🚫 У вас нет питомцев!")
+            time.sleep(1)
+            echo_all(message)
+        else:
+            sell_pets(message)  
+    else:
+        echo_all(message)
+
 def sell_pets(message):
     print('- - - - sell pets function - - - - ')
     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
@@ -113,29 +182,7 @@ def pet_selling(query):
     bot.answer_callback_query(query.id,text='You sold pet')
     bot.send_message(query.from_user.id, "Петомец продан")
 
-
-
-# buttons test
-# @bot.message_handler(commands=['earn_money'])
-# def do_work(message):
-#     last_work = sql_helper.db_get_player_info(message.from_user.id)[3]
-#     print(last_work)
-#     print(type(last_work))
-#     print('- ts -')
-#     ts = datetime.fromisoformat(last_work)
-#     print(ts)
-#     time_diff = datetime.now() - last_work
-#     hours_of_rest = datetime(time_diff).hour
-#     print(hours_of_rest)
-#     print('time diff')
-#     print(time_diff)    
-#     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     btn1 = types.KeyboardButton("⛏ Искать клад")
-#     btn2 = types.KeyboardButton("⚒ Работать")
-#     btn3 = types.KeyboardButton("🔙 Назад")
-#     markup.add(btn1,btn2, btn3)
-#     bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
-#     bot.register_next_step_handler(message, search_money)
+#  - - - - - - - - - - - - E A R N I N G  M O N E Y  - - - - - - - - - - - - - - - - - -
 
 @bot.message_handler(regexp=".*Работа.*")
 def do_work(message):
@@ -216,18 +263,10 @@ def check_relax(tid):
         print('hours rest ' + str(hours_rest) + 'not enough')
     return hours_rest
 
-def step_two(message):
-    if re.match('.*pet.*',message.text):
-        bot.reply_to(message, 'pet option')
-    else:
-        bot.reply_to(message, 'test option')
+def travel(message):
+    print('- - - TO DO ---')
 
-# legacy func from previous project
-@bot.message_handler(regexp=".*(shit).*")
-def attach_ls(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    markup.add(types.KeyboardButton('show pets'))
-    msg = bot.send_message(message.chat.id, "choose type shit", reply_markup=markup)
+# - - - - - - -  U T I L S - - - - - - - 
 
 def extract_numbers(str):
     numbers = re.findall(r'\d+',str)
@@ -248,80 +287,7 @@ def pet_emoji(id):
         e = "❌"
     return e
 
-@bot.message_handler(regexp=".*Магазин.*")
-def shop_select(message):
-    print('---------- SELECT SHOP -----------')
-    tid = message.from_user.id
-    # define location to show specific shop
-    location =  sql_helper.db_check_location(tid)
-    if location == 5:
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn1 = types.KeyboardButton("Зоомагазин 🐇",)
-        btn2 = types.KeyboardButton("Рынок 🏪",)
-        btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2,btn_back)
-    else:
-        print('- - - - UNKNOWN LOCATION  - - - - -')
-    bot.send_message(tid, 'Куда пойдем?:', reply_markup=markup)  
-    bot.register_next_step_handler(message, to_shop)
-
-def to_shop(message):
-    print('- - to shop - - ')
-    if re.match('.*Зоо.*',message.text):
-        pet_shop(message)
-    elif re.match('.*Рынок.*', message.text):
-        print('- - - bazar selected - - - ')
-    else:
-        echo_all(message)
-
-def pet_shop(message):
-    print('---------- PET SHOP -----------')
-    tid = message.from_user.id
-    # define location to show specific shop
-    location =  sql_helper.db_check_location(tid)
-
-    if location == 5:
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn1 = types.KeyboardButton("🥚 Яйцо 💰 1",)
-        btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
-        btn3 = types.KeyboardButton("🕷 Паук 💰 5")
-        btn4 = types.KeyboardButton("🐈 Кот 💰 9")
-        btn_sell = types.KeyboardButton("Продать ")
-        btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2,btn3,btn4,btn_sell,btn_back)
-    else:
-        print('- - - - UNKNOWN LOCATION  - - - - -')
-    bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)  
-    bot.register_next_step_handler(message, buy_pet)
-
-def buy_pet(message):
-    print(' - - - buy pet - - - ')
-    if re.match('.*Яйцо.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 1)
-        bot.send_message(message.from_user.id, "Петомец куплен!")
-    elif re.match('.*Мышь.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 2)
-        bot.send_message(message.from_user.id, "Петомец куплен!")
-    elif re.match('.*Паук.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 3)
-        bot.send_message(message.from_user.id, "Петомец куплен!")
-    elif re.match('.*Кот.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 4)
-        bot.send_message(message.from_user.id, "Петомец куплен!")
-    elif re.match('.*Продать.*',message.text):
-        pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
-        if len(pet_list) == 0:
-            bot.send_message(message.from_user.id, "🚫 У вас нет питомцев!")
-            time.sleep(1)
-            echo_all(message)
-        else:
-            sell_pets(message)  
-    else:
-        echo_all(message)
-    
-
-def travel(message):
-    print('- - - TO DO ---')
+# - - - - - - -  M A I N  M E N U  - - - - - - - 
 
 def next_option(message):
     print('-- -- NEXT option ----')
