@@ -86,27 +86,23 @@ def sell_pets(message):
         print(p)
         pet_price = str(int(p[2] / 2)) # sell price its original price / 2
         emj = str(pet_emoji(p[1]) + " 💰-" + pet_price)
-        btn = types.InlineKeyboardButton(emj,callback_data=p[0])
+        cb_prefix = 'petsel'
+        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]))
         btn_pack.append(btn)
         print(type(btn_pack))
     # very interesting and useful trick with asterisk (*) operator https://www.geeksforgeeks.org/python-star-or-asterisk-operator/
     markup.add(*btn_pack)
-    bot.send_message(message.from_user.id, "Ваши питомцы на кнопках.", reply_markup=markup)  
+    bot.send_message(message.from_user.id, "Ваши питомцы:", reply_markup=markup)  
     bot.register_next_step_handler(message, pet_details)
 
-@bot.callback_query_handler(lambda query: query.data == "1")
+@bot.callback_query_handler(lambda query: 'petsel' in query.data )
 def pet_details(query):
     print(' - - pet sell func -- : ')
+    pet_it = query.data[-1:]
+    sql_helper.db_sell_pet(pet_it)    
+    bot.answer_callback_query(query.id,text='You sold pet')
 
-    bot.edit_message_text(
-        text='wow',
-        chat_id=query.message.chat.id,
-        message_id=query.message.id,
-        reply_markup=quick_markup({'xox':{'callback_data':'xoxdata'}})
-    )
-    bot.answer_callback_query(query.id,text='i')
-
-@bot.callback_query_handler(func=lambda call: call.data == "5")
+#@bot.callback_query_handler(func=lambda call: call.data == "5")
 def pet_details(call):
     print(' - - pet detail func -- : ')
     #print(call)
@@ -300,6 +296,7 @@ def buy_pet(message):
         sell_pets(message)  
     else:
         echo_all(message)
+    bot.send_message(message.from_user.id, "Петомец куплен!")
 
 def travel(message):
     print('- - - TO DO ---')

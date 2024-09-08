@@ -158,6 +158,13 @@ def db_buy_pet(animal_id,tid):
     cur.execute(q,(animal_id,tid))
     con.commit()
 
+def db_sell_pet(pet_id):
+    print(' - - sell pet DB func - -')
+    q = '''SELECT sell_pet(%s);'''
+    cur = con.cursor()
+    cur.execute(q,(pet_id,))
+    con.commit()
+
 # ==================================== SHOW BLOCK
 
 

@@ -91,6 +91,8 @@ insert into food_type values (1,'omnivore'),(2,'herbivore'),(3,'carnivore')
 
 select * from players p ;
 
+-- BUY PET ---
+
 create or replace function buy_pet(tid int8, animal int8)
 returns int 
 language plpgsql
@@ -100,6 +102,24 @@ begin
 	select price into pet_price from animal_list where id = animal; 
 	insert into pets(animal_id, owner) values(animal,tid);
 	update players set coins = (coins - pet_price) where telegram_id = tid;
+	return 1;
+end;
+$$;
+end
+
+-- SELL PET
+create or replace function sell_pet(pet_id int8)
+returns int 
+language plpgsql
+as $$
+declare 
+sell_price int;
+tid int8;
+begin
+	select price/2, p.owner  into sell_price, tid  from animal_list a join pets p on p.animal_id = a .id where p.id = pet_id; 
+	raise notice 'sell price: %', sell_price;
+	delete from pets where id = pet_id;
+	update  players set coins = (coins + sell_price) where telegram_id = tid;
 	return 1;
 end;
 $$;
