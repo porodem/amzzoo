@@ -22,6 +22,9 @@ def db_check_player_exists(tid):
     return result
 
 def db_check_location(tid):
+    '''
+    1	desert    2	field    3	forest    4	water    5	any
+    '''
     print('- - - check players location - - -')
     q = '''SELECT h.id from players p join habitat h on h.id = p.game_location where telegram_id = %s'''
     cur = con.cursor()
@@ -105,8 +108,7 @@ def db_get_owned_pets(tid):
      with con.cursor() as cur:
           cur.execute(q,(tid,))
           b = cur.fetchall()
-          print(type(b))
-          print(list(b))
+          #print(list(b))
           for record in b:
                pet_list.append(record)
                
@@ -163,6 +165,8 @@ def db_sell_pet(pet_id):
     q = '''SELECT sell_pet(%s);'''
     cur = con.cursor()
     cur.execute(q,(pet_id,))
+    result = cur.fetchone()
+    print('sql sel result: ' + str(result))
     con.commit()
 
 # ==================================== SHOW BLOCK

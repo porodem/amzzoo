@@ -76,9 +76,18 @@ def show_pets(message):
     bot.send_message(message.from_user.id, "Ваши питомцы на кнопках.", reply_markup=markup)  
     bot.register_next_step_handler(message, pet_details)
 
+#@bot.callback_query_handler(func=lambda call: call.data == "5")
+def pet_details(call):
+    print(' - - pet detail func -- : ')
+    #print(call)
+    sql_helper.db_pet_info(call.data)
+    bot.send_message(call.from_user.id, 'What next?')
+    #pet_info = sql_helper.db_pet_info(message.text)
+
 def sell_pets(message):
+    print('- - - - sell pets function - - - - ')
     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
-    print(list(owned_pets))
+    #print(list(owned_pets))
     #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn_pack = []
@@ -93,22 +102,18 @@ def sell_pets(message):
     # very interesting and useful trick with asterisk (*) operator https://www.geeksforgeeks.org/python-star-or-asterisk-operator/
     markup.add(*btn_pack)
     bot.send_message(message.from_user.id, "Ваши питомцы:", reply_markup=markup)  
-    bot.register_next_step_handler(message, pet_details)
+    bot.register_next_step_handler(message, echo_all)
 
 @bot.callback_query_handler(lambda query: 'petsel' in query.data )
-def pet_details(query):
+def pet_selling(query):
     print(' - - pet sell func -- : ')
-    pet_it = query.data[-1:]
+    #pet_it = query.data[-1:]
+    pet_it = extract_numbers(query.data)
     sql_helper.db_sell_pet(pet_it)    
     bot.answer_callback_query(query.id,text='You sold pet')
+    bot.send_message(query.from_user.id, "Петомец продан")
 
-#@bot.callback_query_handler(func=lambda call: call.data == "5")
-def pet_details(call):
-    print(' - - pet detail func -- : ')
-    #print(call)
-    sql_helper.db_pet_info(call.data)
-    bot.send_message(call.from_user.id, 'What next?')
-    #pet_info = sql_helper.db_pet_info(message.text)
+
 
 # buttons test
 # @bot.message_handler(commands=['earn_money'])
@@ -224,6 +229,12 @@ def attach_ls(message):
     markup.add(types.KeyboardButton('show pets'))
     msg = bot.send_message(message.chat.id, "choose type shit", reply_markup=markup)
 
+def extract_numbers(str):
+    numbers = re.findall(r'\d+',str)
+    print('extracted: ' + numbers[0])
+    return numbers[0]
+
+
 def pet_emoji(id):
     if id == 1:
         e = "🥚"
@@ -268,6 +279,7 @@ def pet_shop(message):
     tid = message.from_user.id
     # define location to show specific shop
     location =  sql_helper.db_check_location(tid)
+
     if location == 5:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🥚 Яйцо 💰 1",)
@@ -286,17 +298,27 @@ def buy_pet(message):
     print(' - - - buy pet - - - ')
     if re.match('.*Яйцо.*',message.text):
         sql_helper.db_buy_pet(message.from_user.id, 1)
+        bot.send_message(message.from_user.id, "Петомец куплен!")
     elif re.match('.*Мышь.*',message.text):
         sql_helper.db_buy_pet(message.from_user.id, 2)
+        bot.send_message(message.from_user.id, "Петомец куплен!")
     elif re.match('.*Паук.*',message.text):
         sql_helper.db_buy_pet(message.from_user.id, 3)
+        bot.send_message(message.from_user.id, "Петомец куплен!")
     elif re.match('.*Кот.*',message.text):
         sql_helper.db_buy_pet(message.from_user.id, 4)
+        bot.send_message(message.from_user.id, "Петомец куплен!")
     elif re.match('.*Продать.*',message.text):
-        sell_pets(message)  
+        pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
+        if len(pet_list) == 0:
+            bot.send_message(message.from_user.id, "🚫 У вас нет питомцев!")
+            time.sleep(1)
+            echo_all(message)
+        else:
+            sell_pets(message)  
     else:
         echo_all(message)
-    bot.send_message(message.from_user.id, "Петомец куплен!")
+    
 
 def travel(message):
     print('- - - TO DO ---')
@@ -304,7 +326,8 @@ def travel(message):
 def next_option(message):
     print('-- -- NEXT option ----')
     if re.match('.*Питомцы.*',message.text):
-        bot.register_next_step_handler(message, show_pets)
+        #bot.register_next_step_handler(message, show_pets)
+        show_pets(message)
     elif re.match('.*Имущество.*',message.text):
         bot.reply_to(message, 'test option')
     elif re.match('.*Работа.*',message.text):
