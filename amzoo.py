@@ -55,6 +55,7 @@ def begin_game(message):
 
 # ----------   SHOW PETS 
 
+#TODELETE - DEPRICATED
 @bot.message_handler(commands=['show_pets'])
 def show_pets_old(message):
     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
@@ -86,14 +87,11 @@ def show_pets_old(message):
 @bot.callback_query_handler(lambda query: 'pet' in query.data )
 def show_pets(query):
     print(' - - show pets function (callback) -- : ')
-    #print('data: ' + query.data)
     if hasattr(query,'data'):
         cidx = int(query.data[-1:])
     else:
         cidx = 0
-    btn_pack = []
     print('cidx: ' + str(cidx))
-    ls = ['one','two','three']
     owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
     print('owned_pets: ')
     print(list(owned_pets))
@@ -104,9 +102,11 @@ def show_pets(query):
     print(list(pet_info))
     btn_lbl = pet_emoji(pet_info[1]) + ' сытость: ' + str(pet_info[2])    
     markup = types.InlineKeyboardMarkup(row_width=2)
+    # TODO add SHOW (petting) animated emoji button, FEED button, CURE (heal) button
+    btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[1]))
     btn_backward = types.InlineKeyboardButton('◀',callback_data="pet" + str(cidx-1))
     btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid))
-    markup.add(btn_backward,btn_forward)
+    markup.add(btn_feed,btn_backward,btn_forward)
 
     if hasattr(query,'data'):
         bot.edit_message_text(
@@ -118,13 +118,12 @@ def show_pets(query):
     else:
         bot.send_message(query.from_user.id, btn_lbl, reply_markup=markup)
 
-#@bot.callback_query_handler(func=lambda call: call.data == "5")
-def pet_details(call):
-    print(' - - pet detail func -- : ')
-    #print(call)
-    sql_helper.db_pet_info(call.data)
-    bot.send_message(call.from_user.id, 'What next?')
-    #pet_info = sql_helper.db_pet_info(message.text)
+@bot.callback_query_handler(func=lambda call: 'feed' in call.data)
+def pet_feeding(call):
+    print(' - - pet feed -- : ')
+    animal_id = extract_numbers(call.data)
+    print('animal id: ' + animal_id)
+    bot.send_message(call.from_user.id, pet_emoji(int(animal_id)))
 
 # - - - - - - SHOP  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
