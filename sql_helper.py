@@ -87,13 +87,19 @@ def db_get_player_info(tid):
     return result
 
 def db_pet_info(id):
+    """
+        :param id: pet id from pets table.
+
+        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price] of pets 
+    """
     print('--- DB pet_info ---')
-    q = '''SELECT p.id, hunger, health, mood, a.species, habitat, food_type, price from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
+    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
     cur = con.cursor()
     cur.execute(q,(id,))
     b = cur.fetchone()
     result = b
     print (b)
+    return b
 
 def db_get_owned_pets(tid):
      """
