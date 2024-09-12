@@ -100,7 +100,10 @@ def show_pets(query):
     pet_info = sql_helper.db_pet_info(first_pet[0])
     print('pet_info: ')
     print(list(pet_info))
-    btn_lbl = pet_emoji(pet_info[1]) + ' сытость: ' + str(pet_info[2])    
+    mood = define_mood(pet_info)
+    habitat = habitat_emoji(pet_info[6])
+    meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
+    btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
     # TODO add SHOW (petting) animated emoji button, FEED button, CURE (heal) button
     btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[1]))
@@ -117,6 +120,8 @@ def show_pets(query):
         )
     else:
         bot.send_message(query.from_user.id, btn_lbl, reply_markup=markup)
+
+
 
 @bot.callback_query_handler(func=lambda call: 'feed' in call.data)
 def pet_feeding(call):
@@ -331,6 +336,39 @@ def pet_emoji(id):
     else:
         e = "❌"
     return e
+
+# values(1,'desert'),(2,'field'),(3,'forest'),(4,'water'),(5,'any')
+def habitat_emoji(id):
+    if id == 1:
+        e = "🏜"
+    elif id == 2:
+        e = "🛣" # maby don't use at all
+    elif id == 3:
+        e = "🌲"
+    elif id == 4:
+        e = "🌊"
+    else:
+        e = "🌐"
+    return e
+
+
+def define_mood(pet: list, environment: list=None):
+    hunger = pet[2]
+    health = pet[3]
+    habitat = pet[6]
+    sum_points = hunger + health
+    mood = "😐"
+    if hunger == 0 or health == 1:
+        mood = "😢"
+    elif sum_points < 5:
+        mood = "🙁"
+    elif sum_points < 8:
+        mood = "😐"
+    elif sum_points >  12:
+        mood = "🙂"
+    elif sum_points > 16:
+        mood = "☺"
+    return mood
 
 # - - - - - - -  M A I N  M E N U  - - - - - - - 
 
