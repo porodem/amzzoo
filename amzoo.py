@@ -106,7 +106,7 @@ def show_pets(query):
     btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
     # TODO add SHOW (petting) animated emoji button, FEED button, CURE (heal) button
-    btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[1]))
+    btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[0]))
     btn_backward = types.InlineKeyboardButton('◀',callback_data="pet" + str(cidx-1))
     btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid))
     markup.add(btn_feed,btn_backward,btn_forward)
@@ -126,8 +126,11 @@ def show_pets(query):
 @bot.callback_query_handler(func=lambda call: 'feed' in call.data)
 def pet_feeding(call):
     print(' - - pet feed -- : ')
-    animal_id = extract_numbers(call.data)
-    print('animal id: ' + animal_id)
+    pet_id = extract_numbers(call.data)
+    pet_info = sql_helper.db_pet_info(pet_id)
+    animal_id = pet_info[1]
+    print('animal id: ' + str(animal_id))
+    sql_helper.db_change_hunger(pet_id, True, 1)
     bot.send_message(call.from_user.id, pet_emoji(int(animal_id)))
 
 # - - - - - - SHOP  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -333,6 +336,8 @@ def pet_emoji(id):
         e = "🕷"
     elif id == 4:
         e = "🐈"
+    elif id == 0:
+        e = "☠"
     else:
         e = "❌"
     return e

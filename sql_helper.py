@@ -175,6 +175,16 @@ def db_sell_pet(pet_id):
     print('sql sel result: ' + str(result))
     con.commit()
 
+def db_change_hunger(pet_id: int, feed: bool, val: int):
+    print(' - - change hunger pet DB func - -')
+    q = '''SELECT change_hunger(%s,%s,1);'''
+    cur = con.cursor()
+    cur.execute(q,(pet_id,feed))
+    result = cur.fetchone()
+    print('sql sel result: ' + str(result))
+    con.commit()
+
+
 # ==================================== SHOW BLOCK
 
 
