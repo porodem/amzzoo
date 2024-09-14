@@ -181,11 +181,30 @@ def db_sell_pet(pet_id):
     print('sql sel result: ' + str(result))
     con.commit()
 
-def db_change_hunger(pet_id: int, feed: bool, val: int):
+def db_change_hunger(pet_id: int, feed: bool, val: int=1):
+    """  
+        :param pet_id: telegram id of current player.
+        :param feed:bool is feeding or not
+        :param val: points
+
+        :return None:
+    """
     print(' - - change hunger pet DB func - -')
-    q = '''SELECT change_hunger(%s,%s,1);'''
+    q = '''SELECT change_hunger(%s,%s,%s);'''
     cur = con.cursor()
-    cur.execute(q,(pet_id,feed))
+    cur.execute(q,(pet_id,feed,val))
+    result = cur.fetchone()
+    print('sql sel result: ' + str(result))
+    con.commit()
+
+def db_change_hunger_all():
+    """  
+        lowers all pets hunger level on 1 (one)
+    """
+    print(' - - change hunger all pet DB func - -')
+    q = '''select change_hunger(id, false , 1) from pets p where health > 0;;'''
+    cur = con.cursor()
+    cur.execute(q)
     result = cur.fetchone()
     print('sql sel result: ' + str(result))
     con.commit()

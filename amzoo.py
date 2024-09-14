@@ -27,6 +27,12 @@ main_menu = types.BotCommand('main_menu','Меню')
 main_menu = types.BotCommand('earn_money','Найти деньги')
 bot.set_my_commands([my_pets_command,main_menu])
 
+# Timer for all pets to get hunger every 8 hours (28000 sec)
+hunger_interval = 20
+
+
+
+
 # new game
 @bot.message_handler(commands=['start'])
 def begin_game(message):
@@ -423,4 +429,12 @@ def echo_all(message):
     next_option(message)
 
 bot.infinity_polling()
+
+def get_hunger():
+    print("- - -  get hunger - - - ")
+    sql_helper.db_change_hunger_all()
+
+while True:
+    get_hunger()
+    time.sleep(hunger_interval)
 
