@@ -38,14 +38,20 @@ price int)
 
 select * from animal_list al ;
 
+insert into animal_list values(0,'bones',5,0,0)
+
+0;Кости;5;0;0
+
+truncate  animal_list ;
+
 create table tpets(id int references animal_list, species text);
 
 create table pets(
 id int8 generated always as identity,
 animal_id int8 references animal_list(id),
 owner int8 references players(telegram_id),
-petname text,  hunger int default 6 check (hunger < 11 and hunger > 0),
-health int default 10, 
+petname text,  hunger int default 6 check (hunger < 11 and hunger >= 0),
+health int default 10 check( health > -1), 
 mood int default 3);
 
 drop table pets;
@@ -87,11 +93,11 @@ insert into habitat values(1,'desert'),(2,'field'),(3,'forest'),(4,'water'),(5,'
 
 create table food_type(id int primary key , name text)
 
-insert into food_type values (1,'omnivore'),(2,'herbivore'),(3,'carnivore')
+insert into food_type values (0,'nothing'),(1,'omnivore'),(2,'herbivore'),(3,'carnivore')
+
+truncate food_type cascade;
 
 select * from players p ;
-
--- BUY PET ---
 
 create or replace function buy_pet(tid int8, animal int8)
 returns int 
@@ -125,6 +131,16 @@ end;
 $$;
 end
 
+select p.*, p2.coins from pets p join players p2 on p."owner"  = p2.telegram_id 
+
+select 1 into a 
+
+select sell_pet(8) 
+
+select  buy_pet(775803031,4)
+
+update players set coins  = coins + 1 where telegram_id = 775803031
+
 -- last work reset
 create or replace function work_reset() returns trigger 
 as $$
@@ -142,3 +158,46 @@ select * from players p
 
 insert into players(telegram_id) values(1)
 
+-- change hunger level
+
+create or replace function change_hunger(pet_id int8, feeding boolean, value int) 
+returns int
+language plpgsql
+as $$
+declare 
+hung_before int;
+health_before int;
+begin
+	if feeding then
+		update pets set hunger = hunger + value where id = pet_id;
+	else
+		select hunger into hung_before from pets where id = pet_id;
+		if hung_before = 0 then
+			select health into health_before from pets where id = pet_id;
+			if health_before = 1 then
+				update pets set animal_id = 0, mood = '3' where id = pet_id;
+			else
+				update pets set health = health - 1 where id = pet_id;
+			end if;
+	    else
+	    	update pets set hunger = hunger - 1 where id = pet_id;
+	    end if;
+	end if;
+    return 1;
+end;
+$$;
+end
+
+select change_hunger(2, false , 1)
+
+select change_hunger(id, false , 1) from pets p where health > 0;
+
+select * from pets;
+
+create temp table t(b boolean)
+
+insert into t values('True')
+
+
+
+update pets set hunger = hunger - 1 where hunger > 0;
