@@ -30,7 +30,13 @@ bot.set_my_commands([my_pets_command,main_menu])
 # Timer for all pets to get hunger every 8 hours (28000 sec)
 hunger_interval = 20
 
+def get_hunger():
+    print("- - -  get hunger - - - ")
+    sql_helper.db_change_hunger_all()
 
+# while True:
+#     get_hunger()
+#     time.sleep(hunger_interval)
 
 
 # new game
@@ -305,7 +311,11 @@ def treasure_dice_result(message):
     print(message.dice)
 
 def check_relax(tid):
-    last_work = sql_helper.db_get_player_info(tid)[3]
+    info = sql_helper.db_get_player_info(tid)
+    last_work = info[3]
+    stamina_before = info[2]
+    if stamina_before == 10:
+        return
     print('last work: ' + str(last_work))
     print('- ts -')
     #ts = datetime.fromisoformat(last_work)
@@ -315,7 +325,7 @@ def check_relax(tid):
     hours_rest = time_diff.days * 24 + time_diff.seconds // 3600
     print('hours: ' + str(hours_rest))
     if hours_rest > 0:
-        hours_rest = hours_rest if hours_rest < 11 else 10
+        hours_rest = hours_rest if (hours_rest + stamina_before) < 11 else 10 - stamina_before
         print('hours rest ' + str(hours_rest))
         sql_helper.db_stamina_up(tid,hours_rest)
     else:
@@ -430,11 +440,4 @@ def echo_all(message):
 
 bot.infinity_polling()
 
-def get_hunger():
-    print("- - -  get hunger - - - ")
-    sql_helper.db_change_hunger_all()
-
-while True:
-    get_hunger()
-    time.sleep(hunger_interval)
 
