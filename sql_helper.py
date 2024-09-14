@@ -148,6 +148,12 @@ def db_stamina_down(tid, value):
     con.commit()
 
 def db_stamina_up(tid, value):
+    """  sql trigger updates last_work table field
+        :param tid: telegram id of current player.
+        :param value: points up.
+
+        :return None:
+    """
     print('- - - update up stamina lvl to DB - - - ')
     q = '''UPDATE players set stamina = stamina + %s where telegram_id = %s;'''
     q2 = '''SELECT stamina FROM players WHERE telegram_id = %s;'''

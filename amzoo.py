@@ -394,6 +394,7 @@ def next_option(message):
 
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
+    check_relax(tid)
     pinfo = sql_helper.db_get_player_info(tid)
     lvl = pinfo[1]
     coins = pinfo[0]
