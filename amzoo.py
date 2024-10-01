@@ -289,6 +289,7 @@ def search_money(message):
         m = bot.send_dice(tid,'🎲')
         dig_result = m.dice.value
         if dig_result < 5:
+            # TODO this and other sleep() stops all other players!
             time.sleep(4)
             bot.send_message(tid,'💩 Неповезло, вы ничего не нашли!',  reply_markup=markup)
         elif dig_result == 5:
