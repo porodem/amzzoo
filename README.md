@@ -10,3 +10,9 @@
 5. ADS free
 
 :x: **Disadvantages**: Curently in developing stage
+
+### Features to develop
+1. Hunger over time
+2. Travels
+3. Buildings
+4. Items (?)
