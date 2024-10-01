@@ -16,3 +16,5 @@
 2. Travels
 3. Buildings
 4. Items (?)
+5. sleep() problem - it stops activity all over program (other user seems to have to wait)
+6. add button for pet animal that sends to player animation of pet
