@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from telebot import types
 from telebot.util import update_types, quick_markup
 from pprint import pprint # to investigate what inside objects
+import threading # for parallel timer in difrent tasks like pet hunger timer
 
 print('- - - - - S T A R T E D - - - - - - ')
 
@@ -28,11 +29,17 @@ main_menu = types.BotCommand('earn_money','Найти деньги')
 bot.set_my_commands([my_pets_command,main_menu])
 
 # Timer for all pets to get hunger every 8 hours (28000 sec)
-hunger_interval = 20
+hunger_interval = 8
 
 def get_hunger():
-    print("- - -  get hunger - - - ")
-    sql_helper.db_change_hunger_all()
+    while True:
+        print("- - -  get hunger - - - ")
+        sql_helper.db_change_hunger_all()
+        time.sleep(hunger_interval * 60 * 60)
+
+thread_hunger = threading.Thread(target=get_hunger)
+thread_hunger.daemon = True # This makes sure the thread will exit when the main program does
+thread_hunger.start()
 
 # while True:
 #     get_hunger()
