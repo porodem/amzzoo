@@ -125,10 +125,11 @@ def show_pets(query):
     btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
     # TODO add SHOW (petting) animated emoji button, FEED button, CURE (heal) button
-    btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[0]))
     btn_backward = types.InlineKeyboardButton('◀',callback_data="pet" + str(cidx-1))
     btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid))
-    markup.add(btn_feed,btn_backward,btn_forward)
+    btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[0]))
+
+    markup.add(btn_backward, btn_forward, btn_feed)
 
     if hasattr(query,'data'):
         bot.edit_message_text(
