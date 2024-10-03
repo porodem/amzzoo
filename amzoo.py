@@ -75,33 +75,33 @@ def begin_game(message):
 # ----------   SHOW PETS 
 
 #TODELETE - DEPRICATED
-@bot.message_handler(commands=['show_pets'])
-def show_pets_old(message):
-    owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
-    print(list(owned_pets))
-    #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 2
-    btn_pack = []
-    first_pet = owned_pets[0]
-    pet_info = sql_helper.db_pet_info(first_pet[0])
-    btn_lbl = pet_emoji(pet_info[1]) + ' сытость: ' + pet_info[2]  
-    # for p in owned_pets:
-    #     print(p)
-    #     cbdata = 'pet' + str(p[0])
-    #     e = str(pet_emoji(p[1]))
-    #     #btn = types.KeyboardButton(e)
+# @bot.message_handler(commands=['show_pets'])
+# def show_pets_old(message):
+#     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
+#     print(list(owned_pets))
+#     #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+#     markup = types.InlineKeyboardMarkup()
+#     markup.row_width = 2
+#     btn_pack = []
+#     first_pet = owned_pets[0]
+#     pet_info = sql_helper.db_pet_info(first_pet[0])
+#     btn_lbl = pet_emoji(pet_info[1]) + ' сытость: ' + pet_info[2]  
+#     # for p in owned_pets:
+#     #     print(p)
+#     #     cbdata = 'pet' + str(p[0])
+#     #     e = str(pet_emoji(p[1]))
+#     #     #btn = types.KeyboardButton(e)
 
-    #     btn = types.InlineKeyboardButton(e,callback_data=cbdata)
-    #     btn_back = types.InlineKeyboardButton(e,callback_data=cbdata)
-    #     markup.add(btn,btn2)
-    cidx = 0
-    next_cid = 0 if cidx == len(owned_pets) - 1 else cidx + 1
-    btn = types.InlineKeyboardButton('◀')
-    btn2 = types.InlineKeyboardButton('▶')
-    markup.add(btn,btn2)
-    bot.send_message(message.from_user.id, btn_lbl, reply_markup=markup)  
-    bot.register_next_step_handler(message, pet_details)
+#     #     btn = types.InlineKeyboardButton(e,callback_data=cbdata)
+#     #     btn_back = types.InlineKeyboardButton(e,callback_data=cbdata)
+#     #     markup.add(btn,btn2)
+#     cidx = 0
+#     next_cid = 0 if cidx == len(owned_pets) - 1 else cidx + 1
+#     btn = types.InlineKeyboardButton('◀')
+#     btn2 = types.InlineKeyboardButton('▶')
+#     markup.add(btn,btn2)
+#     bot.send_message(message.from_user.id, btn_lbl, reply_markup=markup)  
+#     bot.register_next_step_handler(message, pet_details)
 
 @bot.callback_query_handler(lambda query: 'pet' in query.data )
 def show_pets(query):
@@ -219,7 +219,7 @@ def buy_pet(message):
         pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
         if len(pet_list) == 0:
             bot.send_message(message.from_user.id, "🚫 У вас нет питомцев!")
-            time.sleep(1)
+            #time.sleep(1)
             echo_all(message)
         else:
             sell_pets(message)  
@@ -236,8 +236,8 @@ def sell_pets(message):
     for p in owned_pets:
         print(p)
         pet_price = str(int(p[2] / 2)) # sell price its original price / 2
-        emj = str(pet_emoji(p[1]) + " 💰-" + pet_price)
-        cb_prefix = 'petsel'
+        emj = str(pet_emoji(p[1]) + " 💰+" + pet_price)
+        cb_prefix = 'sel'
         btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]))
         btn_pack.append(btn)
         print(type(btn_pack))
@@ -246,7 +246,7 @@ def sell_pets(message):
     bot.send_message(message.from_user.id, "Ваши питомцы:", reply_markup=markup)  
     bot.register_next_step_handler(message, echo_all)
 
-@bot.callback_query_handler(lambda query: 'petsel' in query.data )
+@bot.callback_query_handler(lambda query: 'sel' in query.data )
 def pet_selling(query):
     print(' - - pet sell func -- : ')
     #pet_it = query.data[-1:]
