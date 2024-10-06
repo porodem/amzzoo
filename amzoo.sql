@@ -104,8 +104,13 @@ returns int
 language plpgsql
 as $$
 declare pet_price int;
+player_coins int;
 begin
+	select coins into player_coins from players where telegram_id = tid;
 	select price into pet_price from animal_list where id = animal; 
+	if pet_price > player_coins then 
+		return 0;
+	end if;
 	insert into pets(animal_id, owner) values(animal,tid);
 	update players set coins = (coins - pet_price) where telegram_id = tid;
 	return 1;
