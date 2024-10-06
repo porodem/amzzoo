@@ -20,3 +20,4 @@
 6. add button for pet animal that sends to player animation of pet
 7. dispose of dead pets
 8. earn money for having animals (more rare more profit from customers)
+9. Add top players rating (show best animal)

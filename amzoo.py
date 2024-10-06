@@ -41,6 +41,8 @@ thread_hunger = threading.Thread(target=get_hunger)
 thread_hunger.daemon = True # This makes sure the thread will exit when the main program does
 thread_hunger.start()
 
+
+
 # while True:
 #     get_hunger()
 #     time.sleep(hunger_interval)
