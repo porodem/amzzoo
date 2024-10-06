@@ -207,18 +207,31 @@ def pet_shop(message):
 
 def buy_pet(message):
     print(' - - - buy pet - - - ')
+    coins = sql_helper.db_get_player_info(message.from_user.id)
     if re.match('.*Яйцо.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 1)
-        bot.send_message(message.from_user.id, "Петомец куплен!")
+        ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        if ok:
+            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     elif re.match('.*Мышь.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 2)
-        bot.send_message(message.from_user.id, "Петомец куплен!")
+        ok = sql_helper.db_buy_pet(message.from_user.id, 2)
+        if ok:
+            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     elif re.match('.*Паук.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 3)
-        bot.send_message(message.from_user.id, "Петомец куплен!")
+        ok = sql_helper.db_buy_pet(message.from_user.id, 3)
+        if ok:
+            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     elif re.match('.*Кот.*',message.text):
-        sql_helper.db_buy_pet(message.from_user.id, 4)
-        bot.send_message(message.from_user.id, "Петомец куплен!")
+        ok = sql_helper.db_buy_pet(message.from_user.id, 4)
+        if ok:
+            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     elif re.match('.*Продать.*',message.text):
         pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
         if len(pet_list) == 0:

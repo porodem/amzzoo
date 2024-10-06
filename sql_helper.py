@@ -173,7 +173,10 @@ def db_buy_pet(animal_id,tid):
     q = '''SELECT buy_pet(%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(animal_id,tid))
+    result = cur.fetchone()
     con.commit()
+    print('result ' + str(result))
+    return result[0]
 
 def db_sell_pet(pet_id):
     print(' - - sell pet DB func - -')
