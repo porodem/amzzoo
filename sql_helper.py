@@ -123,6 +123,22 @@ def db_get_owned_pets(tid):
                
      return pet_list
 
+def db_get_profit(tid):
+    """
+        :param tid: telegram id of current player.
+
+        :return sum of coins for owned pets
+    """
+    q = '''select sum(price)/4 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = %s'''
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    b = cur.fetchone()
+    profit = b[0]
+    db_add_money(tid, profit)
+    return b[0]
+
+
+
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):
