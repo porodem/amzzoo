@@ -73,10 +73,10 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     '''
-    coins, level, stamina, last_work
+    coins, level, stamina, last_work, pet_space
     '''
     print('- - - get player info- - -')
-    q = '''SELECT coins, level, stamina, last_work from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work, pet_space from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()

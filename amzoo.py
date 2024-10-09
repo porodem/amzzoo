@@ -181,6 +181,11 @@ def shop_select(message):
 def to_shop(message):
     print('- - to shop - - ')
     if re.match('.*Зоо.*',message.text):
+        pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
+        owned = sql_helper.db_check_owned_pets(message.from_user.id)
+        if owned == pet_space: 
+            bot.send_message(message.from_user.id,"Нет места ☹")
+            return
         pet_shop(message)
     elif re.match('.*Рынок.*', message.text):
         print('- - - bazar selected - - - ')
@@ -460,8 +465,9 @@ def get_statistics(tid):
     pinfo = sql_helper.db_get_player_info(tid)
     lvl = pinfo[1]
     coins = pinfo[0]
-    stamina = pinfo[2]
-    player_stats = 'Уровень 🎓:' + str(lvl) + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + '\nДеньги 💰: ' + str(coins)
+    stamina = pinfo[2]    
+    pet_space = pinfo[4]
+    player_stats = 'Уровень 🎓:' + str(lvl) + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
 
     return player_stats
 
