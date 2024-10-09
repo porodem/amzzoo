@@ -22,6 +22,8 @@ alter table players add column last_work timestamp default now();
 
 alter table players add constraint pkey_tid primary key (telegram_id)
 
+alter table players add column pet_space int default 4;
+
 drop  table players cascade;
 
 select * from players p ;
@@ -83,6 +85,10 @@ select * from tpets;
 
 copy animal_list(id,species,habitat,food_type,price) from 'C:\Python\Python310\Scripts\amzzoo\animals.csv' delimiter ';' csv header encoding 'WIN1251'
 
+insert into animal_list values(5,'Черепаха',5,2,15)
+
+insert into animal_list values(6,'Индюк',5,2,20)
+
 create table moods(id int primary key, value text);
 
 insert into moods values(1, 'ill'),(2,'sad'),(3,'ok'),(4,'scary'),(5,'happy'),(6,'love'),(7,'cold'),(8,'hot'),(9,'sleep'),(10,'angry'),(0,'dead'),(100,'ghost');
@@ -94,6 +100,10 @@ insert into habitat values(1,'desert'),(2,'field'),(3,'forest'),(4,'water'),(5,'
 create table food_type(id int primary key , name text)
 
 insert into food_type values (0,'nothing'),(1,'omnivore'),(2,'herbivore'),(3,'carnivore')
+
+create table property(id int primary key , name text);
+
+
 
 truncate food_type cascade;
 
@@ -143,6 +153,10 @@ select 1 into a
 select sell_pet(8) 
 
 select  buy_pet(775803031,4)
+
+select * from pets p ;
+
+select * from players p ;
 
 update players set coins  = coins + 1 where telegram_id = 775803031
 
@@ -199,6 +213,8 @@ select change_hunger(id, false , 1) from pets p where health > 0;
 
 select * from pets;
 
+select * from players;
+
 create temp table t(b boolean)
 
 insert into t values('True')
@@ -206,3 +222,5 @@ insert into t values('True')
 
 
 update pets set hunger = hunger - 1 where hunger > 0;
+
+select sum(price)/4 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = 775803031
