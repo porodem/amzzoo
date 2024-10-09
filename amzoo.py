@@ -199,9 +199,11 @@ def pet_shop(message):
         btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
         btn3 = types.KeyboardButton("🕷 Паук 💰 5")
         btn4 = types.KeyboardButton("🐈 Кот 💰 9")
+        btn5 = types.KeyboardButton("🐢 Черепаха 💰 15")
+        btn6 = types.KeyboardButton("🦃 Индюк 💰 20")
         btn_sell = types.KeyboardButton("Продать ")
         btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2,btn3,btn4,btn_sell,btn_back)
+        markup.add(btn1,btn2,btn3,btn4,btn5,btn6,btn_sell,btn_back)
     else:
         print('- - - - UNKNOWN LOCATION  - - - - -')
     bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)  
@@ -230,6 +232,18 @@ def buy_pet(message):
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     elif re.match('.*Кот.*',message.text):
         ok = sql_helper.db_buy_pet(message.from_user.id, 4)
+        if ok:
+            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    elif re.match('.*Черепаха.*',message.text):
+        ok = sql_helper.db_buy_pet(message.from_user.id, 5)
+        if ok:
+            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    elif re.match('.*Индюк.*',message.text):
+        ok = sql_helper.db_buy_pet(message.from_user.id, 6)
         if ok:
             bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
         else:
