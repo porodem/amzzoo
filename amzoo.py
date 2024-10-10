@@ -295,6 +295,7 @@ def pet_selling(query):
 
 #  - - - - - - - - - - - - E A R N I N G  M O N E Y  - - - - - - - - - - - - - - - - - -
 
+# TODO rename all work mentions to getmoney
 @bot.message_handler(regexp=".*Работа.*")
 def do_work(message):
     print(' - - - do work - - -')
@@ -306,16 +307,24 @@ def do_work(message):
         print('nothing')
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     if stamina == 1:
-        btn1 = types.KeyboardButton("⛏ Искать клад 💪x1")
+        btn1 = types.KeyboardButton("🎲 удачный кубик 💪x1")
         btn3 = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn3)
         bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup) 
         bot.register_next_step_handler(message, search_money)
-    elif stamina > 1:
-        btn1 = types.KeyboardButton("⛏ Искать клад 💪x1")
-        btn2 = types.KeyboardButton("⚒ Работать 💪x2")
+    elif stamina == 2:
+        btn1 = types.KeyboardButton("🎲 удачный кубик 💪x1")
+        btn2 = types.KeyboardButton("🎯 удачный дартс 💪x2")
         btn3 = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2, btn3)
+        markup.add(btn1,btn2,btn3)
+        bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup) 
+        bot.register_next_step_handler(message, search_money)
+    elif stamina > 2:
+        btn1 = types.KeyboardButton("🎲 удачный кубик 💪x1")
+        btn2 = types.KeyboardButton("🎯 удачный дартс 💪x2")
+        btn3 = types.KeyboardButton("🎳 удачный боулинг 💪x3")
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn2, btn3, btn_back)
         bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup)
         bot.register_next_step_handler(message, search_money) 
     else:
@@ -323,31 +332,40 @@ def do_work(message):
         bot.register_next_step_handler(message, echo_all)
 
 def search_money(message):
-    if re.match('.*клад.*',message.text):
+    if re.match('.*удачн.*',message.text):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn = types.KeyboardButton("Ещё")
         markup.add(btn)
         tid = message.from_user.id
-        d = types.Dice(2,'🎯')
-        print(d)
-        sql_helper.db_stamina_down(tid, 1)
+        if re.match('.*🎲.*',message.text):
+            m = bot.send_dice(tid,'🎲')
+            pwr = 1
+        elif re.match('.*🎯.*',message.text):
+            m = bot.send_dice(tid,'🎯')
+            pwr = 2
+        elif re.match('.*🎳.*',message.text):
+            m = bot.send_dice(tid,'🎳')
+            pwr = 3
+        #print(d)
+        sql_helper.db_stamina_down(tid, pwr)
         bot.register_next_step_handler(message, do_work)
-        m = bot.send_dice(tid,'🎲')
+        # m = bot.send_dice(tid,'🎲')
         dig_result = m.dice.value
         if dig_result < 5:
             # TODO this and other sleep() stops all other players!
             time.sleep(4)
-            bot.send_message(tid,'💩 Неповезло, вы ничего не нашли!',  reply_markup=markup)
+            bot.send_message(tid,'💩 Неповезло, бывает!',  reply_markup=markup)
         elif dig_result == 5:
             time.sleep(4)
-            bot.send_message(tid,'Ура! Клад! 💰 x 1')
+            bot.send_message(tid,'Ура! Приз! 💰 x 1')
             sql_helper.db_add_money(tid,1)
         elif dig_result == 6:
             time.sleep(4)
-            bot.send_message(tid,'Ура! Клад! 💰 x 2')
+            bot.send_message(tid,'Ура! Приз! 💰 x 2')
             sql_helper.db_add_money(tid,1)
 
     elif re.match('.*Работа.*',message.text):
+        m = bot.send_dice(tid,'🎳')
         bot.reply_to(message, 'work option')
     else:
         print('-- search money none --')
@@ -451,7 +469,7 @@ def next_option(message):
         show_pets(message)
     elif re.match('.*Имущество.*',message.text):
         bot.reply_to(message, 'test option')
-    elif re.match('.*Работа.*',message.text):
+    elif re.match('.*Деньги.*',message.text):
         print(' - - work select - -')
         do_work(message)
     elif re.match('.*Магазин.*',message.text):
@@ -482,10 +500,10 @@ def echo_all(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🐇 Питомцы")
     btn2 = types.KeyboardButton("🏫 Имущество")
-    btn3 = types.KeyboardButton("⚒ Работа")
+    btn3 = types.KeyboardButton("💸 Деньги")
     btn4 = types.KeyboardButton("🛒 Магазин")
     btn5 = types.KeyboardButton("✈ Путешествие")
-    markup.add(btn1,btn2,btn3,btn4,btn5)
+    markup.add(btn1,btn3,btn4,btn5)
     bot.send_message(tid, get_statistics(tid), reply_markup=markup)
     #bot.register_next_step_handler(message, next_option)
     next_option(message)
