@@ -375,7 +375,7 @@ def check_relax(tid):
         if hours_rest > 8: 
             print('hours over 8 - -')
             profit = sql_helper.db_get_profit(tid)  
-            bot.send_message(tid,"💰 Доход зоопарка " + str(profit))
+            bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
         hours_rest = hours_rest if (hours_rest + stamina_before) < 11 else 10 - stamina_before
         print('hours rest ' + str(hours_rest))
         sql_helper.db_stamina_up(tid,hours_rest)
