@@ -156,8 +156,8 @@ def pet_feeding(call):
     pet_info = sql_helper.db_pet_info(pet_id)
     animal_id = pet_info[1]
     print('animal id: ' + str(animal_id))
-    sql_helper.db_change_hunger(pet_id, True, 1)
-    bot.send_message(call.from_user.id, pet_emoji(int(animal_id)))
+    sql_helper.db_change_hunger(pet_id, True, 10)
+    bot.send_message(call.from_user.id, '😋')
 
 # - - - - - - SHOP  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

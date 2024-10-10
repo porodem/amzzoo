@@ -184,14 +184,18 @@ returns int
 language plpgsql
 as $$
 declare 
-hung_before int;
+hunger_before int;
 health_before int;
 begin
+	select hunger into hunger_before from pets where id = pet_id;
 	if feeding then
-		update pets set hunger = hunger + value where id = pet_id;
-	else
-		select hunger into hung_before from pets where id = pet_id;
-		if hung_before = 0 then
+		if hunger_before + value > 10 then
+			update pets set hunger = 10 where id = pet_id;
+		else
+			update pets set hunger = hunger + value where id = pet_id;
+		end if;
+	else		
+		if hunger_before = 0 then
 			select health into health_before from pets where id = pet_id;
 			if health_before = 1 then
 				update pets set animal_id = 0, mood = '3' where id = pet_id;
@@ -207,7 +211,7 @@ end;
 $$;
 end
 
-select change_hunger(2, false , 1)
+select change_hunger(7, true , 12)
 
 select change_hunger(id, false , 1) from pets p where health > 0;
 
