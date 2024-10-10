@@ -181,11 +181,9 @@ def shop_select(message):
 def to_shop(message):
     print('- - to shop - - ')
     if re.match('.*Зоо.*',message.text):
-        pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
-        owned = sql_helper.db_check_owned_pets(message.from_user.id)
-        if owned == pet_space: 
-            bot.send_message(message.from_user.id,"Нет места ☹")
-            return
+        
+        
+        
         pet_shop(message)
     elif re.match('.*Рынок.*', message.text):
         print('- - - bazar selected - - - ')
@@ -200,19 +198,31 @@ def pet_shop(message):
 
     if location == 5:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn1 = types.KeyboardButton("🥚 Яйцо 💰 1",)
-        btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
-        btn3 = types.KeyboardButton("🕷 Паук 💰 5")
-        btn4 = types.KeyboardButton("🐈 Кот 💰 9")
-        btn5 = types.KeyboardButton("🐢 Черепаха 💰 15")
-        btn6 = types.KeyboardButton("🦃 Индюк 💰 20")
-        btn_sell = types.KeyboardButton("Продать ")
-        btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2,btn3,btn4,btn5,btn6,btn_sell,btn_back)
+        
+        pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
+        owned = sql_helper.db_check_owned_pets(message.from_user.id)
+        if owned == pet_space: 
+            bot.send_message(message.from_user.id,"Нет места для новых питомцев ☹")
+            btn_sell = types.KeyboardButton("Продать ")
+            btn_back = types.KeyboardButton("🔙 Назад")            
+            markup.add(btn_sell,btn_back)
+            bot.register_next_step_handler(message,sell_pets(message) )
+        else:
+            btn1 = types.KeyboardButton("🥚 Яйцо 💰 1",)
+            btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
+            btn3 = types.KeyboardButton("🕷 Паук 💰 5")
+            btn4 = types.KeyboardButton("🐈 Кот 💰 9")
+            btn5 = types.KeyboardButton("🐢 Черепаха 💰 15")
+            btn6 = types.KeyboardButton("🦃 Индюк 💰 20")
+            btn_sell = types.KeyboardButton("Продать ")
+            btn_back = types.KeyboardButton("🔙 Назад")
+            markup.add(btn1,btn2,btn3,btn4,btn5,btn6,btn_sell,btn_back)
+            bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)
+            bot.register_next_step_handler(message, buy_pet)
     else:
         print('- - - - UNKNOWN LOCATION  - - - - -')
-    bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)  
-    bot.register_next_step_handler(message, buy_pet)
+      
+    
 
 def buy_pet(message):
     print(' - - - buy pet - - - ')
@@ -281,7 +291,7 @@ def sell_pets(message):
         print(type(btn_pack))
     # very interesting and useful trick with asterisk (*) operator https://www.geeksforgeeks.org/python-star-or-asterisk-operator/
     markup.add(*btn_pack)
-    bot.send_message(message.from_user.id, "Ваши питомцы:", reply_markup=markup)  
+    bot.send_message(message.from_user.id, "Кого продать?", reply_markup=markup)  
     bot.register_next_step_handler(message, echo_all)
 
 @bot.callback_query_handler(lambda query: 'sel' in query.data )
