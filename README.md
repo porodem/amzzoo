@@ -21,3 +21,4 @@
 7. dispose of dead pets (maby just sell in pet shop?)
 8. :white_check_mark: earn money for having animals (more rare more profit from customers)
 9. Add top players rating (show best animal)
+10. access to sell pet when no space
