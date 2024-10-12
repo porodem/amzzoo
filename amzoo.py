@@ -175,6 +175,10 @@ def shop_select(message):
         markup.add(btn1,btn2,btn_back)
     else:
         print('- - - - UNKNOWN LOCATION  - - - - -')
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("Зоомагазин 🐇",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn_back)
     bot.send_message(tid, 'Куда пойдем?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_shop)
 
@@ -456,8 +460,52 @@ def check_relax(tid):
         print('hours rest ' + str(hours_rest) + 'not enough')
     return hours_rest
 
+@bot.message_handler(regexp=".*Путешествие.*")
+def shop_select(message):
+    print('---------- SELECT TRAVEL -----------')
+    tid = message.from_user.id
+    # define location to show specific shop
+    location =  sql_helper.db_check_location(tid)
+    if location == 5:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
+        btn2 = types.KeyboardButton("🏜 Пустыня 💰 25",)
+        btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn2,btn_back)
+    else:
+        print('- - - - UNKNOWN LOCATION  - - - - -')
+    bot.send_message(tid, 'Куда отправимся?:', reply_markup=markup)  
+    bot.register_next_step_handler(message, travel)
+
 def travel(message):
-    print('- - - TO DO ---')
+    print(' - - - TRY TRAVEL - - - ')
+    tid = message.from_user.id
+    coins = sql_helper.db_get_player_info(message.from_user.id)[0]
+    if re.match('.*Лес.*',message.text):
+        #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        if coins >= 12:
+            sql_helper.db_change_location(tid,3,12)
+            bot.send_message(message.from_user.id, "✈ Вы отправились в лес 🌲!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    if re.match('.*Пустыня.*',message.text):
+        #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        if coins >= 25:
+            # TODO variable for ticket price
+            sql_helper.db_change_location(tid,1,25)
+            bot.send_message(message.from_user.id, "✈ Вы улетели в пустыню 🏜!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    if re.match('.*Дом.*',message.text):
+        #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        if coins >= 25:
+            # TODO variable for ticket price
+            sql_helper.db_change_location(tid,5,5)
+            bot.send_message(message.from_user.id, "✈ Вы улетели домой 🏠!")
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    echo_all(message)
 
 # - - - - - - -  U T I L S - - - - - - - 
 
@@ -505,7 +553,7 @@ def habitat_emoji(id):
     elif id == 4:
         e = "🌊"
     else:
-        e = "🌐"
+        e = "🏠"
     return e
 
 
@@ -552,7 +600,8 @@ def get_statistics(tid):
     coins = pinfo[0]
     stamina = pinfo[2]    
     pet_space = pinfo[4]
-    player_stats = 'Уровень 🎓:' + str(lvl) + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
+    loc = habitat_emoji(pinfo[5]) 
+    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
 
     return player_stats
 
