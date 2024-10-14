@@ -474,6 +474,7 @@ def shop_select(message):
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn2,btn_back)
     else:
+        # TODO make home available
         print('- - - - UNKNOWN LOCATION  - - - - -')
     bot.send_message(tid, 'Куда отправимся?:', reply_markup=markup)  
     bot.register_next_step_handler(message, travel)
@@ -507,10 +508,18 @@ def travel(message):
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     echo_all(message)
 
-
-def vet(message):
+@bot.callback_query_handler(lambda query: 'cure' in query.data )
+def vet(query):
     print('- - - - cure pets function - - - - ')
-    owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
+    if hasattr(query,'data'):
+        pet_id = extract_numbers(query.data)
+        print('Healing pet_id: ' + pet_id)     
+        sql_helper.db_cure_pet(pet_id)   
+    else:
+        print('no pet_id for now')
+        pet_id = ''
+    owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
+    coins = sql_helper.db_get_player_info(query.from_user.id)[0]
     #print(list(owned_pets))
     #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup = types.InlineKeyboardMarkup(row_width=2)
@@ -522,14 +531,38 @@ def vet(message):
         cure_price = int((p[2] * 0.7) * ((10-health) / 10))  #str(int(p[2] / 2)) # sell price its original price / 2
         if cure_price == 0: cure_price = 1
         emj = str(pet_emoji(p[1]) + " ♥ " + str(health) +  " лечить за 💰x" + str(cure_price))
-        cb_prefix = 'sel'
-        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]))
+        cb_prefix = 'cure'
+        pet_id = p[0]
+        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(pet_id))
+        # TODO fix emoji
+        lbl = str(pet_emoji(p[1])) + 'вылечен'
         btn_pack.append(btn)
         print(type(btn_pack))
-    # very interesting and useful trick with asterisk (*) operator https://www.geeksforgeeks.org/python-star-or-asterisk-operator/
     markup.add(*btn_pack)
-    bot.send_message(message.from_user.id, "Кого лечим?", reply_markup=markup)  
-    bot.register_next_step_handler(message, echo_all)
+    #bot.send_message(message.from_user.id, "Кого лечим?", reply_markup=markup)  
+
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=lbl,
+            chat_id=query.message.chat.id,
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, lbl, reply_markup=markup)
+
+    #bot.register_next_step_handler(message, echo_all)
+
+# @bot.callback_query_handler(lambda query: 'cure' in query.data )
+# def pet_cure(query):
+#     print(' - - pet cure func -- : ')
+#     #pet_it = query.data[-1:]
+#     pet_it = extract_numbers(query.data)
+#     sql_helper.db_sell_pet(pet_it)    
+#     bot.answer_callback_query(query.id,text='You sold pet')
+#     bot.send_message(query.from_user.id, "Петомец продан")
+
+
 
 # - - - - - - -  U T I L S - - - - - - - 
 

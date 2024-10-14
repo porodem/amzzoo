@@ -238,6 +238,18 @@ def db_change_hunger_all():
     print('sql sel result: ' + str(result))
     con.commit()
 
+def db_cure_pet(pet_id: int):
+    """  
+        :param pet_id: id of cured pet.
+
+        :return None:
+    """
+    print(' - - SQL pet curing - -')
+    q = '''UPDATE pets SET health = 10 where id = %s;'''
+    cur = con.cursor()
+    cur.execute(q,(pet_id,))
+    con.commit()
+
 
 # ==================================== SHOW BLOCK
 
