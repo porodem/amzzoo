@@ -108,10 +108,10 @@ def db_get_owned_pets(tid):
      """
         :param tid: telegram id of current player.
 
-        :return list: [id, animal_id, price] from pets table
+        :return list: [id, animal_id, price, health] from pets table
     """
      print('-- get all players pets --')
-     q = '''select pets.id, animal_id, price from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
+     q = '''select pets.id, animal_id, price, health from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
      pet_list = []
 
      with con.cursor() as cur:

@@ -507,6 +507,30 @@ def travel(message):
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     echo_all(message)
 
+
+def vet(message):
+    print('- - - - cure pets function - - - - ')
+    owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
+    #print(list(owned_pets))
+    #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    btn_pack = []
+    for p in owned_pets:
+        print(p)
+        health = p[3]
+        if p[1] == 0 or health == 10: continue # escape corpses
+        cure_price = int((p[2] * 0.7) * ((10-health) / 10))  #str(int(p[2] / 2)) # sell price its original price / 2
+        if cure_price == 0: cure_price = 1
+        emj = str(pet_emoji(p[1]) + " ♥ " + str(health) +  " лечить за 💰x" + str(cure_price))
+        cb_prefix = 'sel'
+        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]))
+        btn_pack.append(btn)
+        print(type(btn_pack))
+    # very interesting and useful trick with asterisk (*) operator https://www.geeksforgeeks.org/python-star-or-asterisk-operator/
+    markup.add(*btn_pack)
+    bot.send_message(message.from_user.id, "Кого лечим?", reply_markup=markup)  
+    bot.register_next_step_handler(message, echo_all)
+
 # - - - - - - -  U T I L S - - - - - - - 
 
 def extract_numbers(str):
@@ -591,6 +615,8 @@ def next_option(message):
         bot.register_next_step_handler(message, shop_select)
     elif re.match('.*Путешествие.*',message.text):
         bot.register_next_step_handler(message, travel)
+    elif re.match('.*больница.*',message.text):
+        vet(message)
 
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
@@ -616,10 +642,11 @@ def echo_all(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🐇 Питомцы")
     btn2 = types.KeyboardButton("🏫 Имущество")
+    btn_hospital = types.KeyboardButton("🏥 Вет.больница")
     btn3 = types.KeyboardButton("💸 Деньги")
     btn4 = types.KeyboardButton("🛒 Магазин")
     btn5 = types.KeyboardButton("✈ Путешествие")
-    markup.add(btn1,btn3,btn4,btn5)
+    markup.add(btn1,btn_hospital,btn3,btn4,btn5)
     bot.send_message(tid, get_statistics(tid), reply_markup=markup)
     #bot.register_next_step_handler(message, next_option)
     next_option(message)
