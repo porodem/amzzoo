@@ -246,9 +246,13 @@ def db_cure_pet(pet_id: int):
     """
     print(' - - SQL pet curing - -')
     q = '''UPDATE pets SET health = 10 where id = %s;'''
+    q2 = '''SELECT animal_id from pets WHERE id = %s'''
     cur = con.cursor()
     cur.execute(q,(pet_id,))
+    cur.execute(q2,(pet_id,))
+    result = cur.fetchone()[0]
     con.commit()
+    return result
 
 
 # ==================================== SHOW BLOCK
