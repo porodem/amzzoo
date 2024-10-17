@@ -240,6 +240,7 @@ def db_change_hunger_all():
 
 def db_cure_pet(pet_id: int):
     """  
+        DEPRICATED
         :param pet_id: id of cured pet.
 
         :return None:
@@ -254,6 +255,15 @@ def db_cure_pet(pet_id: int):
     con.commit()
     return result
 
+def db_buy_healing(pet_id: int, cost: int, tid: int):
+    """
+    """
+    q = '''SELECT buy_healing(%s,%s,%s);'''
+    cur = con.cursor()
+    cur.execute(q,(pet_id,cost,tid))
+    result = cur.fetchone()[0] # animal id from emoji; -1 if not enough money
+    con.commit()
+    return result
 
 # ==================================== SHOW BLOCK
 

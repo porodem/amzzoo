@@ -510,20 +510,30 @@ def travel(message):
 
 @bot.callback_query_handler(lambda query: 'cure' in query.data )
 def vet(query):
-    print('- - - - cure pets function - - - - ')
+    print('- - - - cure pets function - - - - ')    
+    tid = query.from_user.id
     if hasattr(query,'data'):
-        healing_pet_id = extract_numbers(query.data)
-        print('Healing pet_id: ' + healing_pet_id)     
-        animal_id = sql_helper.db_cure_pet(healing_pet_id)  
-        lbl = str(pet_emoji(animal_id)) + 'вылечен 🤗'
-        bot.send_message(query.from_user.id, '💊')
-        # TODO learn how to show notification and show it  
+        print(query.data)
+        coins = sql_helper.db_get_player_info(tid)[0]
+        cure_price = int(extract_numbers(query.data, 1))   
+        print('cure_price from data:' + str(cure_price))     
+        if coins < cure_price:
+            lbl = '❌ нехватает денег 💰'
+            bot.send_message(query.from_user.id, lbl, reply_markup=None)
+            
+        else:
+            healing_pet_id = extract_numbers(query.data)
+            print('Healing pet_id: ' + healing_pet_id)     
+            animal_id = sql_helper.db_buy_healing(healing_pet_id, cure_price, tid)#sql_helper.db_cure_pet(healing_pet_id)  
+            lbl = str(pet_emoji(animal_id)) + 'вылечен 🤗  💰-' + str(cure_price) 
+            bot.send_message(tid, '💊')
+            # TODO learn how to show notification and show it  
     else:
         print('no pet_id for now')
         lbl = '🏥 кого будем лечить?'
         healing_pet_id = ''
-    owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
-    coins = sql_helper.db_get_player_info(query.from_user.id)[0]
+    owned_pets = sql_helper.db_get_owned_pets(tid)
+    coins = sql_helper.db_get_player_info(tid)[0]
     #print(list(owned_pets))
     #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup = types.InlineKeyboardMarkup(row_width=2)
@@ -536,7 +546,8 @@ def vet(query):
         if cure_price == 0: cure_price = 1
         emj = str(pet_emoji(p[1]) + " ♥ " + str(health) +  " лечить за 💰x" + str(cure_price))
         cb_prefix = 'cure'
-        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]))
+        cb_price_sfx = '_' + str(cure_price)
+        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]) + cb_price_sfx)
         # TODO fix emoji
         
         btn_pack.append(btn)
@@ -569,10 +580,19 @@ def vet(query):
 
 # - - - - - - -  U T I L S - - - - - - - 
 
-def extract_numbers(str):
+def extract_numbers(str, v=0):
+    '''
+    Used for extract variables from callback query data that was concatenated before.
+
+    :param str: string containing some special build-in param values.
+    :param v: block of numbers that need to return
+
+    :return number: number saved in query data. First block by default 
+    "rtype: string
+    '''
     numbers = re.findall(r'\d+',str)
-    print('extracted: ' + numbers[0])
-    return numbers[0]
+    print('extracted: ' + numbers[v])
+    return numbers[v]
 
 
 def pet_emoji(id):
