@@ -212,15 +212,21 @@ def pet_shop(message):
             markup.add(btn_sell,btn_back)
             bot.register_next_step_handler(message,sell_pets(message) )
         else:
-            btn1 = types.KeyboardButton("🥚 Яйцо 💰 1",)
-            btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
-            btn3 = types.KeyboardButton("🕷 Паук 💰 5")
-            btn4 = types.KeyboardButton("🐈 Кот 💰 9")
-            btn5 = types.KeyboardButton("🐢 Черепаха 💰 15")
-            btn6 = types.KeyboardButton("🦃 Индюк 💰 20")
+            animals = sql_helper.db_get_animal_shop(location)
+            print(list(animals))
+            btn_pack = []
+            for a in animals:
+                btn = types.KeyboardButton(pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
+                btn_pack.append(btn)
+            # btn1 = types.KeyboardButton("🥚 Яйцо 💰 1",)
+            # btn2 = types.KeyboardButton("🐭 Мышь 💰 3")
+            # btn3 = types.KeyboardButton("🕷 Паук 💰 5")
+            # btn4 = types.KeyboardButton("🐈 Кот 💰 9")
+            # btn5 = types.KeyboardButton("🐢 Черепаха 💰 15")
+            # btn6 = types.KeyboardButton("🦃 Индюк 💰 20")
             btn_sell = types.KeyboardButton("Продать ")
             btn_back = types.KeyboardButton("🔙 Назад")
-            markup.add(btn1,btn2,btn3,btn4,btn5,btn6,btn_sell,btn_back)
+            markup.add(*btn_pack,btn_sell,btn_back)
             bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)
             bot.register_next_step_handler(message, buy_pet)
     elif location == 3:

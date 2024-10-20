@@ -137,7 +137,24 @@ def db_get_profit(tid):
     db_add_money(tid, profit)
     return b[0]
 
+def db_get_animal_shop(location_id):
+     """
+        :param location_id: location of shop. [5 - any, 4 water, 3 forest, 2 field, 1 desert]
 
+        :return list: [animal_id, species, price] from pets table
+    """
+     print('-- get all animals for location --')
+     q = '''select id, species, price from animal_list al where habitat = %s and price > 0;'''
+     pet_list = []
+
+     with con.cursor() as cur:
+          cur.execute(q,(location_id,))
+          b = cur.fetchall()
+          #print(list(b))
+          for record in b:
+               pet_list.append(record)
+               
+     return pet_list
 
 # ==================================== DML BLOCK
 
