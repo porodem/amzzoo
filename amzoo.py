@@ -216,7 +216,7 @@ def pet_shop(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)                   
         print(list(animals))
         for a in animals:
-            btn = types.KeyboardButton(pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
+            btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
             btn_pack.append(btn)
         btn_sell = types.KeyboardButton("Продать ")
         btn_back = types.KeyboardButton("🔙 Назад")
@@ -228,67 +228,14 @@ def pet_shop(message):
 
 def buy_pet(message):
     print(' - - - buy pet - - - ')
-    coins = sql_helper.db_get_player_info(message.from_user.id)
-    if re.match('.*Яйцо.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+    if re.match('.*#.*',message.text):
+        animal_id = int(extract_numbers(message.text))
+        ok = sql_helper.db_buy_pet(message.from_user.id, animal_id)
         if ok:
             bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Мышь.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 2)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Паук.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 3)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Кот.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 4)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Черепаха.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 5)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Индюк.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 6)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Ёж.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 7)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Сова.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 8)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Летучая.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 9)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    elif re.match('.*Енот.*',message.text):
-        ok = sql_helper.db_buy_pet(message.from_user.id, 10)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    # selling pet
     elif re.match('.*Продать.*',message.text):
         pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
         if len(pet_list) == 0:
@@ -305,27 +252,17 @@ def sell_pets(query):
     print('- - - - sell pets function - - - - ')
     owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
     #print(list(owned_pets))
-    #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup = types.InlineKeyboardMarkup(row_width=2)
-    btn_pack = []
-    for p in owned_pets:
-        print(p)
-        pet_price = str(int(p[2] / 2)) # sell price its original price / 2
-        emj = str(pet_emoji(p[1]) + " 💰+" + pet_price)
-        cb_prefix = 'sel'
-        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]))
-        btn_pack.append(btn)
-        #print(type(btn_pack))
-    # very interesting and useful trick with asterisk (*) operator https://www.geeksforgeeks.org/python-star-or-asterisk-operator/
-    markup.add(*btn_pack)
+    markup.add(*gen_inline_buttons(owned_pets)) 
     if hasattr(query,'data'):
         pet_it = extract_numbers(query.data)
+        sold_animal = int(extract_numbers(query.data,1))
         sql_helper.db_sell_pet(pet_it) 
         owned_pets = sql_helper.db_get_owned_pets(query.from_user.id) 
         markup = quick_markup({}) # clear buttons from previous query
         markup.add(*gen_inline_buttons(owned_pets)) 
         bot.edit_message_text(
-            text='Продан',
+            text='Продан ' + pet_emoji(sold_animal),
             chat_id=query.message.chat.id,
             message_id=query.message.id,
             reply_markup=markup
@@ -337,29 +274,16 @@ def sell_pets(query):
 def gen_inline_buttons(data_list):
     btn_pack = []
     for p in data_list:
-        print(p)
+        animal_id = str(p[1])
         pet_price = str(int(p[2] / 2)) # sell price its original price / 2
         emj = str(pet_emoji(p[1]) + " 💰+" + pet_price)
         cb_prefix = 'sel'
-        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]))
+        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]) + '_' + animal_id)
         btn_pack.append(btn)
 
     return btn_pack
 
-#@bot.callback_query_handler(lambda query: 'sel' in query.data )
-def pet_selling(query):
-    print(' - - pet sell func -- : ')
-    #pet_it = query.data[-1:]
-    pet_it = extract_numbers(query.data)
-    sql_helper.db_sell_pet(pet_it)    
-    #bot.answer_callback_query(query.id,text='You sold pet')
-    bot.edit_message_text(
-        text='text',
-        chat_id=query.message.chat.id,
-        message_id=query.message.id,
-        reply_markup=markup
-    )
-    bot.send_message(query.from_user.id, "Петомец продан")
+
 
 #  - - - - - - - - - - - - E A R N I N G  M O N E Y  - - - - - - - - - - - - - - - - - -
 
