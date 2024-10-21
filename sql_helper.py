@@ -208,11 +208,11 @@ def db_stamina_up(tid, value):
     con.commit()
 
 
-def db_buy_pet(animal_id,tid):
+def db_buy_pet(tid, animal_id):
     print(' - - write new user to DB - -')
     q = '''SELECT buy_pet(%s,%s);'''
     cur = con.cursor()
-    cur.execute(q,(animal_id,tid))
+    cur.execute(q,(tid,animal_id))
     result = cur.fetchone()
     con.commit()
     print('result ' + str(result))

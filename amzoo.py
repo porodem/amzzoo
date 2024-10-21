@@ -233,6 +233,8 @@ def buy_pet(message):
         ok = sql_helper.db_buy_pet(message.from_user.id, animal_id)
         if ok:
             bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
+            bot.send_message(message.from_user.id, pet_emoji(animal_id))
+            echo_all(message)
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     # selling pet
