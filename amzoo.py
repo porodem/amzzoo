@@ -255,14 +255,14 @@ def sell_pets(query):
     owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
     #print(list(owned_pets))
     markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(*gen_inline_buttons(owned_pets)) 
+    markup.add(*gen_inline_sell_buttons(owned_pets)) 
     if hasattr(query,'data'):
         pet_it = extract_numbers(query.data)
         sold_animal = int(extract_numbers(query.data,1))
         sql_helper.db_sell_pet(pet_it) 
         owned_pets = sql_helper.db_get_owned_pets(query.from_user.id) 
         markup = quick_markup({}) # clear buttons from previous query
-        markup.add(*gen_inline_buttons(owned_pets)) 
+        markup.add(*gen_inline_sell_buttons(owned_pets)) 
         bot.edit_message_text(
             text='Продан ' + pet_emoji(sold_animal),
             chat_id=query.message.chat.id,
@@ -273,7 +273,7 @@ def sell_pets(query):
         bot.send_message(query.from_user.id, "Кого продать?", reply_markup=markup)  
     #bot.register_next_step_handler(message, echo_all)
 
-def gen_inline_buttons(data_list):
+def gen_inline_sell_buttons(data_list):
     btn_pack = []
     for p in data_list:
         animal_id = str(p[1])
