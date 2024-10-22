@@ -156,6 +156,23 @@ def db_get_animal_shop(location_id):
                
      return pet_list
 
+def db_get_top_players():
+    """
+    :return list: [username, sum_points, best_animal]
+    """
+    q = '''select p.username , sum(animal_id) , max(animal_id) 
+            from pets join players p on p.telegram_id = pets.owner 
+            group by username order by 2 desc LIMIT 5;'''
+    leaders = []
+    with con.cursor() as cur:
+          cur.execute(q)
+          b = cur.fetchall()
+          #print(list(b))
+          for record in b:
+               leaders.append(record)
+    print(list(leaders))
+    return leaders
+
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):

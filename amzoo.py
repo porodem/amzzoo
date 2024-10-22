@@ -184,10 +184,7 @@ def shop_select(message):
 
 def to_shop(message):
     print('- - to shop - - ')
-    if re.match('.*Зоо.*',message.text):
-        
-        
-        
+    if re.match('.*Зоо.*',message.text):           
         pet_shop(message)
     elif re.match('.*Рынок.*', message.text):
         print('- - - bazar selected - - - ')
@@ -414,6 +411,8 @@ def shop_select(message):
     bot.send_message(tid, 'Куда отправимся?:', reply_markup=markup)  
     bot.register_next_step_handler(message, travel)
 
+
+
 def travel(message):
     print(' - - - TRY TRAVEL - - - ')
     tid = message.from_user.id
@@ -511,7 +510,18 @@ def vet(query):
 #     bot.answer_callback_query(query.id,text='You sold pet')
 #     bot.send_message(query.from_user.id, "Петомец продан")
 
-
+def show_top(message):
+    print('- - - SHOW TOP - - -')
+    leaders = sql_helper.db_get_top_players()
+    info = "🏆 Лучшие игроки 🏆\n--------------------------------\n"
+    i = 1
+    for player in leaders:
+        pname = 'без имени' if player[0] is None else player[0]
+        animal = player[2]
+        info += f"{i}) *{pname}* и его {pet_emoji(animal)}\n"
+        i += 1
+    print(info)
+    bot.send_message(message.from_user.id, info, parse_mode='markdown')
 
 # - - - - - - -  U T I L S - - - - - - - 
 
@@ -608,6 +618,8 @@ def next_option(message):
         bot.register_next_step_handler(message, travel)
     elif re.match('.*больница.*',message.text):
         vet(message)
+    elif re.match('.*ТОП.*',message.text):
+        show_top(message)
 
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
@@ -637,7 +649,8 @@ def echo_all(message):
     btn3 = types.KeyboardButton("💸 Деньги")
     btn4 = types.KeyboardButton("🛒 Магазин")
     btn5 = types.KeyboardButton("✈ Путешествие")
-    markup.add(btn1,btn_hospital,btn3,btn4,btn5)
+    btn_top = types.KeyboardButton("🏆 ТОП")
+    markup.add(btn1,btn_hospital,btn3,btn4,btn5,btn_top)
     bot.send_message(tid, get_statistics(tid), reply_markup=markup)
     #bot.register_next_step_handler(message, next_option)
     next_option(message)
