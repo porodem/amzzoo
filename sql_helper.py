@@ -266,11 +266,14 @@ def db_change_hunger_all():
     """
     print(' - - change hunger all pet DB func - -')
     q = '''select change_hunger(id, false , 1) from pets p where health > 0;;'''
+    q2 = '''select "owner", animal_id, health from pets p where hunger < 2;'''
     cur = con.cursor()
     cur.execute(q)
-    result = cur.fetchone()
-    print('sql sel result: ' + str(result))
+    cur.execute(q2)
+    hungry_pets = cur.fetchall()
+    print('sql hunger all result: ' + str(hungry_pets))
     con.commit()
+    return hungry_pets
 
 def db_cure_pet(pet_id: int):
     """  

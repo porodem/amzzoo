@@ -34,8 +34,17 @@ hunger_interval = 8
 def get_hunger():
     while True:
         print("- - -  get hunger - - - ")
-        sql_helper.db_change_hunger_all()
+        hungry_animals = sql_helper.db_change_hunger_all()
         time.sleep(hunger_interval * 60 * 60)
+        for player in hungry_animals:
+            print(list(player))
+            health = player[2]
+            if player[1] == 0:
+                bot.send_message(player[0], pet_emoji(player[1]) + " Один из питомцев умер 😥")
+            elif health < 6:
+                bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} заболел! Срочно вылечите его!💊 ")
+            else:
+                bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} голоден! Покормите его!")
 
 thread_hunger = threading.Thread(target=get_hunger)
 thread_hunger.daemon = True # This makes sure the thread will exit when the main program does
