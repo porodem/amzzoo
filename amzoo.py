@@ -118,7 +118,7 @@ def begin_game(message):
 def show_pets(query):
     print(' - - show pets function (callback) -- : ')
     if hasattr(query,'data'):
-        cidx = int(query.data[-1:])
+        cidx = int(extract_numbers(query.data))
     else:
         cidx = 0
     print('cidx: ' + str(cidx))
@@ -135,16 +135,21 @@ def show_pets(query):
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
     btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
+    btn_pack = []
     # TODO add SHOW (petting) animated emoji button, FEED button, CURE (heal) button
     if len(owned_pets) > 1:
         btn_backward = types.InlineKeyboardButton('◀',callback_data="pet" + str(cidx-1))
         btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid))
-    btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[0]))
+        btn_pack = btn_pack + [btn_backward,btn_forward]
+    if pet_info[2] < 10:
+        btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[0]))
+        btn_pack = btn_pack + [btn_feed]
 
-    if len(owned_pets) > 1:
-        markup.add(btn_backward, btn_forward, btn_feed)
-    else:
-        markup.add(btn_feed)
+    markup.add(*btn_pack)
+    # if len(owned_pets) > 1:
+    #     markup.add(*btn_pack)
+    # else:
+    #     markup.add(btn_feed)
 
     if hasattr(query,'data'):
         bot.edit_message_text(
@@ -166,7 +171,7 @@ def pet_feeding(call):
     animal_id = pet_info[1]
     print('animal id: ' + str(animal_id))
     sql_helper.db_change_hunger(pet_id, True, 10)
-    bot.send_message(call.from_user.id, '😋')
+    bot.send_message(call.from_user.id, pet_emoji(animal_id))
 
 # - - - - - - SHOP  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
