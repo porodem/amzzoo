@@ -117,14 +117,25 @@ def begin_game(message):
 @bot.callback_query_handler(lambda query: 'pet' in query.data )
 def show_pets(query):
     print(' - - show pets function (callback) -- : ')
+    owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
     if hasattr(query,'data'):
         cidx = int(extract_numbers(query.data))
+        if int(extract_numbers(query.data,1)):
+            first_pet = owned_pets[cidx]
+            pet_info = sql_helper.db_pet_info(first_pet[0])
+            animal_id = pet_info[1]
+            print('animal id: ' + str(animal_id))
+            sql_helper.db_change_hunger(pet_info[0], True, 10)
+            bot.send_message(query.from_user.id, pet_emoji(animal_id))
+        
+        
+        
     else:
         cidx = 0
     print('cidx: ' + str(cidx))
-    owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
-    print('owned_pets: ')
-    print(list(owned_pets))
+    
+    #print('owned_pets: ')
+    #print(list(owned_pets))
     next_cid = 0 if cidx == len(owned_pets) - 1 else cidx + 1
     first_pet = owned_pets[cidx]
     pet_info = sql_helper.db_pet_info(first_pet[0])
@@ -136,13 +147,14 @@ def show_pets(query):
     btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn_pack = []
+    action = '_0'
     # TODO add SHOW (petting) animated emoji button, FEED button, CURE (heal) button
     if len(owned_pets) > 1:
-        btn_backward = types.InlineKeyboardButton('◀',callback_data="pet" + str(cidx-1))
-        btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid))
+        btn_backward = types.InlineKeyboardButton('◀',callback_data="pet" + str(cidx-1) + action)
+        btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid) + action)
         btn_pack = btn_pack + [btn_backward,btn_forward]
     if pet_info[2] < 10:
-        btn_feed = types.InlineKeyboardButton('🍽',callback_data="feed" + str(pet_info[0]))
+        btn_feed = types.InlineKeyboardButton('🍽',callback_data="pet" + str(cidx) + '_1')
         btn_pack = btn_pack + [btn_feed]
 
     markup.add(*btn_pack)
@@ -163,15 +175,15 @@ def show_pets(query):
 
 
 
-@bot.callback_query_handler(func=lambda call: 'feed' in call.data)
-def pet_feeding(call):
-    print(' - - pet feed -- : ')
-    pet_id = extract_numbers(call.data)
-    pet_info = sql_helper.db_pet_info(pet_id)
-    animal_id = pet_info[1]
-    print('animal id: ' + str(animal_id))
-    sql_helper.db_change_hunger(pet_id, True, 10)
-    bot.send_message(call.from_user.id, pet_emoji(animal_id))
+# @bot.callback_query_handler(func=lambda call: 'feed' in call.data)
+# def pet_feeding(call):
+#     print(' - - pet feed -- : ')
+#     pet_id = extract_numbers(call.data)
+#     pet_info = sql_helper.db_pet_info(pet_id)
+#     animal_id = pet_info[1]
+#     print('animal id: ' + str(animal_id))
+#     sql_helper.db_change_hunger(pet_id, True, 10)
+#     bot.send_message(call.from_user.id, pet_emoji(animal_id))
 
 # - - - - - - SHOP  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
