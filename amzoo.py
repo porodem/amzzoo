@@ -432,6 +432,12 @@ def shop_select(message):
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn2,btn_back)
+    elif location == 3: # forest
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("🏜 Пустыня 💰 25",)
+        btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn_home,btn_back)
     else:
         # TODO make home available
         print('- - - - UNKNOWN LOCATION  - - - - -')
