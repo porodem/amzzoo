@@ -368,6 +368,7 @@ def search_money(message):
         bot.register_next_step_handler(message, do_work)
         # m = bot.send_dice(tid,'🎲')
         dig_result = m.dice.value
+        coins = pwr
         if dig_result < 5:
             # TODO this and other sleep() stops all other players!
             time.sleep(4)
@@ -375,11 +376,11 @@ def search_money(message):
         elif dig_result == 5:
             time.sleep(4)
             bot.send_message(tid,'Ура! Приз! 💰 x 1')
-            sql_helper.db_add_money(tid,1)
+            sql_helper.db_add_money(tid,coins)
         elif dig_result == 6:
             time.sleep(4)
             bot.send_message(tid,'Ура! Приз! 💰 x 2')
-            sql_helper.db_add_money(tid,2)
+            sql_helper.db_add_money(tid,coins)
 
     elif re.match('.*Работа.*',message.text):
         m = bot.send_dice(tid,'🎳')
