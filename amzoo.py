@@ -594,6 +594,16 @@ def pet_emoji(id):
         e = "🦇"
     elif id == 10:
         e = "🦝"
+    elif id == 11:
+        e = "🦌"
+    elif id == 12:
+        e = "🦍"
+    elif id == 13:
+        e = "🦓"
+    elif id == 14:
+        e = "🐅"
+    elif id == 15:
+        e = "🐆"
     elif id == 0:
         e = "☠"
     else:
