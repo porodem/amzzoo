@@ -375,12 +375,12 @@ def search_money(message):
             bot.send_message(tid,'💩 Неповезло, бывает!',  reply_markup=markup)
         elif dig_result == 5:
             time.sleep(4)
-            bot.send_message(tid,'Ура! Приз! 💰 x 1')
+            bot.send_message(tid,f"Ура! Приз! 💰 x {coins}")
             sql_helper.db_add_money(tid,coins)
         elif dig_result == 6:
             time.sleep(4)
-            bot.send_message(tid,'Ура! Приз! 💰 x 2')
-            sql_helper.db_add_money(tid,coins)
+            bot.send_message(tid,f"Ура! Приз! 💰 x {coins + 1}")
+            sql_helper.db_add_money(tid,coins + 1)
 
     elif re.match('.*Работа.*',message.text):
         m = bot.send_dice(tid,'🎳')
@@ -435,6 +435,12 @@ def shop_select(message):
     elif location == 3: # forest
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🏜 Пустыня 💰 25",)
+        btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn_home,btn_back)
+    elif location == 1: # desert
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn_home,btn_back)
