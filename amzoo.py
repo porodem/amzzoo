@@ -218,8 +218,8 @@ def to_shop(message):
         echo_all(message)
 
 def pet_shop(message):
-    print('---------- PET SHOP -----------')
-    tid = message.from_user.id
+    print('---------- PET SHOP -----------')    
+    tid = message.from_user.id    
     owned = sql_helper.db_check_owned_pets(message.from_user.id)
     pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
 
@@ -428,13 +428,13 @@ def shop_select(message):
     if location == 5:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
-        btn2 = types.KeyboardButton("🏜 Пустыня 💰 25",)
+        btn2 = types.KeyboardButton("🏜 Африка 💰 25",)
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn2,btn_back)
     elif location == 3: # forest
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn1 = types.KeyboardButton("🏜 Пустыня 💰 25",)
+        btn1 = types.KeyboardButton("🏜 Африка 💰 25",)
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn_home,btn_back)
@@ -461,6 +461,8 @@ def travel(message):
         if coins >= 12:
             sql_helper.db_change_location(tid,3,12)
             bot.send_message(message.from_user.id, "✈ Вы отправились в лес 🌲!")
+            # new location image
+            bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     if re.match('.*Пустыня.*',message.text):
@@ -468,7 +470,9 @@ def travel(message):
         if coins >= 25:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,1,25)
-            bot.send_message(message.from_user.id, "✈ Вы улетели в пустыню 🏜!")
+            bot.send_message(message.from_user.id, "✈ Вы улетели в Африку 🏜!")
+            # new location image
+            bot.send_photo(tid,'AgACAgIAAxkBAAIOEmcuA05mlhg-HQfSqDbYL8ixtHZTAAIv6DEbItVxSfetuCF-nurtAQADAgADcwADNgQ')
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     if re.match('.*Дом.*',message.text):
@@ -477,6 +481,8 @@ def travel(message):
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,5,5)
             bot.send_message(message.from_user.id, "✈ Вы улетели домой 🏠!")
+            # new location image
+            bot.send_photo(tid,'AgACAgIAAxkBAAIODGcuAhzmF5UMoXJRY21Muwi2veWRAAIq6DEbItVxSb9bfLiZxO8FAQADAgADcwADNgQ')
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     echo_all(message)
@@ -551,6 +557,7 @@ def vet(query):
 
 def show_top(message):
     print('- - - SHOW TOP - - -')
+    
     leaders = sql_helper.db_get_top_players()
     info = "🏆 Лучшие игроки 🏆\n--------------------------------\n"
     i = 1
@@ -683,7 +690,11 @@ def get_statistics(tid):
 
     return player_stats
 
-
+@bot.message_handler(func=lambda message: True, content_types=['photo'])
+def echo_allimage(message):
+    print('it is image ')
+    file_id = message.photo[0].file_id
+    print('file id : ' + str(file_id))
 
 #anything other messages
 @bot.message_handler(func=lambda m:True)
