@@ -462,6 +462,7 @@ def travel(message):
             sql_helper.db_change_location(tid,3,12)
             bot.send_message(message.from_user.id, "✈ Вы отправились в лес 🌲!")
             # new location image
+            # any picture have unique id, that we receive when send this pic for the first time to telegram. See picture grabber code block in the end.
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
@@ -690,6 +691,7 @@ def get_statistics(tid):
 
     return player_stats
 
+# picture grabber
 @bot.message_handler(func=lambda message: True, content_types=['photo'])
 def echo_allimage(message):
     print('it is image ')
