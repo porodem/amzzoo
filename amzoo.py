@@ -429,9 +429,10 @@ def shop_select(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
         btn2 = types.KeyboardButton("🏜 Африка 💰 25",)
+        btn3 = types.KeyboardButton("🌊 Море 💰 35",)
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2,btn_back)
+        markup.add(btn1,btn2,btn3,btn_back)
     elif location == 3: # forest
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🏜 Африка 💰 25",)
@@ -444,6 +445,11 @@ def shop_select(message):
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn_home,btn_back)
+    elif location == 4: # sea 
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn_home,btn_back)
     else:
         # TODO make home available
         print('- - - - UNKNOWN LOCATION  - - - - -')
@@ -474,6 +480,16 @@ def travel(message):
             bot.send_message(message.from_user.id, "✈ Вы улетели в Африку 🏜!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEmcuA05mlhg-HQfSqDbYL8ixtHZTAAIv6DEbItVxSfetuCF-nurtAQADAgADcwADNgQ')
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    if re.match('.*Море.*',message.text):
+        #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        if coins >= 25:
+            # TODO variable for ticket price
+            sql_helper.db_change_location(tid,4,35)
+            bot.send_message(message.from_user.id, "✈ Вы улетели на море 🏜!")
+            # new location image
+            bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     if re.match('.*Дом.*',message.text):
@@ -618,11 +634,22 @@ def pet_emoji(id):
         e = "🐅"
     elif id == 15:
         e = "🐆"
+    elif id == 16:
+        e = "🦐"
+    elif id == 17:
+        e = "🐠"
+    elif id == 18:
+        e = "🦑"
+    elif id == 19:
+        e = "🐙"
+    elif id == 20:
+        e = "🦭"
     elif id == 0:
         e = "☠"
     else:
         e = "❌"
     return e
+
 
 # values(1,'desert'),(2,'field'),(3,'forest'),(4,'water'),(5,'any')
 def habitat_emoji(id):
