@@ -485,7 +485,7 @@ def travel(message):
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     if re.match('.*Море.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-        if coins >= 25:
+        if coins >= 35:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,4,35)
             bot.send_message(message.from_user.id, "✈ Вы улетели на море 🏜!")
@@ -495,7 +495,7 @@ def travel(message):
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     if re.match('.*Дом.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-        if coins >= 25:
+        if coins >= 5:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,5,5)
             bot.send_message(message.from_user.id, "✈ Вы улетели домой 🏠!")
