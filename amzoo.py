@@ -222,6 +222,7 @@ def pet_shop(message):
     tid = message.from_user.id    
     owned = sql_helper.db_check_owned_pets(message.from_user.id)
     pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
+    # TODO add pet space addition by buying some item (maby just a box) and return to home
 
     if owned == pet_space: 
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True) 
