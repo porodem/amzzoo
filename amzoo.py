@@ -29,13 +29,13 @@ main_menu = types.BotCommand('earn_money','Найти деньги')
 bot.set_my_commands([my_pets_command,main_menu])
 
 # Timer for all pets to get hunger every 8 hours (28000 sec)
-hunger_interval = 8
+hunger_interval = 4
 
 def get_hunger():
     while True:
         print("- - -  get hunger - - - ")
         hungry_animals = sql_helper.db_change_hunger_all()
-        time.sleep(hunger_interval * 60 * 60)
+        time.sleep(hunger_interval * 3)
         for player in hungry_animals:
             print(list(player))
             health = player[2]

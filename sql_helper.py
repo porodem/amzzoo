@@ -181,6 +181,7 @@ def db_new_player(tid,username,nickname):
     cur = con.cursor()
     cur.execute(q,(tid,username,nickname))
     con.commit()
+    cur.close()
 
 def db_add_money(tid, value):
     print('- - - write money to DB - - - ')
@@ -188,6 +189,7 @@ def db_add_money(tid, value):
     cur = con.cursor()
     cur.execute(q,(value,tid))
     con.commit()
+    cur.close()
 
 def db_change_location(tid, value, coins):
     print('- - - write money to DB - - - ')
@@ -195,6 +197,7 @@ def db_change_location(tid, value, coins):
     cur = con.cursor()
     cur.execute(q,(value,coins,tid))
     con.commit()
+    cur.close()
 
 def db_stamina_down(tid, value):
     print('- - - update down stamina lvl to DB - - - ')
@@ -206,6 +209,7 @@ def db_stamina_down(tid, value):
     b = cur.fetchone()
     print('db stamina down result: ' + str(b))
     con.commit()
+    cur.close()
 
 def db_stamina_up(tid, value):
     """  sql trigger updates last_work table field
@@ -223,6 +227,7 @@ def db_stamina_up(tid, value):
     b = cur.fetchone()
     print('db stamina up result: ' + str(b))
     con.commit()
+    cur.close()
 
 
 def db_buy_pet(tid, animal_id):
@@ -243,6 +248,7 @@ def db_sell_pet(pet_id):
     result = cur.fetchone()
     print('sql sel result: ' + str(result))
     con.commit()
+    cur.close()
 
 def db_change_hunger(pet_id: int, feed: bool, val: int=1):
     """  
@@ -259,20 +265,25 @@ def db_change_hunger(pet_id: int, feed: bool, val: int=1):
     result = cur.fetchone()
     print('sql sel result: ' + str(result))
     con.commit()
+    cur.close()
 
 def db_change_hunger_all():
     """  
         lowers all pets hunger level on 1 (one)
+
+        :return list: [owner, animal_id, health]
     """
     print(' - - change hunger all pet DB func - -')
     q = '''select change_hunger(id, false , 1) from pets p where health > 0;;'''
-    q2 = '''select "owner", animal_id, health from pets p where hunger < 2;'''
+    q2 = '''select "owner", animal_id, health FROM pets p where hunger < 3;'''
     cur = con.cursor()
     cur.execute(q)
     cur.execute(q2)
     hungry_pets = cur.fetchall()
     print('sql hunger all result: ' + str(hungry_pets))
+    cur.close()
     con.commit()
+    cur.close()
     return hungry_pets
 
 def db_cure_pet(pet_id: int):
@@ -290,6 +301,7 @@ def db_cure_pet(pet_id: int):
     cur.execute(q2,(pet_id,))
     result = cur.fetchone()[0]
     con.commit()
+    cur.close()
     return result
 
 def db_buy_healing(pet_id: int, cost: int, tid: int):
@@ -300,6 +312,7 @@ def db_buy_healing(pet_id: int, cost: int, tid: int):
     cur.execute(q,(pet_id,cost,tid))
     result = cur.fetchone()[0] # animal id from emoji; -1 if not enough money
     con.commit()
+    cur.close()
     return result
 
 # ==================================== SHOW BLOCK
