@@ -22,3 +22,8 @@
 8. :white_check_mark: earn money for having animals (more rare more profit from customers)
 9. Add top players rating (show best animal)
 10. access to sell pet when no space
+
+### TODO List
+1. close cursor after SQL fucntion (idle in transaction)
+2. None mondey player
+3. Travel don't work for player without nickname
