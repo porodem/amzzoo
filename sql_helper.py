@@ -133,7 +133,7 @@ def db_get_profit(tid):
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
-    profit = b[0]
+    profit = 0 if b[0] is None else b[0]
     db_add_money(tid, profit)
     return b[0]
 
