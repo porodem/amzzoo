@@ -173,6 +173,23 @@ def db_get_top_players():
     print(list(leaders))
     return leaders
 
+def db_get_all_tids():
+    """
+    :return all tids
+    """
+    print(" - - get all tids - - ")
+    q = '''SELECT telegram_id FROM players where invite_date is not null;'''
+    all_players = []
+    with con.cursor() as cur:
+        cur.execute(q)
+        b = cur.fetchall()
+        for line in b:
+            all_players.append(line[0])
+    print(str(len(all_players)) + " " + str(list(all_players)))
+    return(all_players)
+
+
+
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):

@@ -19,14 +19,37 @@ f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
+master_tid = f.readline()
+master_tid = int(master_tid.rsplit()[0])
 f.close()
 bot = telebot.TeleBot(token, parse_mode=None)
 
+
 c_start = types.BotCommand('start','Начать')
-my_pets_command = types.BotCommand('show_pets','Показать питомцев')
-main_menu = types.BotCommand('main_menu','Меню')
+help_command = types.BotCommand('show_help','Справка')
+#main_menu = types.BotCommand('main_menu','Меню')
 #main_menu = types.BotCommand('earn_money','Найти деньги')
-bot.set_my_commands([my_pets_command,main_menu])
+bot.set_my_commands([help_command])
+
+@bot.message_handler(commands=['show_help'])
+def show_help(message):
+    bot.send_message(message.from_user.id, '''Привет!
+Зарабатывай деньги в мини играх и покупай 🐇 питомцев.
+💪 Сила восстанавливается 1 в час.
+✈ Путешествуй чтобы купить других животных!
+💰 Каждый следующий день, ты получишь доход если у тебя есть питомцы и вчера ты тратил силы.''')
+
+@bot.message_handler(commands=['announce'])
+def admin_announce(message):
+    if (message.from_user.id == master_tid):
+        all_players = sql_helper.db_get_all_tids()
+        announce_text = 'empty' if len(message.text[10:]) == 0 else message.text[10:]
+        #bot.send_message(master_tid, announce_text) # testing line for developer only
+        for player in all_players:
+            bot.send_message(player, announce_text)
+    else:
+        bot.send_message(message.from_user.id, "Restricted! It is admin function only!")
+        print(f"announce: {master_tid} " + str(message.from_user.id))
 
 # Timer for all pets to get hunger every 8 hours (28000 sec)
 hunger_interval = 4
