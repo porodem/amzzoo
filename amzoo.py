@@ -25,7 +25,7 @@ bot = telebot.TeleBot(token, parse_mode=None)
 c_start = types.BotCommand('start','Начать')
 my_pets_command = types.BotCommand('show_pets','Показать питомцев')
 main_menu = types.BotCommand('main_menu','Меню')
-main_menu = types.BotCommand('earn_money','Найти деньги')
+#main_menu = types.BotCommand('earn_money','Найти деньги')
 bot.set_my_commands([my_pets_command,main_menu])
 
 # Timer for all pets to get hunger every 8 hours (28000 sec)
@@ -35,7 +35,7 @@ def get_hunger():
     while True:
         print("- - -  get hunger - - - ")
         hungry_animals = sql_helper.db_change_hunger_all()
-        time.sleep(hunger_interval * 3)
+        time.sleep(hunger_interval * 60 * 60)
         for player in hungry_animals:
             print(list(player))
             health = player[2]
@@ -71,6 +71,13 @@ def begin_game(message):
         # vname = new_member["username"]
 
         sql_helper.db_new_player(message.from_user.id,message.from_user.username,'x')
+
+        # show help for new player
+        bot.send_message(message.from_user.id, '''Привет!
+Зарабатывай деньги в мини играх и покупай 🐇 питомцев.
+✈ Путешествуй чтобы купить других животных!
+💰 Каждый следующий день, ты получишь доход если у тебя есть питомцы и вчера ты играл в мини игры.''')
+        echo_all(message)
 
     else:
 

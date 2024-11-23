@@ -20,6 +20,7 @@ def db_check_player_exists(tid):
         result = b[0]
 
     return result
+#TODO add commit transaction to all DB functions
 
 def db_check_location(tid):
     '''
