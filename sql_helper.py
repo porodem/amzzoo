@@ -84,8 +84,7 @@ def db_get_player_info(tid):
     if b is None:
         result = 0
     else:
-        print(b[0])
-        print(b[1])
+        print(b)
         result = b
 
     return result

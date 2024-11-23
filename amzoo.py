@@ -126,6 +126,10 @@ def begin_game(message):
 def show_pets(query):
     print(' - - show pets function (callback) -- : ')
     owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
+    print(str(query.from_user.id) + f" has {len(owned_pets)}")
+    if len(owned_pets) == 0:
+        bot.send_message(query.from_user.id, "У вас нет питомцев")
+        return
     if hasattr(query,'data'):
         cidx = int(extract_numbers(query.data))
         if int(extract_numbers(query.data,1)):
@@ -199,6 +203,7 @@ def show_pets(query):
 def shop_select(message):
     print('---------- SELECT SHOP -----------')
     tid = message.from_user.id
+    print(f"Buyer {tid}")
     # define location to show specific shop
     location =  sql_helper.db_check_location(tid)
     if location == 5:
@@ -324,7 +329,7 @@ def gen_inline_sell_buttons(data_list):
 # TODO rename all work mentions to getmoney
 @bot.message_handler(regexp=".*Работа.*")
 def do_work(message):
-    print(' - - - do work - - -')
+    print(' - - - play minigames - - -')
     tid = message.from_user.id
     stamina = sql_helper.db_get_player_info(message.from_user.id)[2]
     if stamina == 0:
@@ -358,11 +363,12 @@ def do_work(message):
         bot.register_next_step_handler(message, echo_all)
 
 def search_money(message):
+    tid = message.from_user.id
+    print("-- PLAY: " + str(tid) + " type: " + message.text + " at " + str(datetime.now()))
     if re.match('.*удачн.*',message.text):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn = types.KeyboardButton("Ещё")
-        markup.add(btn)
-        tid = message.from_user.id
+        markup.add(btn)        
         if re.match('.*🎲.*',message.text):
             m = bot.send_dice(tid,'🎲')
             pwr = 1
@@ -372,7 +378,6 @@ def search_money(message):
         elif re.match('.*🎳.*',message.text):
             m = bot.send_dice(tid,'🎳')
             pwr = 3
-        #print(d)
         sql_helper.db_stamina_down(tid, pwr)
         bot.register_next_step_handler(message, do_work)
         # m = bot.send_dice(tid,'🎲')
@@ -408,8 +413,7 @@ def check_relax(tid):
     stamina_before = info[2]
     if stamina_before == 10:
         return
-    print('last work: ' + str(last_work))
-    print('- ts -')
+    print(f"check+relax func: {str(tid)} last work: " + str(last_work))
     #ts = datetime.fromisoformat(last_work)
     #print(ts)
     time_diff = datetime.now() - last_work
@@ -610,7 +614,6 @@ def extract_numbers(str, v=0):
     numbers = re.findall(r'\d+',str)
     print('extracted: ' + numbers[v])
     return numbers[v]
-
 
 def pet_emoji(id):
     if id == 1:
