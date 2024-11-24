@@ -239,8 +239,9 @@ def shop_select(message):
         print('- - - - UNKNOWN LOCATION  - - - - -')
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("Зоомагазин 🐇",)
+        btn2 = types.KeyboardButton("Рынок 🏪",)
         btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn_back)
+        markup.add(btn1,btn2,btn_back)
     bot.send_message(tid, 'Куда пойдем?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_shop)
 
@@ -250,8 +251,27 @@ def to_shop(message):
         pet_shop(message)
     elif re.match('.*Рынок.*', message.text):
         print('- - - bazar selected - - - ')
+        bazar_shop(message)
     else:
         echo_all(message)
+
+def bazar_shop(message):
+    tid = message.from_user.id  
+    # TODO check owned items
+    location =  sql_helper.db_check_location(tid)
+    available_items = sql_helper.db_get_bazar_shop_items(location)
+    btn_pack = []
+
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)                   
+    print(list(available_items))
+    for a in available_items:
+        btn = types.KeyboardButton(f"#{a[0]}" + " 📦 "  + a[1] + " 💰 " + str(a[2]))
+        btn_pack.append(btn)
+    #btn_sell = types.KeyboardButton("Продать ") # NOTICE maby later
+    btn_back = types.KeyboardButton("🔙 Назад")
+    markup.add(*btn_pack,btn_back)
+    bot.send_message(tid, 'Выберите покупку:', reply_markup=markup)
+    bot.register_next_step_handler(message, buy_item)
 
 def pet_shop(message):
     print('---------- PET SHOP -----------')    
@@ -302,6 +322,28 @@ def buy_pet(message):
         pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
         if len(pet_list) == 0:
             bot.send_message(message.from_user.id, "🚫 У вас нет питомцев!")
+            #time.sleep(1)
+            echo_all(message)
+        else:
+            sell_pets(message)  
+    else:
+        echo_all(message)
+
+def buy_item(message):
+    print(' - - - buy item - - - ')
+    if re.match('.*#.*',message.text):
+        item_id = int(extract_numbers(message.text))
+        ok = sql_helper.db_buy_item(message.from_user.id, item_id)
+        if ok:
+            bot.send_message(message.from_user.id, "🎉 Поздравляем с покупкой!")
+            echo_all(message)
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    # selling pet
+    elif re.match('.*Продать.*',message.text):
+        pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
+        if len(pet_list) == 0:
+            bot.send_message(message.from_user.id, "🚫 У вас нет вещей!")
             #time.sleep(1)
             echo_all(message)
         else:

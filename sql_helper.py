@@ -156,6 +156,22 @@ def db_get_animal_shop(location_id):
                
      return pet_list
 
+def db_get_bazar_shop_items(location_id):
+    """
+    :param location_id: location of shop. [5 - any, 4 water, 3 forest, 2 field, 1 desert]
+    :return list: [item_id, name, price] from pets items
+    """
+    q = 'SELECT id, name, price FROM items WHERE location = %s;'
+    items_available = []
+
+    with con.cursor() as cur:
+        cur.execute(q,(location_id,))
+        b = cur.fetchall()
+        for record in b:
+            items_available.append(record)
+
+    return items_available;
+
 def db_get_top_players():
     """
     :return list: [username, sum_points, best_animal]
@@ -248,7 +264,7 @@ def db_stamina_up(tid, value):
 
 
 def db_buy_pet(tid, animal_id):
-    print(' - - write new user to DB - -')
+    print(' - - write to DB buy pet - -')
     q = '''SELECT buy_pet(%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(tid,animal_id))
@@ -266,6 +282,16 @@ def db_sell_pet(pet_id):
     print('sql sel result: ' + str(result))
     con.commit()
     cur.close()
+
+def db_buy_item(tid, item_id):
+    print(' - -  write to DB buy item - -')
+    q = '''SELECT buy_item(%s,%s);'''
+    cur = con.cursor()
+    cur.execute(q,(tid,item_id))
+    result = cur.fetchone()
+    con.commit()
+    print('result ' + str(result))
+    return result[0]
 
 def db_change_hunger(pet_id: int, feed: bool, val: int=1):
     """  

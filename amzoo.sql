@@ -10,6 +10,8 @@ game_location int default 5 references habitat(id),
 stamina int default 5 check (stamina > -1 and stamina < 11)
 );
 
+alter table players alter column coins set not null;
+
 alter table players add column level int default 1;
 
 alter table players add column stamina int default 5 check (stamina > -1 and stamina < 11)
@@ -26,9 +28,12 @@ alter table players add column pet_space int default 4;
 
 drop  table players cascade;
 
+
 select * from players p ;
 
-select buy_pet(775803031,1)
+delete from players where telegram_id = 00000
+
+select buy_pet(00000,1)
 
 
 create table animal_list(
@@ -60,7 +65,7 @@ drop table pets;
 
 select * from pets;
 
-insert into pets(animal_id, owner /*petname*/) values(2,775803031)
+insert into pets(animal_id, owner /*petname*/) values(2,00000)
 
 select * from pets;
 
@@ -81,9 +86,26 @@ insert into tpets(id) values (1)
 select * from tpets;
 
 
+create temp table anlist(
+id int8 primary key,
+species text,
+habitat int ,
+food_type int, 
+price int)
 
+copy animal_list(id,species,habitat,food_type,price) from 'C:\Python\Python310\Scripts\amzzoo\a.csv' delimiter ';' csv header encoding 'WIN1251'
 
-copy animal_list(id,species,habitat,food_type,price) from 'C:\Python\Python310\Scripts\amzzoo\animals.csv' delimiter ';' csv header encoding 'WIN1251'
+create temp table anlist(id int, name text)
+
+copy animal_list from 'C:\Python\Python310\Scripts\amzzoo\animals.csv' delimiter ';' csv header -- encoding 'WIN1251'
+
+truncate animal_list cascade
+
+select * from pets p 
+
+select * from animal_list al ;
+
+update animal_list set species = n from (select species n, id i from anlist) animals  where id = i;
 
 insert into animal_list values(5,'Черепаха',5,2,15)
 
@@ -95,6 +117,8 @@ insert into moods values(1, 'ill'),(2,'sad'),(3,'ok'),(4,'scary'),(5,'happy'),(6
 
 create table habitat(id int primary key, value text)
 
+alter table habitat add column travel_price int;
+
 insert into habitat values(1,'desert'),(2,'field'),(3,'forest'),(4,'water'),(5,'any')
 
 create table food_type(id int primary key , name text)
@@ -103,9 +127,65 @@ insert into food_type values (0,'nothing'),(1,'omnivore'),(2,'herbivore'),(3,'ca
 
 create table property(id int primary key , name text);
 
+select * from habitat h 
 
+update habitat set travel_price = 12 where id = 3;
+
+select id, species, price from animal_list al where habitat = 5
+
+union select * from  food_type ft 
 
 truncate food_type cascade;
+
+create table items(id int primary key, 
+	name text,
+	price int, 
+	location int references habitat(id)
+	)
+	
+create table property(
+	id int primary key generated always as identity, 
+	item_id int references items(id),
+	durability int default 10 check (durability < 11 and durability >= -1),	
+	charged boolean default false, -- if it contain something, charged, enabled ect.
+	owner int8 references players(telegram_id)
+	);
+	
+copy items from 'C:\Python\Python310\Scripts\amzzoo\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
+
+select * from  property p ;
+
+drop table property ;
+
+alter table property add column location int default 5 not null;
+
+alter table items drop column 
+
+alter table property add column charged boolean default false;
+
+	
+create or replace function buy_item(tid int8, item int8)
+returns int 
+language plpgsql
+as $$
+declare item_price int;
+player_coins int;
+begin
+	select coins into player_coins from players where telegram_id = tid;
+	select price into item_price from items where id = item; 
+	if item_price > player_coins then 
+		return 0;
+	end if;
+	insert into property(item_id, owner) values(item,tid);
+	update players set coins = (coins - item_price) where telegram_id = tid;
+	return 1;
+end;
+$$;
+end
+
+select buy_item(00000, 1)
+
+select username, p2.* from players p join property p2  on p2."owner" = p.telegram_id ;
 
 select * from players p ;
 
@@ -150,15 +230,15 @@ select p.*, p2.coins from pets p join players p2 on p."owner"  = p2.telegram_id
 
 select 1 into a 
 
-select sell_pet(8) 
+select sell_pet(37) 
 
-select  buy_pet(775803031,4)
+select  buy_pet(00000,4)
 
 select * from pets p ;
 
 select * from players p ;
 
-update players set coins  = coins + 1 where telegram_id = 775803031
+update players set coins  = coins + 1 where telegram_id = 00000
 
 -- last work reset
 create or replace function work_reset() returns trigger 
@@ -175,7 +255,7 @@ drop trigger t_work_res on  players;
 
 select * from players p 
 
-insert into players(telegram_id) values(1)
+insert into players(telegram_id) values(3)
 
 -- change hunger level
 
@@ -217,14 +297,55 @@ select change_hunger(id, false , 1) from pets p where health > 0;
 
 select * from pets;
 
+select * from animal_list al ;
+
 select * from players;
 
 create temp table t(b boolean)
 
 insert into t values('True')
 
+select animal_id, "owner" from pets p where hunger < 2;
+
 
 
 update pets set hunger = hunger - 1 where hunger > 0;
 
-select sum(price)/4 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = 775803031
+select sum(price)/4 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = 00000
+
+-- full healing for money
+
+create or replace function buy_healing(pet_id int8, heal_cost int, t_id int8)
+returns int
+language plpgsql
+as $$
+declare
+a_id int;
+player_coins int;
+begin
+	select coins into player_coins from players where telegram_id = t_id;
+	if heal_cost > player_coins then
+		return -1;
+	end if;
+	UPDATE pets SET health = 10 where id = pet_id;
+	update players set coins = coins - heal_cost where telegram_id = t_id;
+	select animal_id into a_id from pets where id = pet_id;
+	return a_id; 
+end;
+$$;
+end
+
+player_coins int;
+begin
+	select coins into player_coins from players where telegram_id = tid;
+	select price into pet_price from animal_list where id = animal; 
+	if pet_price > player_coins then 
+		return 0;
+		
+-- top 5 players
+	
+select p.username , sum(animal_id), max(animal_id) 
+from pets join players p on p.telegram_id = pets.owner 
+group by username order by 2 desc limit 1;
+
+select * from pets p 
