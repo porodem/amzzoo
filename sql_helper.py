@@ -123,6 +123,25 @@ def db_get_owned_pets(tid):
                
      return pet_list
 
+def db_get_owned_items(tid):
+    """
+        :param tid: telegram id of current player.
+
+        :return list: [property_id, item_name, price, location] from property and items tables
+    """
+    print('-- get all players items --')
+    q = '''select  p.id, i."name", price, location from  property p join items i on i.id = p.item_id  where owner = %s;'''
+    item_list = []
+
+    with con.cursor() as cur:
+        cur.execute(q,(tid,))
+        b = cur.fetchall()
+        #print(list(b))
+        for record in b:
+            item_list.append(record)
+            
+    return item_list
+
 def db_get_profit(tid):
     """
         :param tid: telegram id of current player.
@@ -292,6 +311,24 @@ def db_buy_item(tid, item_id):
     con.commit()
     print('result ' + str(result))
     return result[0]
+
+def db_remove_property(pid):
+    print('- - - SQL remove property  - - -')
+    q = '''DELETE FROM property where id = %s'''
+    cur = con.cursor()
+    cur.execute(q,(pid,))
+    con.commit()
+    return
+
+def db_change_pet_space(tid, value):
+    print('- - - SQL update pet space - - - ')
+    q = '''UPDATE players set pet_space = pet_space + %s where telegram_id = %s;'''
+    #TODO maby add exhaustion for stamina
+    cur = con.cursor()
+    cur.execute(q,(value,tid))
+    con.commit()
+    cur.close()
+    return
 
 def db_change_hunger(pet_id: int, feed: bool, val: int=1):
     """  

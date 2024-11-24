@@ -335,19 +335,20 @@ def buy_item(message):
         item_id = int(extract_numbers(message.text))
         ok = sql_helper.db_buy_item(message.from_user.id, item_id)
         if ok:
-            bot.send_message(message.from_user.id, "🎉 Поздравляем с покупкой!")
+            bot.send_message(message.from_user.id, "🎉 Поздравляем с покупкой! Вернитесь домой, чтобы использовать клетку.")
+            bot.send_photo(message.from_user.id,'AgACAgIAAxkBAAIkIWdC48JXnJZFGVULAAFBQefELqAT0AAC8eUxG72lGUq9LWS8E531jQEAAwIAA3MAAzYE')
             echo_all(message)
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     # selling pet
-    elif re.match('.*Продать.*',message.text):
-        pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
-        if len(pet_list) == 0:
-            bot.send_message(message.from_user.id, "🚫 У вас нет вещей!")
-            #time.sleep(1)
-            echo_all(message)
-        else:
-            sell_pets(message)  
+    # elif re.match('.*Продать.*',message.text):
+    #     pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
+    #     if len(pet_list) == 0:
+    #         bot.send_message(message.from_user.id, "🚫 У вас нет вещей!")
+    #         #time.sleep(1)
+    #         echo_all(message)
+    #     else:
+    #         sell_pets(message)  
     else:
         echo_all(message)
 
@@ -578,6 +579,16 @@ def travel(message):
             bot.send_message(message.from_user.id, "✈ Вы улетели домой 🏠!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIODGcuAhzmF5UMoXJRY21Muwi2veWRAAIq6DEbItVxSb9bfLiZxO8FAQADAgADcwADNgQ')
+            # check for delivering new items (cage - for increase owned pets limit)
+            owned_items = sql_helper.db_get_owned_items(tid)
+            print(f"- List of owned items for {tid}")
+            print(list(owned_items))
+            for i in owned_items:
+                if i[1] == 'Клетка':
+                    sql_helper.db_remove_property(i[0])
+                    sql_helper.db_change_pet_space(tid,1)
+                    bot.send_message(tid, "Место для питомцев увеличено!")
+            
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     echo_all(message)
@@ -787,6 +798,8 @@ def next_option(message):
 
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
+    items = sql_helper.db_get_owned_items(tid)
+    box = '📦' if len(items) > 0 else ' '
     check_relax(tid)
     pinfo = sql_helper.db_get_player_info(tid)
     lvl = pinfo[1]
@@ -795,6 +808,7 @@ def get_statistics(tid):
     pet_space = pinfo[4]
     loc = habitat_emoji(pinfo[5]) 
     player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
+    player_stats = player_stats + f"\nВещи: {box}"
     # next line must be commented before run game in production
     player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
 
