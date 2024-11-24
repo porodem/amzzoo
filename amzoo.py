@@ -565,6 +565,9 @@ def vet(query):
         lbl = '🏥 кого будем лечить?'
         healing_pet_id = ''
     owned_pets = sql_helper.db_get_owned_pets(tid)
+    if len(owned_pets) == 0: 
+        bot.send_message(tid, "Все питомцы здоровы 😺 Лечение не требуется!")
+        return
     coins = sql_helper.db_get_player_info(tid)[0]
     #print(list(owned_pets))
     #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
