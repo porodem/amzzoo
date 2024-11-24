@@ -750,6 +750,8 @@ def get_statistics(tid):
     pet_space = pinfo[4]
     loc = habitat_emoji(pinfo[5]) 
     player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
+    # next line must be commented before run game in production
+    player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
 
     return player_stats
 
