@@ -13,15 +13,19 @@
 
 ### Features to develop
 1. :white_check_mark: Hunger over time
-2. Travels
+2. :white_check_mark: Travels 
 3. Buildings
-4. Items (?)
+4. :white_check_mark: Items (?) 
 5. sleep() problem - it stops activity all over program (other user seems to have to wait)
 6. add button for pet animal that sends to player animation of pet
 7. dispose of dead pets (maby just sell in pet shop?)
 8. :white_check_mark: earn money for having animals (more rare more profit from customers)
-9. Add top players rating (show best animal)
+9. :white_check_mark: Add top players rating (show best animal) 
 10. access to sell pet when no space
+11. announce about player got in TOP
+12. Send package to other player (?)
+13. Make problems for other player - put bacteria in zoo to get his pets ill. Broke cage
+14. add items for protect zoo from other players
 
 ### TODO List
 1. close cursor after SQL fucntion (idle in transaction)
