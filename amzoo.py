@@ -334,9 +334,17 @@ def buy_item(message):
     print(' - - - buy item - - - ')
     if re.match('.*#.*',message.text):
         item_id = int(extract_numbers(message.text))
+        owned_items = sql_helper.db_get_owned_items(message.from_user.id)
+        owned_items_id = []
+        for i in owned_items:
+            owned_items_id.append(i[5])
+        print(list(owned_items_id))
+        if item_id in owned_items_id:
+            bot.send_message(message.from_user.id, "❌ У вас уже есть такой предмет!")
+            return
         ok = sql_helper.db_buy_item(message.from_user.id, item_id)
         if ok:
-            bot.send_message(message.from_user.id, "🎉 Поздравляем с покупкой! Вернитесь домой, чтобы использовать клетку.")
+            bot.send_message(message.from_user.id, "🎉 Поздравляем с покупкой! Вернитесь домой, чтобы использовать клетку.\n Эту клетку можно использовать только один раз!")
             bot.send_photo(message.from_user.id,'AgACAgIAAxkBAAIkIWdC48JXnJZFGVULAAFBQefELqAT0AAC8eUxG72lGUq9LWS8E531jQEAAwIAA3MAAzYE')
             echo_all(message)
         else:
@@ -584,12 +592,23 @@ def travel(message):
             owned_items = sql_helper.db_get_owned_items(tid)
             print(f"- List of owned items for {tid}")
             print(list(owned_items))
+            #cage_counter = 0
             for i in owned_items:
-                if i[1] == 'Клетка':
-                    sql_helper.db_remove_property(i[0])
+                if i[1] == 'Клетка' and i[3] == False:
+                    sql_helper.db_change_pet_space(tid,1)
+                    sql_helper.db_update_property(i[0],switch=True)    
+                    bot.send_message(tid, "Место для питомцев увеличено!")
+                elif i[1] == 'Железная Клетка' and i[3] == False:
                     sql_helper.db_change_pet_space(tid,1)
                     bot.send_message(tid, "Место для питомцев увеличено!")
-            
+                    #cage_counter += 1
+                    #sql_helper.db_remove_property(i[0])                    
+                    sql_helper.db_update_property(i[0],switch=True)            
+            # if cage_counter == 1:
+            #     sql_helper.db_change_pet_space(tid,1)
+            #     bot.send_message(tid, "Место для питомцев увеличено!")
+            # elif cage_counter > 1:
+            #     bot.send_message(tid, "У вас уже есть такая клетка для животных!")            
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     echo_all(message)

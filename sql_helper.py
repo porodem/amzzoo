@@ -127,10 +127,10 @@ def db_get_owned_items(tid):
     """
         :param tid: telegram id of current player.
 
-        :return list: [property_id, item_name, price, location] from property and items tables
+        :return list: [property_id, item_name, price, (3) charged, location, item_id] from property and items tables
     """
     print('-- get all players items --')
-    q = '''select  p.id, i."name", price, location from  property p join items i on i.id = p.item_id  where owner = %s;'''
+    q = '''select  p.id, i."name", price, charged, location, i.id from  property p join items i on i.id = p.item_id  where owner = %s;'''
     item_list = []
 
     with con.cursor() as cur:
@@ -319,6 +319,35 @@ def db_remove_property(pid):
     cur.execute(q,(pid,))
     con.commit()
     return
+
+def db_update_property(pid, switch: bool=None, value: int=0):
+    """  sql trigger updates last_work table field
+        :param pid: property ID.
+        :param switch: Change state of item.
+        :param value: durability changes on than value
+
+        :return item:
+    """
+    print('- - - SQL update property  - - -')
+    if switch is not None:
+        print('-- SQL change charged')
+        q = 'UPDATE property SET charged = %s where id = %s'
+        cur = con.cursor()
+        cur.execute(q,(switch,pid))
+
+    if value != 0:
+        print('-- SQL change durability')
+        q = '''UPDATE property SET durability = durability + %s where id = %s'''
+        cur = con.cursor()
+        cur.execute(q,(value,pid))
+
+    q2 ='SELECT * from property WHERE id = %s'
+    cur = con.cursor()
+    cur.execute(q2,(pid,))
+    result = cur.fetchone()
+    con.commit()
+    print(list(result))
+    return result
 
 def db_change_pet_space(tid, value):
     print('- - - SQL update pet space - - - ')
