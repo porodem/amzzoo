@@ -15,7 +15,7 @@ import threading # for parallel timer in difrent tasks like pet hunger timer
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -688,8 +688,11 @@ def show_top(message):
     print('- - - SHOW TOP - - -')
     
     leaders = sql_helper.db_get_top_players()
-    info = "🏆 Лучшие игроки 🏆\n--------------------------------\n"
+    total_players = leaders[0][3]
+    info = f"🏆 Лучшие игроки\n  10 из {total_players} \n----------------------------------\n"
     i = 1
+    
+    print("total players: " + str(total_players))
     for player in leaders:
         pname = 'без имени' if player[0] is None else player[0]
         animal = player[2]
