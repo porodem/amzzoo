@@ -23,9 +23,10 @@
 9. :white_check_mark: Add top players rating (show best animal) 
 10. access to sell pet when no space
 11. announce about player got in TOP
-12. Send package to other player (?)
-13. Make problems for other player - put bacteria in zoo to get his pets ill. Broke cage
-14. add items for protect zoo from other players
+12. Show total zoo profit in TOP
+13. Send package to other player (?)
+14. Make problems for other player - put bacteria in zoo to get his pets ill. Broke cage
+15. add items for protect zoo from other players
 
 ### TODO List
 1. close cursor after SQL fucntion (idle in transaction)
