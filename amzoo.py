@@ -343,10 +343,15 @@ def buy_item(message):
             bot.send_message(message.from_user.id, "❌ У вас уже есть такой предмет!")
             return
         ok = sql_helper.db_buy_item(message.from_user.id, item_id)
-        if ok:
+        # item id 1 and 2 its different types of boxes
+        if ok and item_id in [1,2]:
             bot.send_message(message.from_user.id, "🎉 Поздравляем с покупкой! Вернитесь домой, чтобы использовать клетку.\n Эту клетку можно использовать только один раз!")
             bot.send_photo(message.from_user.id,'AgACAgIAAxkBAAIkIWdC48JXnJZFGVULAAFBQefELqAT0AAC8eUxG72lGUq9LWS8E531jQEAAwIAA3MAAzYE')
             echo_all(message)
+        elif ok and item_id == 10:
+            # passport 
+            bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре!")
+            bot.register_next_step_handler(message, set_nickname)
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     # selling pet
@@ -397,7 +402,12 @@ def gen_inline_sell_buttons(data_list):
 
     return btn_pack
 
-
+def set_nickname(message):
+    print(" - rename player -")
+    new_nickname = message.text
+    sql_helper.db_rename_player(message.from_user.id, message.text)
+    bot.send_message(message.from_user.id, "Теперь в топе вы будете отображаться с этим именем")
+    print(new_nickname)
 
 #  - - - - - - - - - - - - E A R N I N G  M O N E Y  - - - - - - - - - - - - - - - - - -
 

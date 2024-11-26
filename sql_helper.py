@@ -193,11 +193,11 @@ def db_get_bazar_shop_items(location_id):
 
 def db_get_top_players():
     """
-    :return list: [username, sum_points, best_animal]
+    :return list: [username, sum_points, best_animal, total_players]
     """
-    q = '''select p.username , sum(animal_id) , max(animal_id) , count(*) over () ttl
+    q = '''select case when nick_name = 'x' then p.username else nick_name end nick , sum(animal_id) , max(animal_id) , count(*) over () ttl
             from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
-            group by username order by 2 desc NULLS LAST LIMIT 10;'''
+            group by username, nick_name order by 2 desc NULLS LAST LIMIT 10;'''
     leaders = []
     with con.cursor() as cur:
           cur.execute(q)
@@ -234,6 +234,15 @@ def db_new_player(tid,username,nickname):
     cur.execute(q,(tid,username,nickname))
     con.commit()
     cur.close()
+
+def db_rename_player(tid,nickname):
+    print(' SQL rename player')
+    q = "UPDATE players SET nick_name = %s WHERE telegram_id = %s"
+    cur = con.cursor()
+    cur.execute(q,(nickname,tid))
+    con.commit()
+    cur.close()
+
 
 def db_add_money(tid, value):
     print('- - - write money to DB - - - ')
