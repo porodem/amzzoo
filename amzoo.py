@@ -419,6 +419,7 @@ def do_work(message):
     tid = message.from_user.id
     info = sql_helper.db_get_player_info(message.from_user.id)
     stamina = info[2]
+    print(stamina)
     last_work = info[3]
     hour_ago = datetime.now() - timedelta(hours=1)
     #d = datetime.now() - delta
@@ -504,7 +505,7 @@ def check_relax(tid):
     last_work = info[3]
     stamina_before = info[2]
     if stamina_before == 10:
-        return
+        return stamina_before
     print('datetime: ' + str(datetime.now()))
     print(f"check+relax func: {str(tid)} last work: " + str(last_work))
     #ts = datetime.fromisoformat(last_work)
