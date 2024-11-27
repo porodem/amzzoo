@@ -268,7 +268,7 @@ def db_stamina_down(tid, value):
     cur.execute(q,(value,tid))
     cur.execute(q2,(tid,))
     b = cur.fetchone()
-    print('db stamina down result: ' + str(b))
+    #print('db stamina down result: ' + str(b))
     con.commit()
     cur.close()
 
@@ -286,7 +286,7 @@ def db_stamina_up(tid, value):
     cur.execute(q,(value,tid))
     cur.execute(q2,(tid,))
     b = cur.fetchone()
-    print('db stamina up result: ' + str(b))
+    #print('db stamina up result: ' + str(b))
     con.commit()
     cur.close()
 

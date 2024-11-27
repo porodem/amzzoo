@@ -15,7 +15,7 @@ import threading # for parallel timer in difrent tasks like pet hunger timer
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -417,11 +417,17 @@ def set_nickname(message):
 def do_work(message):
     print(' - - - play minigames - - -')
     tid = message.from_user.id
-    stamina = sql_helper.db_get_player_info(message.from_user.id)[2]
-    if stamina == 0:
+    info = sql_helper.db_get_player_info(message.from_user.id)
+    stamina = info[2]
+    last_work = info[3]
+    hour_ago = datetime.now() - timedelta(hours=1)
+    #d = datetime.now() - delta
+    if last_work < hour_ago:
+    #if stamina == 0:
+        print(f"lastwork {last_work} more than {hour_ago} checking relax...")
         stamina = check_relax(tid)
     else:
-        print('nothing')
+        print(f"lastwork {last_work} less than {hour_ago} - NO checking relax")
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     if stamina == 1:
         btn1 = types.KeyboardButton("🎲 удачный кубик 💪x1")
@@ -499,6 +505,7 @@ def check_relax(tid):
     stamina_before = info[2]
     if stamina_before == 10:
         return
+    print('datetime: ' + str(datetime.now()))
     print(f"check+relax func: {str(tid)} last work: " + str(last_work))
     #ts = datetime.fromisoformat(last_work)
     #print(ts)
