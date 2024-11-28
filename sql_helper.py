@@ -195,7 +195,10 @@ def db_get_top_players():
     """
     :return list: [username, sum_points, best_animal, total_players]
     """
-    q = '''select case when nick_name = 'x' then p.username else nick_name end nick , sum(animal_id) , max(animal_id) , count(*) over () ttl , telegram_id
+    q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
+      sum(animal_id) *  (1.0 + count(distinct animal_id)/10::numeric) ,
+      max(animal_id) ,
+        count(*) over () ttl , telegram_id
             from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
             group by username, nick_name, telegram_id order by 2 desc NULLS LAST LIMIT 10;'''
     leaders = []
