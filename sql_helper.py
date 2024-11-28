@@ -195,9 +195,9 @@ def db_get_top_players():
     """
     :return list: [username, sum_points, best_animal, total_players]
     """
-    q = '''select case when nick_name = 'x' then p.username else nick_name end nick , sum(animal_id) , max(animal_id) , count(*) over () ttl
+    q = '''select case when nick_name = 'x' then p.username else nick_name end nick , sum(animal_id) , max(animal_id) , count(*) over () ttl , telegram_id
             from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
-            group by username, nick_name order by 2 desc NULLS LAST LIMIT 10;'''
+            group by username, nick_name, telegram_id order by 2 desc NULLS LAST LIMIT 10;'''
     leaders = []
     with con.cursor() as cur:
           cur.execute(q)

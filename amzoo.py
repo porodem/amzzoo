@@ -15,7 +15,7 @@ import threading # for parallel timer in difrent tasks like pet hunger timer
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
