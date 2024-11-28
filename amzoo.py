@@ -15,7 +15,7 @@ import threading # for parallel timer in difrent tasks like pet hunger timer
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -43,11 +43,13 @@ def show_help(message):
 
 @bot.message_handler(commands=['announce'])
 def admin_announce(message):
+    print('annou')
     if (message.from_user.id == master_tid):
         all_players = sql_helper.db_get_all_tids()
         announce_text = 'empty' if len(message.text[10:]) == 0 else message.text[10:]
         #bot.send_message(master_tid, announce_text) # testing line for developer only
         for player in all_players:
+            print('ANNOUNCE to: ' + str(player))
             bot.send_message(player, announce_text)
     else:
         bot.send_message(message.from_user.id, "Restricted! It is admin function only!")
