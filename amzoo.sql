@@ -31,9 +31,9 @@ drop  table players cascade;
 
 select * from players p ;
 
-delete from players where telegram_id = 00000
+delete from players where telegram_id = 775803031
 
-select buy_pet(00000,1)
+select buy_pet(775803031,1)
 
 
 create table animal_list(
@@ -65,7 +65,7 @@ drop table pets;
 
 select * from pets;
 
-insert into pets(animal_id, owner /*petname*/) values(2,00000)
+insert into pets(animal_id, owner /*petname*/) values(2,775803031)
 
 select * from pets;
 
@@ -143,6 +143,8 @@ create table items(id int primary key,
 	location int references habitat(id)
 	)
 	
+	alter table items owner to pet_master;
+	
 create table property(
 	id int primary key generated always as identity, 
 	item_id int references items(id),
@@ -151,9 +153,31 @@ create table property(
 	owner int8 references players(telegram_id)
 	);
 	
+
+
 copy items from 'C:\Python\Python310\Scripts\amzzoo\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
 
-select * from  property p ;
+copy animal_list(id,species,habitat,food_type,price) from 'C:\Python\Python310\Scripts\amzzoo\a.csv' delimiter ';' csv header encoding 'WIN1251'
+
+create temp table new_items(id int, name text, price int, location int)
+
+copy new_items from 'C:\Python\Python310\Scripts\amzzoo\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
+
+insert into items select * from new_items n where (select id from items  ) <> n.id
+
+insert into items values(10,'Пасспорт',5,5)
+
+select * from items;
+
+
+
+select p.id, i."name", price, location from  property p join items i on i.id = p.item_id ;
+
+select * from property p 
+
+select * from players p ;
+
+select * from items i ;
 
 drop table property ;
 
@@ -183,11 +207,13 @@ end;
 $$;
 end
 
-select buy_item(00000, 1)
+select buy_item(775803031, 1)
 
 select username, p2.* from players p join property p2  on p2."owner" = p.telegram_id ;
 
 select * from players p ;
+
+UPDATE players set pet_space = pet_space + 1 where telegram_id =775803031
 
 create or replace function buy_pet(tid int8, animal int8)
 returns int 
@@ -232,19 +258,30 @@ select 1 into a
 
 select sell_pet(37) 
 
-select  buy_pet(00000,4)
+select  buy_pet(775803031,4)
 
 select * from pets p ;
 
 select * from players p ;
 
-update players set coins  = coins + 1 where telegram_id = 00000
+update players set coins  = coins + 1 where telegram_id = 775803031
 
--- last work reset
+-- last work reset BUGGY version DONT USE!
 create or replace function work_reset() returns trigger 
 as $$
 begin 
 	new.last_work =  now() ;
+	return new;
+end;
+$$ language plpgsql;
+
+-- last work reset v2 (have side effect - player after more than one hour rest begin receive stamina up inlimited, every time after check_relax executed on info message)
+create or replace function work_reset() returns trigger 
+as $$
+begin 
+	if new.stamina < old.stamina then
+		new.last_work =  now() ;
+	end if;
 	return new;
 end;
 $$ language plpgsql;
@@ -311,7 +348,7 @@ select animal_id, "owner" from pets p where hunger < 2;
 
 update pets set hunger = hunger - 1 where hunger > 0;
 
-select sum(price)/4 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = 00000
+select sum(price)/4 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = 775803031
 
 -- full healing for money
 
@@ -344,8 +381,10 @@ begin
 		
 -- top 5 players
 	
-select p.username , sum(animal_id), max(animal_id) 
-from pets join players p on p.telegram_id = pets.owner 
-group by username order by 2 desc limit 1;
+select p.username , sum(animal_id), max(animal_id) , count(*) over () ttl
+from pets right join players p on p.telegram_id = pets.owner 
+group by username order by 2  desc nulls last limit 5;
 
-select * from pets p 
+select * from players p where nick_name = 'kozel'
+
+select "owner", count(distinct animal_id) from pets p group by "owner" 

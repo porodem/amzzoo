@@ -15,7 +15,7 @@ import threading # for parallel timer in difrent tasks like pet hunger timer
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -484,12 +484,13 @@ def search_money(message):
             bot.send_message(tid,'💩 Неповезло, бывает!',  reply_markup=markup)
         elif dig_result == 5:
             time.sleep(4)
-            bot.send_message(tid,f"Ура! Приз! 💰 x {coins}")
             sql_helper.db_add_money(tid,coins)
+            bot.send_message(tid,f"Ура! Приз! 💰 x {coins}",  reply_markup=markup)            
         elif dig_result == 6:
             time.sleep(4)
-            bot.send_message(tid,f"Ура! Приз! 💰 x {coins + 1}")
-            sql_helper.db_add_money(tid,coins + 1)
+            coins = coins + 1 if coins < 3 else 5
+            sql_helper.db_add_money(tid,coins)
+            bot.send_message(tid,f"Ура! Приз! 💰 x {coins}",  reply_markup=markup)            
 
     elif re.match('.*Работа.*',message.text):
         m = bot.send_dice(tid,'🎳')
@@ -508,25 +509,29 @@ def check_relax(tid):
     stamina_before = info[2]
     if stamina_before == 10:
         return stamina_before
-    print('datetime: ' + str(datetime.now()))
-    print(f"check+relax func: {str(tid)} last work: " + str(last_work))
+    
+    #print(f"check+relax func: {str(tid)} last work: " + str(last_work))
     #ts = datetime.fromisoformat(last_work)
     #print(ts)
-    time_diff = datetime.now() - last_work
+    this_moment = datetime.now()
+    time_diff = this_moment - last_work
+    day_left = last_work.date().day < this_moment.date().day
     print('time dif:' + str(time_diff))
     hours_rest = time_diff.days * 24 + time_diff.seconds // 3600
     print('hours: ' + str(hours_rest))
     if hours_rest > 0:
-        if hours_rest > 8: 
+        if day_left:
             print('hours over 8 - -')
             profit = sql_helper.db_get_profit(tid)  
             bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
-        hours_rest = hours_rest if (hours_rest + stamina_before) < 11 else 10 - stamina_before
-        print('hours rest ' + str(hours_rest))
-        sql_helper.db_stamina_up(tid,hours_rest)
+        relax = hours_rest if (hours_rest + stamina_before) < 11 else 10 - stamina_before
+        print('stamina added: ' + str(hours_rest))
+        sql_helper.db_stamina_up(tid,relax)
     else:
+        relax = 0
         print('hours rest ' + str(hours_rest) + 'not enough')
-    return hours_rest
+    print(str(datetime.now()) + f" check_relax;tid {str(tid)} last work: {str(last_work)} t_dif: {time_diff}; hours_rest: {hours_rest}; stm_up: {relax}; day_left: {day_left} ")
+    return relax
 
 @bot.message_handler(regexp=".*Путешествие.*")
 def shop_select(message):
@@ -854,7 +859,7 @@ def get_statistics(tid):
     player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
     player_stats = player_stats + f"\nВещи: {box}"
     # next line must be commented before run game in production
-    #player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
+    player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
 
     return player_stats
 
