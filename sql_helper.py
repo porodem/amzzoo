@@ -178,9 +178,9 @@ def db_get_animal_shop(location_id):
 def db_get_bazar_shop_items(location_id):
     """
     :param location_id: location of shop. [5 - any, 4 water, 3 forest, 2 field, 1 desert]
-    :return list: [item_id, name, price] from pets items
+    :return list: [item_id, name, price, description] from pets items
     """
-    q = 'SELECT id, name, price FROM items WHERE location = %s;'
+    q = 'SELECT id, name, price, description FROM items WHERE location = %s;'
     items_available = []
 
     with con.cursor() as cur:

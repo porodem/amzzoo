@@ -255,7 +255,7 @@ def to_shop(message):
         pet_shop(message)
     elif re.match('.*Рынок.*', message.text):
         print('- - - bazar selected - - - ')
-        bazar_shop(message)
+        bazar_shop_new(message)
     else:
         echo_all(message)
 
@@ -276,6 +276,74 @@ def bazar_shop(message):
     markup.add(*btn_pack,btn_back)
     bot.send_message(tid, 'Выберите покупку:', reply_markup=markup)
     bot.register_next_step_handler(message, buy_item)
+
+@bot.callback_query_handler(lambda message: 'bazar' in message.data )
+def bazar_shop_new(message):
+    tid = message.from_user.id  
+    # TODO check owned items
+    location =  sql_helper.db_check_location(tid)
+    available_items = sql_helper.db_get_bazar_shop_items(location)
+    btn_pack = []
+
+    # for i in available_items:
+    #     btn = types.KeyboardButton(f"#{i[0]}" + " 📦 "  + i[1] + " 💰 " + str(i[2]))
+    #     btn_pack.append(btn)
+    # markup = types.InlineKeyboardMarkup()
+    # markup.add(btn_pack)
+
+    #check owned
+
+
+    if hasattr(message,'data'):
+        cidx = int(extract_numbers(message.data))
+        # -------------------------------------------buy item option -------------------------------------------------------
+        if int(extract_numbers(message.data,1)):
+            print(f" - {tid} buying item {cidx} - - - - ")
+            item = available_items[cidx]
+            sql_helper.db_buy_item(tid,item[0])
+            bot.answer_callback_query(message.id, f"📦 Вы купили *{item[1]}*!")
+            if item[0] == 10:
+                bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре!")
+                bot.register_next_step_handler(message.message, set_nickname)
+    else:
+        cidx = 0
+
+
+
+    next_cid = 0 if cidx == len(available_items) - 1 else cidx + 1
+    item = available_items[cidx]
+    price = item[2]
+    lbl = f"📦 *{item[1]}* : {item[3]}"
+    action = '_0'
+
+        #check owned
+    owned_items = sql_helper.db_get_owned_items(message.from_user.id)
+    owned_items_id = []
+    is_owned = ''
+    for i in owned_items:
+        owned_items_id.append(i[5])
+    print(list(owned_items_id))
+    if item[0] in owned_items_id:
+        is_owned = '✅'
+
+    markup = types.InlineKeyboardMarkup()
+    btn_buy = types.InlineKeyboardButton(f"💰 {price} " + is_owned, callback_data='bazar' + str(cidx) + '_1')
+    btn_forward = types.InlineKeyboardButton('▶', callback_data='bazar' + str(next_cid) + action)
+    #btn_sell = types.KeyboardButton("Продать ") # NOTICE maby later
+    #btn_back = types.KeyboardButton("🔙 Назад")
+    markup.add(btn_buy,btn_forward)
+    # bot.send_message(tid, 'Выберите покупку:', reply_markup=markup)
+    # bot.register_next_step_handler(message, buy_item)
+    if hasattr(message,'data'):
+        bot.edit_message_text(
+            text=lbl,
+            chat_id=message.message.chat.id,
+            parse_mode='markdown',
+            message_id=message.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(message.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
 
 def pet_shop(message):
     print('---------- PET SHOP -----------')    
