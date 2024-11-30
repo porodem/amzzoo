@@ -377,18 +377,22 @@ def sell_pets(query):
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(*gen_inline_sell_buttons(owned_pets)) 
     if hasattr(query,'data'):
+        
         pet_it = extract_numbers(query.data)
         sold_animal = int(extract_numbers(query.data,1))
         sql_helper.db_sell_pet(pet_it) 
-        owned_pets = sql_helper.db_get_owned_pets(query.from_user.id) 
+        owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
+        text = "Кого продать?" if len(owned_pets) > 0 else "У вас нет питомцев!" 
         markup = quick_markup({}) # clear buttons from previous query
         markup.add(*gen_inline_sell_buttons(owned_pets)) 
         bot.edit_message_text(
-            text='Продан ' + pet_emoji(sold_animal),
+            #text='Продан ' + pet_emoji(sold_animal),
+            text,#= 'Кого хотите продать?',
             chat_id=query.message.chat.id,
             message_id=query.message.id,
             reply_markup=markup
         )
+        bot.answer_callback_query(query.id, pet_emoji(sold_animal) + " продан!", show_alert=True)
     else:
         bot.send_message(query.from_user.id, "Кого продать?", reply_markup=markup)  
     #bot.register_next_step_handler(message, echo_all)
@@ -859,7 +863,7 @@ def get_statistics(tid):
     player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
     player_stats = player_stats + f"\nВещи: {box}"
     # next line must be commented before run game in production
-    player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
+    # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
 
     return player_stats
 

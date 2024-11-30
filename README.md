@@ -12,8 +12,6 @@
 :x: **Disadvantages**: Curently in developing stage
 
 ### Features to develop
-1. :white_check_mark: Hunger over time
-2. :white_check_mark: Travels 
 3. Buildings
 4. :white_check_mark: Items (?) 
 5. sleep() problem - it stops activity all over program (other user seems to have to wait)
