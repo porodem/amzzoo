@@ -142,6 +142,25 @@ def db_get_owned_items(tid):
             
     return item_list
 
+def db_get_owned_items_group(tid):
+    """
+        :param tid: telegram id of current player.
+
+        :return list: [item_id, ttl_price, quantity] from property and items tables
+    """
+    print('-- get all players items --')
+    q = '''select  i.id, sum(price) ttl_price, count(*) as quantity from  property p join items i on i.id = p.item_id where owner = %s group by 1;'''
+    item_list = []
+
+    with con.cursor() as cur:
+        cur.execute(q,(tid,))
+        b = cur.fetchall()
+        #print(list(b))
+        for record in b:
+            item_list.append(record)
+            
+    return item_list
+
 def db_get_profit(tid):
     """
         :param tid: telegram id of current player.

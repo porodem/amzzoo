@@ -300,34 +300,43 @@ def bazar_shop_new(message):
         if int(extract_numbers(message.data,1)):
             print(f" - {tid} buying item {cidx} - - - - ")
             item = available_items[cidx]
-            sql_helper.db_buy_item(tid,item[0])
-            bot.answer_callback_query(message.id, f"📦 Вы купили *{item[1]}*!")
-            if item[0] == 10:
-                bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре!")
-                bot.register_next_step_handler(message.message, set_nickname)
+            buying_ok = sql_helper.db_buy_item(tid,item[0])
+            if buying_ok:
+                bot.answer_callback_query(message.id, f"📦 Вы купили {item[1]}!")            
+                if item[0] == 10:
+                    bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре!")
+                    bot.register_next_step_handler(message.message, set_nickname)
+                    # TODO get peni for more than one passport
+            else:
+                bot.answer_callback_query(message.id, f"❌ Нехватает денег!") 
+                return   
     else:
         cidx = 0
-
-
 
     next_cid = 0 if cidx == len(available_items) - 1 else cidx + 1
     item = available_items[cidx]
     price = item[2]
-    lbl = f"📦 *{item[1]}* : {item[3]}"
-    action = '_0'
 
         #check owned
-    owned_items = sql_helper.db_get_owned_items(message.from_user.id)
+    owned_items = sql_helper.db_get_owned_items_group(message.from_user.id)
     owned_items_id = []
-    is_owned = ''
+    is_owned = False
+    is_owned_info = ''
     for i in owned_items:
-        owned_items_id.append(i[5])
-    print(list(owned_items_id))
-    if item[0] in owned_items_id:
-        is_owned = '✅'
+        if i[0] == item[0]:
+            is_owned = True
+            is_owned_info = f"\n✅ У вас уже имеется ({i[2]})"
+            break
+    print(list(owned_items_id))        
+
+    lbl = f"{item_emoji(item[0])} *{item[1]}* : {item[3]} {is_owned_info}"
+    action = '_0'
 
     markup = types.InlineKeyboardMarkup()
-    btn_buy = types.InlineKeyboardButton(f"💰 {price} " + is_owned, callback_data='bazar' + str(cidx) + '_1')
+    if item[0] in [1,2] and is_owned:
+        btn_buy = types.InlineKeyboardButton('✖', callback_data='bazar' + str(next_cid) + action)
+    else:
+        btn_buy = types.InlineKeyboardButton(f"💰 {price} ", callback_data='bazar' + str(cidx) + '_1')
     btn_forward = types.InlineKeyboardButton('▶', callback_data='bazar' + str(next_cid) + action)
     #btn_sell = types.KeyboardButton("Продать ") # NOTICE maby later
     #btn_back = types.KeyboardButton("🔙 Назад")
@@ -338,7 +347,7 @@ def bazar_shop_new(message):
         bot.edit_message_text(
             text=lbl,
             chat_id=message.message.chat.id,
-            parse_mode='markdown',
+            parse_mode='markdown', # to make some text bold with *this* in messages
             message_id=message.message.id,
             reply_markup=markup
         )
@@ -862,6 +871,23 @@ def pet_emoji(id):
         e = "❌"
     return e
 
+def item_emoji(id):
+    if id == 1:
+        e = "⬜"
+    elif id == 2:
+        e = "🟦"
+    elif id == 5:
+        e = "💉"
+    elif id == 6:
+        e = "🔐"
+    elif id == 10:
+        e = "📔"
+    elif id == 11:
+        e = "🧯"
+    else:
+        e = "✖"
+    return e
+
 
 # values(1,'desert'),(2,'field'),(3,'forest'),(4,'water'),(5,'any')
 def habitat_emoji(id):
@@ -919,8 +945,11 @@ def next_option(message):
 
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
-    items = sql_helper.db_get_owned_items(tid)
-    box = '📦' if len(items) > 0 else ' '
+    items = sql_helper.db_get_owned_items_group(tid)
+    #box = '📦' if len(items) > 0 else ' '
+    item_overview = ''
+    for i in items:
+        item_overview = item_overview + f"{item_emoji(i[0])}x{i[2]}"
     check_relax(tid)
     pinfo = sql_helper.db_get_player_info(tid)
     lvl = pinfo[1]
@@ -929,7 +958,7 @@ def get_statistics(tid):
     pet_space = pinfo[4]
     loc = habitat_emoji(pinfo[5]) 
     player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
-    player_stats = player_stats + f"\nВещи: {box}"
+    player_stats = player_stats + f"\nВещи: {item_overview}"
     # next line must be commented before run game in production
     # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
 
