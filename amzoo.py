@@ -596,7 +596,7 @@ def check_relax(tid):
     #print(ts)
     this_moment = datetime.now()
     time_diff = this_moment - last_work
-    day_left = last_work.date().day < this_moment.date().day
+    day_left = last_work.date().day != this_moment.date().day
     print('time dif:' + str(time_diff))
     hours_rest = time_diff.days * 24 + time_diff.seconds // 3600
     print('hours: ' + str(hours_rest))
