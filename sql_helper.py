@@ -167,7 +167,7 @@ def db_get_profit(tid):
 
         :return sum of coins for owned pets
     """
-    q = '''select sum(price)/4 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = %s'''
+    q = '''select sum(price)/8 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()

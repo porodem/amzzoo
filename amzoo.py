@@ -634,7 +634,7 @@ def shop_select(message):
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn_home,btn_back)
-    elif location == 1: # desert
+    elif location == 1: # desert africa
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
@@ -667,7 +667,7 @@ def travel(message):
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
-    if re.match('.*Пустыня.*',message.text):
+    if re.match('.*Африка.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
         if coins >= 25:
             # TODO variable for ticket price
@@ -884,6 +884,10 @@ def item_emoji(id):
         e = "📔"
     elif id == 11:
         e = "🧯"
+    elif id == 12:
+        e = "🔭"
+    elif id == 13:
+        e = "🗺"
     else:
         e = "✖"
     return e
