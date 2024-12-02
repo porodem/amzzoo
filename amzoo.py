@@ -12,6 +12,7 @@ from telebot import types
 from telebot.util import update_types, quick_markup
 from pprint import pprint # to investigate what inside objects
 import threading # for parallel timer in difrent tasks like pet hunger timer
+from pathlib import Path
 
 print('- - - - - S T A R T E D - - - - - - ')
 
@@ -24,6 +25,9 @@ master_tid = int(master_tid.rsplit()[0])
 f.close()
 bot = telebot.TeleBot(token, parse_mode=None)
 
+with open("update_note.md", 'r', encoding='utf-8') as f:
+    note_text = f.readlines()
+print(list(note_text))
 
 c_start = types.BotCommand('start','Начать')
 help_command = types.BotCommand('show_help','Справка')
@@ -32,15 +36,23 @@ patch_notes_command = types.BotCommand('patch_notes','Что нового')
 #main_menu = types.BotCommand('earn_money','Найти деньги')
 bot.set_my_commands([help_command, patch_notes_command])
 
-@bot.message_handler(commands=['show_help'])
+@bot.message_handler(commands=['show_help','patch_notes'])
 def show_help(message):
-    bot.send_message(message.from_user.id, '''Привет!
-Зарабатывай деньги в мини играх и покупай 🐇 питомцев.
-💪 Сила восстанавливается 1 в час.
-✈ Путешествуй чтобы купить других животных!
-💰 Каждый следующий день, ты получишь доход если у тебя есть питомцы и вчера ты тратил силы.
-Для увеличения лимита животных нужно купить клетку.
-📔 Чтобы изменить имя, купи документы!''')
+    print('000000')
+    print(message.text)
+    if message.text == '/show_help':
+        bot.send_message(message.from_user.id, '''Привет!
+    Зарабатывай деньги в мини играх и покупай 🐇 питомцев.
+    💪 Сила восстанавливается 1 в 2 часа.
+    ✈ Путешествуй чтобы купить других животных!
+    💰 Каждый следующий день, ты получишь доход если у тебя есть питомцы и вчера ты закончил день с силой < 10.
+    Для увеличения лимита животных нужно купить клетку.
+    📔 Чтобы изменить имя, купи документы!''')
+    elif message.text == '/patch_notes':
+        print('-------- NOTE SHOW')
+        bot.send_message(message.from_user.id, ''.join(note_text), parse_mode='markdown' )
+    
+
 
 @bot.message_handler(commands=['announce'])
 def admin_announce(message):
