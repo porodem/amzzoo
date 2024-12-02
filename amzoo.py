@@ -74,8 +74,8 @@ hunger_interval = 4
 def get_hunger():
     while True:
         print("- - -  get hunger - - - ")
-        hungry_animals = sql_helper.db_change_hunger_all()
         time.sleep(hunger_interval * 60 * 60)
+        hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
             health = player[2]
