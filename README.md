@@ -31,3 +31,4 @@
 1. close cursor after SQL fucntion (idle in transaction)
 2. None mondey player
 3. Travel don't work for player without nickname
+4. SQL top function idle in transaction
