@@ -27,9 +27,10 @@ bot = telebot.TeleBot(token, parse_mode=None)
 
 c_start = types.BotCommand('start','Начать')
 help_command = types.BotCommand('show_help','Справка')
+patch_notes_command = types.BotCommand('patch_notes','Что нового')
 #main_menu = types.BotCommand('main_menu','Меню')
 #main_menu = types.BotCommand('earn_money','Найти деньги')
-bot.set_my_commands([help_command])
+bot.set_my_commands([help_command, patch_notes_command])
 
 @bot.message_handler(commands=['show_help'])
 def show_help(message):
@@ -598,7 +599,8 @@ def check_relax(tid):
     time_diff = this_moment - last_work
     day_left = last_work.date().day != this_moment.date().day
     print('time dif:' + str(time_diff))
-    hours_rest = time_diff.days * 24 + time_diff.seconds // 3600
+    single_stamina_priod = 2
+    hours_rest = time_diff.days * 24 + time_diff.seconds // 3600 // single_stamina_priod
     print('hours: ' + str(hours_rest))
     if hours_rest > 0:
         if day_left:
