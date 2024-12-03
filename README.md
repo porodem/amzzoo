@@ -34,3 +34,4 @@
 4. SQL top function idle in transaction
 5. Fix price text for buttons in pet shop
 6. Limit name user
+7. Draw map for travel paths
