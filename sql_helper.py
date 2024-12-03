@@ -81,6 +81,7 @@ def db_get_player_info(tid):
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
+    con.commit()
     if b is None:
         result = 0
     else:
@@ -99,6 +100,7 @@ def db_pet_info(id):
     q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
     cur = con.cursor()
     cur.execute(q,(id,))
+    con.commit()
     b = cur.fetchone()
     result = b
     print (b)
@@ -284,10 +286,10 @@ def db_change_location(tid, value, coins):
 
 def db_stamina_down(tid, value):
     print('- - - update down stamina lvl to DB - - - ')
-    q = '''UPDATE players set stamina = stamina - %s where telegram_id = %s;'''
+    q = '''UPDATE players set stamina = (CASE WHEN stamina - %(value)s < 0 THEN 0 ELSE stamina - %(value)s END) where telegram_id = %(tid)s;'''
     q2 = '''SELECT stamina FROM players WHERE telegram_id = %s;'''
     cur = con.cursor()
-    cur.execute(q,(value,tid))
+    cur.execute(q,{'value':value,'tid':tid})
     cur.execute(q2,(tid,))
     b = cur.fetchone()
     #print('db stamina down result: ' + str(b))
