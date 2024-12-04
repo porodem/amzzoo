@@ -525,7 +525,7 @@ def do_work(message):
         stamina = check_relax(tid)
     else:
         print(f"lastwork {last_work} less than {hour_ago} - NO checking relax")
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     if stamina == 1:
         btn1 = types.KeyboardButton("🎲 удачный кубик 💪x1")
         btn3 = types.KeyboardButton("🔙 Назад")
@@ -574,14 +574,14 @@ def search_money(message):
         coins = pwr
         if dig_result < 5:
             # TODO this and other sleep() stops all other players!
-            time.sleep(4)
+            time.sleep(3)
             bot.send_message(tid,'💩 Неповезло, бывает!',  reply_markup=markup)
         elif dig_result == 5:
-            time.sleep(4)
+            time.sleep(3)
             sql_helper.db_add_money(tid,coins)
             bot.send_message(tid,f"Ура! Приз! 💰 x {coins}",  reply_markup=markup)            
         elif dig_result == 6:
-            time.sleep(4)
+            time.sleep(3)
             coins = coins + 1 if coins < 3 else 5
             sql_helper.db_add_money(tid,coins)
             bot.send_message(tid,f"Ура! Приз! 💰 x {coins}",  reply_markup=markup)            
