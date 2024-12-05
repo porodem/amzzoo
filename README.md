@@ -33,5 +33,5 @@
 3. Travel don't work for player without nickname
 4. SQL top function idle in transaction
 5. Fix price text for buttons in pet shop
-6. Limit name user
+6. Limit name user :white_check_mark:
 7. Draw map for travel paths
