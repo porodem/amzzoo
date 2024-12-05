@@ -16,7 +16,7 @@ from pathlib import Path
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -554,6 +554,16 @@ def do_work(message):
 def search_money(message):
     tid = message.from_user.id
     print("-- PLAY: " + str(tid) + " type: " + message.text + " at " + str(datetime.now()))
+    
+    print(message.__dict__)
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(tid,10)
+        sql_helper.db_remove_money(tid, penalty)
+        bot.send_message(tid, f"Мошенничество! -{penalty}💰")
+        return
     if re.match('.*удачн.*',message.text):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn = types.KeyboardButton("Ещё")

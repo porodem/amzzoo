@@ -276,6 +276,14 @@ def db_add_money(tid, value):
     con.commit()
     cur.close()
 
+def db_remove_money(tid, value):
+    print('- - - SQL remove money  - - - ')
+    q = '''UPDATE players set coins = (CASE WHEN coins - %(value)s < 0 THEN 0 ELSE coins - %(value)s END) where telegram_id = %(tid)s;'''
+    cur = con.cursor()
+    cur.execute(q,{'value':value,'tid':tid})
+    con.commit()
+    cur.close()
+
 def db_change_location(tid, value, coins):
     print('- - - write money to DB - - - ')
     q = '''UPDATE players set game_location = %s, coins = coins - %s where telegram_id = %s;'''
