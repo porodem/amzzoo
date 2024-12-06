@@ -502,7 +502,7 @@ def gen_inline_sell_buttons(data_list):
 def set_nickname(message):
     print(" - rename player -")
     new_nickname = message.text[:99]
-    sql_helper.db_rename_player(message.from_user.id, message.text)
+    sql_helper.db_rename_player(message.from_user.id, new_nickname)
     bot.send_message(message.from_user.id, "Теперь в топе вы будете отображаться с этим именем")
     print(new_nickname)
 
