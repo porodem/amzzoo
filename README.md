@@ -35,3 +35,4 @@
 5. Fix price text for buttons in pet shop
 6. Limit name user :white_check_mark:
 7. Draw map for travel paths
+8. Show personal player place in info
