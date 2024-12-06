@@ -522,7 +522,7 @@ def do_work(message):
     if last_work < hour_ago:
     #if stamina == 0:
         print(f"lastwork {last_work} more than {hour_ago} checking relax...")
-        stamina = check_relax(tid)
+        stamina = stamina + check_relax(tid)
     else:
         print(f"lastwork {last_work} less than {hour_ago} - NO checking relax")
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
