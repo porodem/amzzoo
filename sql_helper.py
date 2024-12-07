@@ -177,14 +177,19 @@ def db_get_profit(tid):
     db_add_money(tid, profit)
     return profit
 
-def db_get_animal_shop(location_id):
+def db_get_animal_shop(location_id, catch_mode=False):
      """
         :param location_id: location of shop. [5 - any, 4 water, 3 forest, 2 field, 1 desert]
 
         :return list: [animal_id, species, price] from pets table
     """
-     print('-- get all animals for location --')
-     q = '''select id, species, price from animal_list al where habitat = %s and price > 0;'''
+     
+     if catch_mode:
+         print('-- SQL get all animals for location to catch--')
+         q = '''select id, species, price from animal_list al where habitat = %s and price > 0 and catch_price > 0;'''
+     else:
+         print('-- SQL get all animals for location to buy--')
+         q = '''select id, species, price from animal_list al where habitat = %s and price > 0 and catch_price is null;'''
      pet_list = []
 
      with con.cursor() as cur:
@@ -195,6 +200,25 @@ def db_get_animal_shop(location_id):
                pet_list.append(record)
                
      return pet_list
+
+def db_get_animal_for_catch(location_id):
+    """
+        :param location_id: location of shop. [5 - any, 4 water, 3 forest, 2 field, 1 desert]
+
+        :return list: [animal_id, species, price, catch_price, catch_difficulty, catch_chance] from pets table
+    """     
+
+    q = '''select id, species, price, catch_price, catch_difficulty, catch_chance  from animal_list al where habitat = %s and price > 0 and catch_price > 0;'''
+    pet_list = []
+
+    with con.cursor() as cur:
+        cur.execute(q,(location_id,))
+        b = cur.fetchall()
+        #print(list(b))
+        for record in b:
+            pet_list.append(record)
+               
+    return pet_list
 
 def db_get_bazar_shop_items(location_id):
     """
@@ -332,6 +356,20 @@ def db_buy_pet(tid, animal_id):
     con.commit()
     print('result ' + str(result))
     return result[0]
+
+def db_get_pet(tid, animal_id):
+    """  assign new pet to player
+
+        :return 1 if OK 0 for :
+    """
+    print(' - - write to DB catch pet - -')
+    q = '''INSERT INTO pets(owner, animal_id ) values (%s,%s);'''
+    cur = con.cursor()
+    cur.execute(q,(tid,animal_id))
+    #result = cur.fetchone()
+    con.commit()
+    #print('result ' + str(result))
+    return #result[0]
 
 def db_sell_pet(pet_id):
     print(' - - sell pet DB func - -')

@@ -27,7 +27,10 @@ bot = telebot.TeleBot(token, parse_mode=None)
 
 with open("update_note.md", 'r', encoding='utf-8') as f:
     note_text = f.readlines()
-print(list(note_text))
+
+with open("game_help.md", 'r', encoding='utf-8') as f:
+    help_text = f.readlines()
+#print(list(note_text))
 
 c_start = types.BotCommand('start','Начать')
 help_command = types.BotCommand('show_help','Справка')
@@ -41,13 +44,7 @@ def show_help(message):
     print('000000')
     print(message.text)
     if message.text == '/show_help':
-        bot.send_message(message.from_user.id, '''Привет!
-    Зарабатывай деньги в мини играх и покупай 🐇 питомцев.
-    💪 Сила восстанавливается 1 в 2 часа.
-    ✈ Путешествуй чтобы купить других животных!
-    💰 Каждый следующий день, ты получишь доход если у тебя есть питомцы и вчера ты закончил день с силой < 10.
-    Для увеличения лимита животных нужно купить клетку.
-    📔 Чтобы изменить имя, купи документы!''')
+        bot.send_message(message.from_user.id, ''.join(help_text), parse_mode='markdown' )
     elif message.text == '/patch_notes':
         print('-------- NOTE SHOW')
         bot.send_message(message.from_user.id, ''.join(note_text), parse_mode='markdown' )
@@ -262,10 +259,33 @@ def shop_select(message):
     bot.send_message(tid, 'Куда пойдем?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_shop)
 
+def lucky_way(message):
+    tid = message.from_user.id
+    print('- - - LUCKY WAY - - -')
+    #location =  sql_helper.db_check_location(tid)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("Поймать животное",)
+    btn2 = types.KeyboardButton("Деньги",)
+    btn_back = types.KeyboardButton("🔙 Назад")
+    markup.add(btn1,btn2,btn_back)
+    bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
+    bot.register_next_step_handler(message, to_lucky_way)
+
+def to_lucky_way(message):
+    print('- - to_lucky_way - - ')
+    if re.match('Деньги.*',message.text):           
+        do_work(message)
+    elif re.match('.*животное.*', message.text):
+        print('- - - animal lucky selected - - - ')
+        pet_shop(message, catch_mode=True)
+    else:
+        echo_all(message)
+
+
 def to_shop(message):
     print('- - to shop - - ')
     if re.match('.*Зоо.*',message.text):           
-        pet_shop(message)
+        pet_shop(message, catch_mode=False)
     elif re.match('.*Рынок.*', message.text):
         print('- - - bazar selected - - - ')
         bazar_shop_new(message)
@@ -367,7 +387,7 @@ def bazar_shop_new(message):
     else:
         bot.send_message(message.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
 
-def pet_shop(message):
+def pet_shop(message, catch_mode=False):
     print('---------- PET SHOP -----------')    
     tid = message.from_user.id    
     owned = sql_helper.db_check_owned_pets(message.from_user.id)
@@ -384,21 +404,95 @@ def pet_shop(message):
     else:
         # define location to show animals specific for this location
         location =  sql_helper.db_check_location(tid)
-        animals = sql_helper.db_get_animal_shop(location)
+        if catch_mode:
+            animals = sql_helper.db_get_animal_for_catch(location)
+        else:
+            animals = sql_helper.db_get_animal_shop(location, catch_mode)
         btn_pack = []
 
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)                   
         print(list(animals))
         for a in animals:
-            btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
+            if catch_mode:
+                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
+            else:
+                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
             btn_pack.append(btn)
         btn_sell = types.KeyboardButton("Продать ")
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(*btn_pack,btn_sell,btn_back)
         bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)
-        bot.register_next_step_handler(message, buy_pet)
+        if catch_mode:
+            bot.register_next_step_handler(message,catch_pet)
+        else:
+            bot.register_next_step_handler(message, buy_pet)
       
+
+def catch_pet(message):
+    print('- - - trying catch pet - - -')
+    if re.match('.*Назад.*',message.text):
+        echo_all(message)
+        return
+    tid = message.from_user.id
+
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(tid,10)
+        sql_helper.db_remove_money(tid, penalty)
+        bot.send_message(tid, f"Мошенничество! -{penalty}💰")
+        return
+
+    info = sql_helper.db_get_player_info(message.from_user.id)
+    coins = info[0]
+    stamina = info[2]
+    print(stamina)
+    last_work = info[3]
+    hour_ago = datetime.now() - timedelta(hours=1)
+    #d = datetime.now() - delta
+    if last_work < hour_ago:
+    #if stamina == 0:
+        print(f"lastwork {last_work} more than {hour_ago} checking relax...")
+        stamina = stamina + check_relax(tid)
+    else:
+        print(f"lastwork {last_work} less than {hour_ago} - NO checking relax")
+
+    animal_id = int(extract_numbers(message.text))
+    chance = int(extract_numbers(message.text,3))
+    pwr = int(extract_numbers(message.text,2)) 
+    catch_price = int(extract_numbers(message.text,1))
+    print("-- CATCHING: " + str(tid) + " type: " + message.text + f" animal:{animal_id} chance:{chance} at " + str(datetime.now()))
+    #print(message.__dict__)
     
+    if stamina < pwr or coins < catch_price:
+        bot.send_message(message.from_user.id, f"😪 Нужны деньги и силы, чтобы ловить редких животных!\n Ваши 💪={stamina} 💰={coins}")  
+        echo_all
+        return    
+
+    if chance == 17:
+        print('chance 17%')
+        m = bot.send_dice(tid,'🎲')
+        sql_helper.db_stamina_down(tid, pwr)
+        sql_helper.db_remove_money(tid,catch_price)
+    else:
+        print(' CHANCE PROBLEM - - - - - - - - - - ')
+        
+    bot.register_next_step_handler(message, lucky_way)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    # m = bot.send_dice(tid,'🎲')
+    dig_result = m.dice.value
+    if dig_result < 6:
+        # TODO this and other sleep() stops all other players!
+        time.sleep(3)
+        bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)         
+    elif dig_result == 6:
+        time.sleep(3)
+        sql_helper.db_get_pet(tid, animal_id)
+        bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)            
+    else:
+        print('-- unknown catching animal none --')
+        echo_all(message) 
 
 def buy_pet(message):
     print(' - - - buy pet - - - ')
@@ -608,6 +702,9 @@ def treasure_dice_result(message):
     print(message.dice)
 
 def check_relax(tid):
+    '''
+    returns: stamina point if player rest enough hours
+    '''
     info = sql_helper.db_get_player_info(tid)
     last_work = info[3]
     stamina_before = info[2]
@@ -889,6 +986,14 @@ def pet_emoji(id):
         e = "🐙"
     elif id == 20:
         e = "🦭"
+    elif id == 21:
+        e = "🐂"
+    elif id == 22:
+        e = "🦒"
+    elif id == 23:
+        e = "🦢"
+    elif id == 24:
+        e = "🐳"
     elif id == 0:
         e = "☠"
     else:
@@ -959,9 +1064,10 @@ def next_option(message):
         show_pets(message)
     elif re.match('.*Имущество.*',message.text):
         bot.reply_to(message, 'test option')
-    elif re.match('.*Деньги.*',message.text):
+    elif re.match('.*повезёт.*',message.text):
         print(' - - work select - -')
-        do_work(message)
+        #do_work(message)
+        lucky_way(message)
     elif re.match('.*Магазин.*',message.text):
         bot.register_next_step_handler(message, shop_select)
     elif re.match('.*Путешествие.*',message.text):
@@ -1009,7 +1115,7 @@ def echo_all(message):
     btn1 = types.KeyboardButton("🐇 Питомцы")
     btn2 = types.KeyboardButton("🏫 Имущество")
     btn_hospital = types.KeyboardButton("🏥 Вет.больница")
-    btn3 = types.KeyboardButton("💸 Деньги")
+    btn3 = types.KeyboardButton("🍀 Мне повезёт")
     btn4 = types.KeyboardButton("🛒 Магазин")
     btn5 = types.KeyboardButton("✈ Путешествие")
     btn_top = types.KeyboardButton("🏆 ТОП")
