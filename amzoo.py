@@ -16,7 +16,7 @@ from pathlib import Path
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -680,7 +680,7 @@ def do_work(message):
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn2, btn3, btn_back)
         bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup)
-        bot.register_next_step_handler(message, search_money) 
+        bot.register_next_step_handler(message, search_money, stamina) 
     else:
         bot.send_message(message.from_user.id, "😪 Ты устал, наберись сил :", reply_markup=markup)  
         bot.register_next_step_handler(message, echo_all)
