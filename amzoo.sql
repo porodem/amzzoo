@@ -43,6 +43,12 @@ habitat int references habitat(id),
 food_type int references food_type(id), 
 price int)
 
+alter table animal_list add column catch_price int;
+
+alter table animal_list add column catch_difficulty int; -- how much stamina you loss on try
+
+alter table animal_list add column catch_chance int; -- percents % 17 for dice and other 1-6 games
+
 select * from animal_list al ;
 
 insert into animal_list values(0,'bones',5,0,0)
@@ -91,21 +97,33 @@ id int8 primary key,
 species text,
 habitat int ,
 food_type int, 
-price int)
+price int,
+catch_price int,
+catch_difficulty int ,
+catch_chance int
+)
 
-copy animal_list(id,species,habitat,food_type,price) from 'C:\Python\Python310\Scripts\amzzoo\a.csv' delimiter ';' csv header encoding 'WIN1251'
+copy animal_list(id,species,habitat,food_type,price,catch_price,catch_difficulty,catch_chance) from 'C:\Python\Python310\Scripts\amzzoo\a.csv' delimiter ';' csv header encoding 'WIN1251'
 
 create temp table anlist(id int, name text)
 
-copy animal_list from 'C:\Python\Python310\Scripts\amzzoo\animals.csv' delimiter ';' csv header -- encoding 'WIN1251'
+copy anlist from 'C:\Python\Python310\Scripts\amzzoo\animals.csv' delimiter ';' csv header -- encoding 'WIN1251'
 
-truncate animal_list cascade
+insert into animal_list (
+select n.* from anlist n left join animal_list i on i.id = n.id where i.id is null
+)
+
+drop table  anlist 
+
+select * from players p 
 
 select * from pets p 
 
-select * from animal_list al ;
+select * from animal_list al where catch_price > 0 ;
 
-update animal_list set species = n from (select species n, id i from anlist) animals  where id = i;
+update animal_list o set
+price = a.price, catch_price = a.catch_price, catch_difficulty = a.catch_difficulty , catch_chance = a.catch_chance
+from (select * from anlist ) a  where o.id = a.id;
 
 insert into animal_list values(5,'Черепаха',5,2,15)
 
@@ -140,10 +158,13 @@ truncate food_type cascade;
 create table items(id int primary key, 
 	name text,
 	price int, 
-	location int references habitat(id)
+	location int references habitat(id),
+	description text
 	)
 	
 	alter table items owner to pet_master;
+
+alter table items add column description text;
 	
 create table property(
 	id int primary key generated always as identity, 
@@ -152,6 +173,11 @@ create table property(
 	charged boolean default false, -- if it contain something, charged, enabled ect.
 	owner int8 references players(telegram_id)
 	);
+
+
+-- db_get_owned_items_group
+
+select  i.id, sum(price) ttl_price, count(*) as quantity from  property p join items i on i.id = p.item_id where owner = 775803031 group by 1 --where owner = %s	
 	
 
 
@@ -159,15 +185,31 @@ copy items from 'C:\Python\Python310\Scripts\amzzoo\items.csv' delimiter ';' csv
 
 copy animal_list(id,species,habitat,food_type,price) from 'C:\Python\Python310\Scripts\amzzoo\a.csv' delimiter ';' csv header encoding 'WIN1251'
 
-create temp table new_items(id int, name text, price int, location int)
+create temp table new_items4(id int, name text, price int, location int, description text )
 
-copy new_items from 'C:\Python\Python310\Scripts\amzzoo\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
+copy new_items4 from 'C:\Python\Python310\Scripts\amzzoo\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
 
 insert into items select * from new_items n where (select id from items  ) <> n.id
 
+insert into items (
+select n.* from new_items3 n left join items i on i.id = n.id where i.id is null
+)
+
+update items i set price = n.price, "location" = n.location, description = n.description from new_items4 n where n.id = i.id 
+
 insert into items values(10,'Пасспорт',5,5)
 
-select * from items;
+select * from players p ;
+
+UPDATE players set stamina = (case when stamina - 1 < 0 then 0 else stamina-1 end)  where telegram_id = 1969292042
+returning stamina 
+
+
+
+select * from habitat h ;
+
+truncate items cascade;
+
 
 
 
@@ -210,6 +252,10 @@ end
 select buy_item(775803031, 1)
 
 select username, p2.* from players p join property p2  on p2."owner" = p.telegram_id ;
+
+delete from property p where id = (select id from property p where item_id = 5 limit 1);
+
+select id from property p where item_id = 5
 
 select * from players p ;
 
@@ -385,6 +431,65 @@ select p.username , sum(animal_id), max(animal_id) , count(*) over () ttl
 from pets right join players p on p.telegram_id = pets.owner 
 group by username order by 2  desc nulls last limit 5;
 
-select * from players p where nick_name = 'kozel'
+select * from players p --where nick_name = 'kozel'
 
 select "owner", count(distinct animal_id) from pets p group by "owner" 
+
+
+-- EPIDEMIC
+
+select * from pets --where animal_id <> 0
+
+select invite_date, username, nick_name, species, pt.id from players p join pets pt on p.telegram_id = pt."owner" 
+join animal_list al on al.id = pt.animal_id 
+where pt.id % (random() *10 + 1)::int = 0
+
+select (random() *10 + 1)::int
+
+update pets set health = health - 1 where animal_id <> 0 and  id % (random() *10 + 1)::int = 0 returning  *
+
+
+
+create or replace function change_health(pet_id int8, healing boolean, value int) 
+returns int
+language plpgsql
+as $$
+declare 
+health_before int;
+begin
+	select health into health_before from pets where id = pet_id;
+	if healing then
+		if health_before + value > 10 then
+			update pets set health = 10 where id = pet_id;
+		else
+			update pets set health = health + value where id = pet_id;
+		end if;
+	else			
+--		if health_before - value < 1 then
+--			update pets set animal_id = 0, mood = '3' where id = pet_id;
+--		else
+		update pets set health = health - value where id = pet_id;
+--		end if;
+	end if;
+    return 1;
+end;
+$$;
+end
+
+select * from pets
+
+select change_health(54,false,1)
+
+
+create or replace function health_down() returns trigger 
+as $$
+begin 
+	if new.health < 1 then
+		new.animal_id =  0 ;
+		new.health = 5;
+	end if;
+	return new;
+end;
+$$ language plpgsql;
+
+create trigger t_health_down before update of health on pets for each row execute function health_down();

@@ -97,7 +97,7 @@ def get_hunger():
             players = []
             for p in infected_pets:
                 print('player: ' + str(p[0]))
-                bot.send_message(p[0],'🦠 Эпидемия! Кто-то из животных заболел!')
+                bot.send_message(p[0],'🦠 Эпидемия! Проверьте питомцев!')
                 players.append(p[0])
             print(list(infected_pets))
 
@@ -187,13 +187,23 @@ def show_pets(query):
         return
     if hasattr(query,'data'):
         cidx = int(extract_numbers(query.data))
-        if int(extract_numbers(query.data,1)):
-            first_pet = owned_pets[cidx]
-            pet_info = sql_helper.db_pet_info(first_pet[0])
-            animal_id = pet_info[1]
-            print('animal id: ' + str(animal_id))
+
+        first_pet = owned_pets[cidx]
+        pet_info = sql_helper.db_pet_info(first_pet[0])
+        animal_id = pet_info[1]
+        print('animal id: ' + str(animal_id))
+
+        if int(extract_numbers(query.data,1)) == 1:
+            print('feed option')
+            
             sql_helper.db_change_hunger(pet_info[0], True, 10)
             bot.send_message(query.from_user.id, pet_emoji(animal_id))
+        elif int(extract_numbers(query.data,1)) == 2:
+            print('cure option')
+            sql_helper.db_cure_pet(pet_info[0])
+            sql_helper.db_delete_property(5)
+            bot.send_message(query.from_user.id, "вылечен")
+            
         
         
         
@@ -220,9 +230,21 @@ def show_pets(query):
         btn_backward = types.InlineKeyboardButton('◀',callback_data="pet" + str(cidx-1) + action)
         btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid) + action)
         btn_pack = btn_pack + [btn_backward,btn_forward]
-    if pet_info[2] < 10:
+    if pet_info[2] < 10 and pet_info[1] != 0:
         btn_feed = types.InlineKeyboardButton('🍽',callback_data="pet" + str(cidx) + '_1')
         btn_pack = btn_pack + [btn_feed]
+    if pet_info[3] < 10 and pet_info[1] != 0:
+        items = sql_helper.db_get_owned_items_group(query.from_user.id)
+        have_antibiotic = False
+        for i in items:
+            print('items:')
+            print(i[0])
+            if i[0] == 5:
+                have_antibiotic = True
+                break
+        if have_antibiotic:
+            btn_cure = types.InlineKeyboardButton('💉',callback_data="pet" + str(cidx) + '_2')
+            btn_pack = btn_pack + [btn_cure]
 
     markup.add(*btn_pack)
     # if len(owned_pets) > 1:

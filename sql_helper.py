@@ -399,6 +399,14 @@ def db_remove_property(pid):
     con.commit()
     return
 
+def db_delete_property(item_id):
+    print('- - - SQL remove property  - - -')
+    q = '''delete from property p where id = (select id from property p where item_id = %s limit 1);'''
+    cur = con.cursor()
+    cur.execute(q,(item_id,))
+    con.commit()
+    return
+
 def db_update_property(pid, switch: bool=None, value: int=0):
     """  sql trigger updates last_work table field
         :param pid: property ID.
@@ -505,8 +513,9 @@ def db_buy_healing(pet_id: int, cost: int, tid: int):
 
 def db_infect_pets():
     '''
+    epidemic
     '''
-    q = '''update pets set health = health - 4 where id % (random() *10 + 1)::int = 0 returning owner;'''
+    q = '''update pets set health = health - 4 where animal_id <> 0 and id % (random() *10 + 1)::int = 0 returning owner;'''
     infected_pet_list = []
 
     with con.cursor() as cur:
