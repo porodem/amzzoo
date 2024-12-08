@@ -665,14 +665,14 @@ def do_work(message):
         btn3 = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn3)
         bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup) 
-        bot.register_next_step_handler(message, search_money)
+        bot.register_next_step_handler(message, search_money, stamina)
     elif stamina == 2:
         btn1 = types.KeyboardButton("🎲 удачный кубик 💪x1")
         btn2 = types.KeyboardButton("🎯 удачный дартс 💪x2")
         btn3 = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn2,btn3)
         bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup) 
-        bot.register_next_step_handler(message, search_money)
+        bot.register_next_step_handler(message, search_money, stamina)
     elif stamina > 2:
         btn1 = types.KeyboardButton("🎲 удачный кубик 💪x1")
         btn2 = types.KeyboardButton("🎯 удачный дартс 💪x2")
@@ -685,11 +685,11 @@ def do_work(message):
         bot.send_message(message.from_user.id, "😪 Ты устал, наберись сил :", reply_markup=markup)  
         bot.register_next_step_handler(message, echo_all)
 
-def search_money(message):
+def search_money(message, stamina):
     tid = message.from_user.id
-    print("-- PLAY: " + str(tid) + " type: " + message.text + " at " + str(datetime.now()))
+    print("-- PLAY: " + str(tid) + " type: " + message.text + " at " + str(datetime.now()) + " stamina: " + str(stamina))
     
-    print(message.__dict__)
+    #print(message.__dict__)
     if message.forward_date is not None:
         print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
         #print("forward: " + str(message.forward_date))
@@ -706,11 +706,19 @@ def search_money(message):
             m = bot.send_dice(tid,'🎲')
             pwr = 1
         elif re.match('.*🎯.*',message.text):
+            if stamina < 2:
+                bot.send_message(tid,"Недостаточно сил")
+                return
             m = bot.send_dice(tid,'🎯')
             pwr = 2
         elif re.match('.*🎳.*',message.text):
+            if stamina < 3:
+                bot.send_message(tid,"Недостаточно сил")
+                return
             m = bot.send_dice(tid,'🎳')
             pwr = 3
+        else:
+            return
         sql_helper.db_stamina_down(tid, pwr)
         bot.register_next_step_handler(message, do_work)
         # m = bot.send_dice(tid,'🎲')
