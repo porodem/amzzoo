@@ -69,6 +69,7 @@ def admin_announce(message):
 hunger_interval = 4
 
 def get_hunger():
+    previous_epidemic_day = None
     while True:
         print("- - -  get hunger - - - ")
         time.sleep(hunger_interval * 60 * 60)
@@ -82,6 +83,23 @@ def get_hunger():
                 bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} заболел! Срочно вылечите его!💊 ")
             else:
                 bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} голоден! Покормите его!")
+        
+        today = datetime.now().day
+        
+        is_epidemic = today % 10 == 0 # every 10 20 30 day of month
+        if previous_epidemic_day == today:
+            print('epidemic today was already executed')
+            is_epidemic = False
+        if is_epidemic:
+            print(f" - - - - - E P I D E M I C today: {today}")
+            previous_epidemic_day = today
+            infected_pets = sql_helper.db_infect_pets()
+            players = []
+            for p in infected_pets:
+                print('player: ' + str(p[0]))
+                bot.send_message(p[0],'🦠 Эпидемия! Кто-то из животных заболел!')
+                players.append(p[0])
+            print(list(infected_pets))
 
 thread_hunger = threading.Thread(target=get_hunger)
 thread_hunger.daemon = True # This makes sure the thread will exit when the main program does

@@ -503,6 +503,22 @@ def db_buy_healing(pet_id: int, cost: int, tid: int):
     cur.close()
     return result
 
+def db_infect_pets():
+    '''
+    '''
+    q = '''update pets set health = health - 4 where id % (random() *10 + 1)::int = 0 returning owner;'''
+    infected_pet_list = []
+
+    with con.cursor() as cur:
+        cur.execute(q)
+        b = cur.fetchall()
+        #print(list(b))
+        for record in b:
+            infected_pet_list.append(record)
+        con.commit()
+            
+    return infected_pet_list
+
 # ==================================== SHOW BLOCK
 
 
