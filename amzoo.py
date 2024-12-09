@@ -313,6 +313,7 @@ def lucky_way(message):
 
 def to_lucky_way(message):
     print('- - to_lucky_way - - ')
+    anti_forward(message.from_user.id, message.forward_date)
     if re.match('Деньги.*',message.text):           
         do_work(message)
     elif re.match('.*животное.*', message.text):
@@ -475,14 +476,7 @@ def catch_pet(message):
         return
     tid = message.from_user.id
 
-    if message.forward_date is not None:
-        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
-        #print("forward: " + str(message.forward_date))
-        penalty = 10
-        sql_helper.db_stamina_down(tid,10)
-        sql_helper.db_remove_money(tid, penalty)
-        bot.send_message(tid, f"Мошенничество! -{penalty}💰")
-        return
+    anti_forward(tid, message.forward_date)
 
     info = sql_helper.db_get_player_info(message.from_user.id)
     coins = info[0]
@@ -647,6 +641,9 @@ def set_nickname(message):
 def do_work(message):
     print(' - - - play minigames - - -')
     tid = message.from_user.id
+
+    anti_forward(tid, message.forward_date)
+
     info = sql_helper.db_get_player_info(message.from_user.id)
     stamina = info[2]
     print(stamina)
@@ -690,14 +687,8 @@ def search_money(message, stamina):
     print("-- PLAY: " + str(tid) + " type: " + message.text + " at " + str(datetime.now()) + " stamina: " + str(stamina))
     
     #print(message.__dict__)
-    if message.forward_date is not None:
-        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
-        #print("forward: " + str(message.forward_date))
-        penalty = 10
-        sql_helper.db_stamina_down(tid,10)
-        sql_helper.db_remove_money(tid, penalty)
-        bot.send_message(tid, f"Мошенничество! -{penalty}💰")
-        return
+    anti_forward(tid, message.forward_date)
+
     if re.match('.*удачн.*',message.text):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn = types.KeyboardButton("Ещё")
@@ -1102,6 +1093,19 @@ def define_mood(pet: list, environment: list=None):
     elif sum_points > 16:
         mood = "☺"
     return mood
+
+def anti_forward(tid, forward_date):
+    '''
+    anti cheat from multiple forwarding messages
+    '''
+    if forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(tid,10)
+        sql_helper.db_remove_money(tid, penalty)
+        bot.send_message(tid, f"⚠ Мошенничество! -{penalty}💰")
+        return
 
 # - - - - - - -  M A I N  M E N U  - - - - - - - 
 
