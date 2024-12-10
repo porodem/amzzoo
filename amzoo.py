@@ -16,7 +16,7 @@ from pathlib import Path
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
