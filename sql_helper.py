@@ -336,7 +336,7 @@ def db_stamina_up(tid, value):
         :return None:
     """
     print('- - - update up stamina lvl to DB - - - ')
-    q = '''UPDATE players set stamina = (CASE WHEN stamina + %(value)s > 10 THEN 10 ELSE stamina + %(value)s) where telegram_id = %(tid)s;'''
+    q = '''UPDATE players set stamina = (CASE WHEN stamina + %(value)s > 10 THEN 10 ELSE stamina + %(value)s END) where telegram_id = %(tid)s;'''
     q2 = '''SELECT stamina FROM players WHERE telegram_id = %s;'''
     cur = con.cursor()
     cur.execute(q,{'value':value,'tid':tid})
