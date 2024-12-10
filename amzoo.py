@@ -86,10 +86,12 @@ def get_hunger():
         
         today = datetime.now().day
         
-        is_epidemic = today % 10 == 0 # every 10 20 30 day of month
+        is_epidemic = today % 9 == 0 # every 9 18 21 day of month
         if previous_epidemic_day == today:
             print('epidemic today was already executed')
             is_epidemic = False
+            
+        # WARNING if bot restarts epidemic executes again !
         if is_epidemic:
             print(f" - - - - - E P I D E M I C today: {today}")
             previous_epidemic_day = today

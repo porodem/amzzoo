@@ -516,7 +516,7 @@ def db_infect_pets():
     '''
     epidemic
     '''
-    q = '''update pets set health = health - 5 where animal_id <> 0 and id % (random() *10 + 1)::int = 0 returning owner;'''
+    q = '''update pets set health = health - 4 where animal_id <> 0 and id % (random() *10 + 1)::int = 0 returning owner;'''
     infected_pet_list = []
 
     with con.cursor() as cur:
