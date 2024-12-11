@@ -6,6 +6,7 @@ import re
 import sql_helper
 # https://pypi.org/project/emoji/
 import emoji
+import random # for flu illnes
 
 from datetime import datetime, timedelta
 from telebot import types
@@ -197,8 +198,13 @@ def show_pets(query):
 
         if int(extract_numbers(query.data,1)) == 1:
             print('feed option')
-            
+            feed_price = int(pet_info[8] / 10)
+            sql_helper.db_remove_money(query.from_user.id,feed_price)
             sql_helper.db_change_hunger(pet_info[0], True, 10)
+            healty = random.randrange(0,9)
+            print('healty: ' + str(healty))
+            if not healty:
+                sql_helper.db_change_health(pet_info[0],False,1)
             bot.send_message(query.from_user.id, pet_emoji(animal_id))
         elif int(extract_numbers(query.data,1)) == 2:
             print('cure option')
@@ -221,6 +227,7 @@ def show_pets(query):
     print('pet_info: ')
     print(list(pet_info))
     mood = define_mood(pet_info)
+    feed_price = int(pet_info[8] / 10)
     habitat = habitat_emoji(pet_info[6])
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
     btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
@@ -233,7 +240,7 @@ def show_pets(query):
         btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid) + action)
         btn_pack = btn_pack + [btn_backward,btn_forward]
     if pet_info[2] < 10 and pet_info[1] != 0:
-        btn_feed = types.InlineKeyboardButton('🍽',callback_data="pet" + str(cidx) + '_1')
+        btn_feed = types.InlineKeyboardButton(f"🍽💰{feed_price}",callback_data="pet" + str(cidx) + '_1')
         btn_pack = btn_pack + [btn_feed]
     if pet_info[3] < 10 and pet_info[1] != 0:
         items = sql_helper.db_get_owned_items_group(query.from_user.id)

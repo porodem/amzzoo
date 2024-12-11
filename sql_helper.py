@@ -529,6 +529,23 @@ def db_infect_pets():
             
     return infected_pet_list
 
+def db_change_health(pet_id: int, cure: bool=False, val: int=1):
+    """  
+        :param pet_id: telegram id of current player.
+        :param cure:bool is healing or not
+        :param val: points
+
+        :return None:
+    """
+    print(' - - change Health pet DB func - -')
+    q = '''SELECT change_health(%s,%s,%s);'''
+    cur = con.cursor()
+    cur.execute(q,(pet_id,cure,val))
+    result = cur.fetchone()
+    print('sql sel result: ' + str(result))
+    con.commit()
+    cur.close()
+
 # ==================================== SHOW BLOCK
 
 
