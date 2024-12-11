@@ -36,3 +36,5 @@
 6. Limit name user :white_check_mark:
 7. Draw map for travel paths
 8. Show personal player place in info
+9. Name as nickname from telegram
+10. restore stamina 1 per hour, but remember about profit nex day problem
