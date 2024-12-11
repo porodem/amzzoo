@@ -254,7 +254,7 @@ def db_get_top_players():
           #print(list(b))
           for record in b:
                leaders.append(record)
-    print(list(leaders))
+    #print(list(leaders))
     return leaders
 
 def db_get_all_tids():

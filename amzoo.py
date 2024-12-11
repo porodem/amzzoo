@@ -303,6 +303,7 @@ def shop_select(message):
 
 def lucky_way(message):
     tid = message.from_user.id
+    anti_forward(message.from_user.id, message.forward_date)
     print('- - - LUCKY WAY - - -')
     #location =  sql_helper.db_check_location(tid)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -967,7 +968,7 @@ def show_top(message):
         animal = player[2]
         info += f"{i}) *{pname}* и его {pet_emoji(animal)}\n"
         i += 1
-    print(info)
+    #print(info)
     bot.send_message(message.from_user.id, info, parse_mode='markdown')
 
 # - - - - - - -  U T I L S - - - - - - - 
