@@ -266,10 +266,25 @@ def db_get_all_tids():
     q = '''SELECT telegram_id FROM players where invite_date is not null;'''
     all_players = []
     with con.cursor() as cur:
-        cur.execute(q)
+        cur.execute(q) 
         b = cur.fetchall()
         for line in b:
             all_players.append(line[0])
+    print(str(len(all_players)) + " " + str(list(all_players)))
+    return(all_players)
+
+def db_get_nearby_players(location = None):
+    """
+    :return players in same locaton 0 tid 1 username 2 nick
+    """
+    print(" - - get all nearby players - - ")
+    q = '''SELECT telegram_id, username, nick_name FROM players where game_location = %s and invite_date is not null;'''
+    all_players = []
+    with con.cursor() as cur:
+        cur.execute(q,(location,))
+        b = cur.fetchall()
+        for line in b:
+            all_players.append(line)
     print(str(len(all_players)) + " " + str(list(all_players)))
     return(all_players)
 

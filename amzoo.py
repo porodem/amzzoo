@@ -358,8 +358,9 @@ def lucky_way(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("Поймать животное",)
     btn2 = types.KeyboardButton("Деньги",)
+    btn3 = types.KeyboardButton("😈 Вор",)
     btn_back = types.KeyboardButton("🔙 Назад")
-    markup.add(btn1,btn2,btn_back)
+    markup.add(btn1,btn2,btn3,btn_back)
     bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_lucky_way)
 
@@ -371,8 +372,26 @@ def to_lucky_way(message):
     elif re.match('.*животное.*', message.text):
         print('- - - animal lucky selected - - - ')
         pet_shop(message, catch_mode=True)
+    elif re.match('.*Вор.*', message.text):
+        print('- - - animal lucky selected - - - ')
+        stealing(message)
     else:
         echo_all(message)
+
+def stealing(message):
+    location =  sql_helper.db_check_location(message.from_user.id)
+    victims = sql_helper.db_get_nearby_players(location)
+    info = ''
+    i = 1
+    #print("total players: " + str(total_players))
+    for player in victims:
+        if player[0] == message.from_user.id:
+            continue
+        pname = 'без имени' if player[1] is None else player[1]
+        info += f"{i}) *{pname}*\n"
+        i += 1
+    #print(info)
+    bot.send_message(message.from_user.id, info, parse_mode='markdown')
 
 
 def to_shop(message):
