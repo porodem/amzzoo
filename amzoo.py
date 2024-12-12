@@ -315,6 +315,41 @@ def shop_select(message):
     bot.send_message(tid, 'Куда пойдем?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_shop)
 
+def zoo_management(message):
+    tid = message.from_user.id
+    anti_forward(message.from_user.id, message.forward_date)
+    print('- - - ZOO MANAGEMENT - - -')
+    #location =  sql_helper.db_check_location(tid)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("Питомцы",)
+    btn2 = types.KeyboardButton("Безопасность",)
+    btn_back = types.KeyboardButton("🔙 Назад")
+    markup.add(btn1,btn2,btn_back)
+    bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
+    bot.register_next_step_handler(message, to_zoo_management)
+
+def to_zoo_management(message):
+    print('- - to_zoo_management - - ')
+    anti_forward(message.from_user.id, message.forward_date)
+    if re.match('Питомцы.*',message.text):           
+        show_pets(message)
+    elif re.match('Безопасность.*', message.text):
+        print('- - - security selected - - - ')
+        bot.send_message(message.from_user.id, "введите только одну цифру! (0-9)")
+        bot.register_next_step_handler(message, set_cage_password)
+    else:
+        echo_all(message)
+
+def set_cage_password(message):
+    password = message.text
+    if re.match('^\d$',password):
+        sql_helper.db_change_zoo_pass(message.from_user.id, password)
+        bot.send_message(message.from_user.id, "🔒 Защита 1 уровня включена")
+    else:
+        bot.send_message(message.from_user.id, "❌ только одну цифру!")
+        bot.register_next_step_handler(message, set_cage_password)
+    
+
 def lucky_way(message):
     tid = message.from_user.id
     anti_forward(message.from_user.id, message.forward_date)
@@ -1128,9 +1163,9 @@ def anti_forward(tid, forward_date):
 
 def next_option(message):
     print('-- -- NEXT option ----')
-    if re.match('.*Питомцы.*',message.text):
+    if re.match('.*Зоо.*',message.text):
         #bot.register_next_step_handler(message, show_pets)
-        show_pets(message)
+        zoo_management(message)
     elif re.match('.*Имущество.*',message.text):
         bot.reply_to(message, 'test option')
     elif re.match('.*повезёт.*',message.text):
@@ -1181,7 +1216,7 @@ def echo_all(message):
     tid = message.from_user.id
  
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("🐇 Питомцы")
+    btn1 = types.KeyboardButton("🐇 Зоопарк")
     btn2 = types.KeyboardButton("🏫 Имущество")
     btn_hospital = types.KeyboardButton("🏥 Вет.больница")
     btn3 = types.KeyboardButton("🍀 Мне повезёт")

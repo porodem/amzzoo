@@ -255,6 +255,7 @@ def db_get_top_players():
           for record in b:
                leaders.append(record)
     #print(list(leaders))
+    con.commit()
     return leaders
 
 def db_get_all_tids():
@@ -557,6 +558,17 @@ def db_change_health(pet_id: int, cure: bool=False, val: int=1):
     con.commit()
     cur.close()
 
+def db_change_zoo_pass(tid, password):
+    '''
+    set password to protect zoo from theifs
+    '''
+    print(' - - SQL set zoo pass - -')
+    q = '''UPDATE players SET zoo_pass = %s WHERE telegram_id = %s;'''
+    cur = con.cursor()
+    cur.execute(q,(password, tid))
+    con.commit()
+    cur.close()
+    return 
 # ==================================== SHOW BLOCK
 
 
