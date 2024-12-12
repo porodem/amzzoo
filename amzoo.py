@@ -9,7 +9,7 @@ import emoji
 import random # for flu illnes
 
 from datetime import datetime, timedelta
-from telebot import types
+from telebot import types, apihelper
 from telebot.util import update_types, quick_markup
 from pprint import pprint # to investigate what inside objects
 import threading # for parallel timer in difrent tasks like pet hunger timer
@@ -61,7 +61,11 @@ def admin_announce(message):
         #bot.send_message(master_tid, announce_text) # testing line for developer only
         for player in all_players:
             print('ANNOUNCE to: ' + str(player))
-            bot.send_message(player, announce_text)
+            try:
+                bot.send_message(player, announce_text)
+            except apihelper.ApiTelegramException:
+                sql_helper.db_blocker_player(player)
+                print('announce Error: Fucking dickhed banned this bot ' + str(player))
     else:
         bot.send_message(message.from_user.id, "Restricted! It is admin function only!")
         print(f"announce: {master_tid} " + str(message.from_user.id))

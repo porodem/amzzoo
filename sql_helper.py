@@ -292,6 +292,17 @@ def db_rename_player(tid,nickname):
     con.commit()
     cur.close()
 
+def db_blocker_player(tid):
+    '''
+    bot was blocked by this user 
+    '''
+    print(' SQL blocker player')
+    q = "UPDATE players SET invite_date = NULL, pet_space = 0 WHERE telegram_id = %s"
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    con.commit()
+    cur.close()
+
 
 def db_add_money(tid, value):
     print('- - - write money to DB - - - ')
