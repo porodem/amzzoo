@@ -288,6 +288,13 @@ def db_get_nearby_players(location = None):
     print(str(len(all_players)) + " " + str(list(all_players)))
     return(all_players)
 
+def db_get_zoo_password(tid):
+    print('SQL get zoo_pass')
+    q = '''SELECT zoo_pass FROM players WHERE telegram_id = %s'''
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    p = cur.fetchone()
+    return p[0]
 
 
 # ==================================== DML BLOCK

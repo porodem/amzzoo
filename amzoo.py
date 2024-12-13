@@ -374,24 +374,74 @@ def to_lucky_way(message):
         pet_shop(message, catch_mode=True)
     elif re.match('.*Вор.*', message.text):
         print('- - - animal lucky selected - - - ')
-        stealing(message)
+        search_victims(message)
     else:
         echo_all(message)
 
-def stealing(message):
-    location =  sql_helper.db_check_location(message.from_user.id)
-    victims = sql_helper.db_get_nearby_players(location)
-    info = ''
-    i = 1
-    #print("total players: " + str(total_players))
-    for player in victims:
-        if player[0] == message.from_user.id:
-            continue
-        pname = 'без имени' if player[1] is None else player[1]
-        info += f"{i}) *{pname}*\n"
-        i += 1
+@bot.callback_query_handler(lambda query: 'stealing' in query.data)
+def stealing(query):
+    victim = extract_numbers(query.data,0)
+    passwd = extract_numbers(query.data,1)
     #print(info)
-    bot.send_message(message.from_user.id, info, parse_mode='markdown')
+    secret = sql_helper.db_get_zoo_password(victim)
+    bot.send_message(query.from_user.id, f"{victim} : {passwd} ? {secret}", parse_mode='markdown')
+
+@bot.callback_query_handler(lambda query: 'victim' in query.data)
+def search_victims(query):
+
+    markup = None
+    btn_pack = []
+    
+    if hasattr(query,'data'):
+        print(query.data)
+        ask = 'Зоопарк жертвы:'
+        victim = int(extract_numbers(query.data,0))
+        print('victim: ' + str(victim))
+        v_zoo = sql_helper.db_get_owned_pets(victim)
+        v_emoji_pack = ''
+        for pet in v_zoo:
+            v_emoji_pack += pet_emoji(pet[1])
+        ask = v_emoji_pack
+        pin_pad_buttons = []
+        markup = types.InlineKeyboardMarkup(row_width=3,)
+        for i in range(9,-1,-1):
+            btn = types.InlineKeyboardButton(f"{i}",callback_data=f"stealing{victim}_{i}")
+            pin_pad_buttons.append(btn)
+        btn_exit = types.InlineKeyboardButton(f"✖",callback_data=f"stealing{victim}_{i}")
+        pin_pad_buttons.append(btn_exit)
+        markup.add(*pin_pad_buttons)
+        #markup = quick_markup({'1': {'callback_data': 'victim'},'2': {'callback_data': 'victim'},'3': {'callback_data': 'victim'}}, row_width=3)
+
+        print(list(v_zoo))
+    else:
+        print('------ have no data')
+        markup = types.InlineKeyboardMarkup(row_width=1,)
+        ask = 'Ближайшие зоопарки:'
+        location =  sql_helper.db_check_location(query.from_user.id)
+        victims = sql_helper.db_get_nearby_players(location)
+        i = 1
+        #print("total players: " + str(total_players))
+        
+        for player in victims:
+            if player[0] == query.from_user.id:
+                continue
+            pname = 'без имени' if player[1] is None else player[1]
+            
+            btn_title = f"#{i} {pname}\n"
+            btn = types.InlineKeyboardButton(btn_title,callback_data='victim' + str(player[0]))
+            i += 1
+            btn_pack.append(btn)
+        markup.add(*btn_pack)
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=ask,
+            chat_id=query.message.chat.id,
+            parse_mode='markdown', # to make some text bold with *this* in messages
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, ask, reply_markup=markup)
 
 
 def to_shop(message):
