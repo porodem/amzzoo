@@ -356,9 +356,9 @@ def lucky_way(message):
     print('- - - LUCKY WAY - - -')
     #location =  sql_helper.db_check_location(tid)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("Поймать животное",)
-    btn2 = types.KeyboardButton("Деньги",)
-    btn3 = types.KeyboardButton("😈 Вор",)
+    btn1 = types.KeyboardButton("🦓Поймать животное",)
+    btn2 = types.KeyboardButton("💰Деньги",)
+    btn3 = types.KeyboardButton("😈Преступник",)
     btn_back = types.KeyboardButton("🔙 Назад")
     markup.add(btn1,btn2,btn3,btn_back)
     bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
@@ -372,19 +372,87 @@ def to_lucky_way(message):
     elif re.match('.*животное.*', message.text):
         print('- - - animal lucky selected - - - ')
         pet_shop(message, catch_mode=True)
-    elif re.match('.*Вор.*', message.text):
+    elif re.match('.*😈Преступник.*', message.text):
         print('- - - animal lucky selected - - - ')
+        location =  sql_helper.db_check_location(message.from_user.id)
+        if location == 5:
+            bot.send_message(message.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+            echo_all(message)
+            return
+        stamina = sql_helper.db_get_player_info(message.from_user.id)[2]    
+        if stamina < 2:
+            bot.send_message(message.from_user.id, "Ты устал 😪")
+            echo_all(message)
+            return
         search_victims(message)
     else:
         echo_all(message)
 
 @bot.callback_query_handler(lambda query: 'stealing' in query.data)
 def stealing(query):
+    print('- STEALING:')
+    
     victim = extract_numbers(query.data,0)
-    passwd = extract_numbers(query.data,1)
+    input_pass = int(extract_numbers(query.data,1))
     #print(info)
     secret = sql_helper.db_get_zoo_password(victim)
-    bot.send_message(query.from_user.id, f"{victim} : {passwd} ? {secret}", parse_mode='markdown')
+    print(f"{victim} : {input_pass} ? {secret}")
+
+    # decay key
+    items = sql_helper.db_get_owned_items(query.from_user.id)
+    tools = 0
+    for i in items:
+        if i[5]== 20:
+            tools = i[0]
+    sql_helper.db_decay_property(tools)
+
+    v_items = sql_helper.db_get_owned_items(victim)
+    strong_lock = False
+    for i in v_items:
+        print('items:')
+        print(i[5])
+        if i[5] == 6:
+            strong_lock = True
+            break
+    
+    pwr = 8 if strong_lock else 3
+    lock_info = 'Здесь установлены хорошие🔒 (-8 💪)' if strong_lock else ''
+    sql_helper.db_stamina_down(query.from_user.id, pwr)
+    stamina = sql_helper.db_get_player_info(query.from_user.id)[2]    
+    if stamina < 1:
+        bot.send_message(query.from_user.id, lock_info + "Ты устал 😪")
+        bot.delete_message(query.message.chat.id, query.message.id)
+        #echo_all()
+        return
+
+    if input_pass == secret:
+        print('cage unlocked')
+        chapest_pet = sql_helper.db_get_cheapest_pet(victim)
+        print(list(chapest_pet))
+        #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
+        bot.delete_message(query.message.chat.id, query.message.id)
+        pet_stays = random.randrange(0,9)
+        sql_helper.db_stamina_down(query.from_user.id, 2)
+        if not pet_stays:
+                print('Successful harm: pet escaped!')
+                sql_helper.db_remove_pet(chapest_pet[0])
+        bot.send_message(query.from_user.id, "🔐")
+        bot.send_message(query.from_user.id, "Успешно! Вероятность 10% что самый дешевый петомец убежит.")
+    else:
+        search_victims(query)
+        #bot.send_message(query.from_user.id, "🔒 Неудалось")
+        #bot.delete_message(query.message.chat.id, query.message.id)
+        # bot.edit_message_text(
+        #     text='🔒 Неудалось',
+        #     chat_id=query.message.chat.id,
+        #     parse_mode='markdown', # to make some text bold with *this* in messages
+        #     message_id=query.message.id,
+        #     reply_markup=markup
+        # )
+        #TODO stamina down , degrade skeleton key
+    #bot.send_message(query.from_user.id, f"{victim} : {input_pass} ? {secret}", parse_mode='markdown')
+
+    #TO THINK : after stealing prohibit restrict another stealing try for perid of time
 
 @bot.callback_query_handler(lambda query: 'victim' in query.data)
 def search_victims(query):
@@ -394,14 +462,30 @@ def search_victims(query):
     
     if hasattr(query,'data'):
         print(query.data)
+
+        items = sql_helper.db_get_owned_items(query.from_user.id)
+        tools = 0
+        for i in items:
+            if i[5]== 20:
+                tools = i[0]
+
+        if tools == 0:
+            bot.send_message(query.from_user.id, "Нужна отмычка!")
+            bot.delete_message(query.message.chat.id, query.message.id)
+            #echo_all()
+            return
+        
+        stamina = sql_helper.db_get_player_info(query.from_user.id)[2]
+        sql_helper.db_stamina_down(query.from_user.id,1)
         ask = 'Зоопарк жертвы:'
         victim = int(extract_numbers(query.data,0))
         print('victim: ' + str(victim))
         v_zoo = sql_helper.db_get_owned_pets(victim)
         v_emoji_pack = ''
+        #TODO good lock consume more stamina
         for pet in v_zoo:
             v_emoji_pack += pet_emoji(pet[1])
-        ask = v_emoji_pack
+        ask = "Обитатели: " + v_emoji_pack + f"\nВаша 💪{stamina}"
         pin_pad_buttons = []
         markup = types.InlineKeyboardMarkup(row_width=3,)
         for i in range(9,-1,-1):
@@ -416,11 +500,17 @@ def search_victims(query):
     else:
         print('------ have no data')
         markup = types.InlineKeyboardMarkup(row_width=1,)
+
+        stamina = sql_helper.db_get_player_info(query.from_user.id)[2]
+        sql_helper.db_stamina_down(query.from_user.id,1)
+
         ask = 'Ближайшие зоопарки:'
         location =  sql_helper.db_check_location(query.from_user.id)
         victims = sql_helper.db_get_nearby_players(location)
         i = 1
         #print("total players: " + str(total_players))
+        if len(victims):
+            ask = 'Похоже рядом нет других игроков -1💪'
         
         for player in victims:
             if player[0] == query.from_user.id:
@@ -433,6 +523,12 @@ def search_victims(query):
             btn_pack.append(btn)
         markup.add(*btn_pack)
     if hasattr(query,'data'):
+        print('HAS query data:')
+        print(query.data)
+        if re.match('steal.*',query.data ):
+            ask = '🔒 Неудалось' + f"\nВаша 💪{stamina}"
+        #     bot.send_message(query.from_user.id, ask, reply_markup=markup)
+        # else:
         bot.edit_message_text(
             text=ask,
             chat_id=query.message.chat.id,
@@ -1177,6 +1273,8 @@ def item_emoji(id):
         e = "🔭"
     elif id == 13:
         e = "🗺"
+    elif id == 20:
+        e = "🔑"
     else:
         e = "✖"
     return e

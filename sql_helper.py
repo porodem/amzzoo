@@ -294,8 +294,17 @@ def db_get_zoo_password(tid):
     cur = con.cursor()
     cur.execute(q,(tid,))
     p = cur.fetchone()
+    cur.close()
     return p[0]
 
+def db_get_cheapest_pet(tid):
+    print('SQL get cheapest pet')
+    q = '''select p.id, al.price from pets p join animal_list al on al.id = p.animal_id where "owner" = %s order by price limit 1;'''
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    pet = cur.fetchone()
+    cur.close()
+    return pet
 
 # ==================================== DML BLOCK
 
@@ -416,6 +425,14 @@ def db_sell_pet(pet_id):
     con.commit()
     cur.close()
 
+def db_remove_pet(pid):
+    print('- - - SQL remove pet  - - -')
+    q = '''DELETE FROM pets where id = %s;'''
+    cur = con.cursor()
+    cur.execute(q,(pid,))
+    con.commit()
+    return
+
 def db_buy_item(tid, item_id):
     print(' - -  write to DB buy item - -')
     q = '''SELECT buy_item(%s,%s);'''
@@ -433,6 +450,19 @@ def db_remove_property(pid):
     cur.execute(q,(pid,))
     con.commit()
     return
+
+def db_decay_property(pid,value=1):
+    '''
+    damage on item during usage
+    '''
+    print('SQL decay property')
+    q = 'UPDATE property SET durability = (CASE WHEN durability - %(value)s < 0 THEN 0 ELSE durability - %(value)s END) where id = %(pid)s'
+    cur = con.cursor()
+    cur.execute(q,{'value':value,'pid':pid})
+    cur.close()
+    con.commit()
+    return
+
 
 def db_delete_property(item_id):
     print('- - - SQL remove property  - - -')
