@@ -275,7 +275,7 @@ def db_get_all_tids():
 
 def db_get_nearby_players(location = None):
     """
-    :return players in same locaton 0 tid 1 username 2 nick
+    :return players in same locaton [0 tid 1 username 2 nick]
     """
     print(" - - get all nearby players - - ")
     q = '''SELECT telegram_id, username, nick_name FROM players where game_location = %s and invite_date is not null;'''

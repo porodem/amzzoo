@@ -534,7 +534,7 @@ def search_victims(query):
         for player in victims:
             if player[0] == query.from_user.id:
                 continue
-            pname = 'без имени' if player[1] is None else player[1]
+            pname = player[2] if player[1] is None else player[1]
             
             btn_title = f"#{i} {pname}\n"
             btn = types.InlineKeyboardButton(btn_title,callback_data='victim' + str(player[0]))
