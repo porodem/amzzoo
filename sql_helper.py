@@ -3,7 +3,7 @@
 import psycopg
 from datetime import datetime, timedelta
 
-con = psycopg.connect('dbname=amzoo user=pet_master host=localhost password=dashakuromi')
+con = psycopg.connect('dbname=amzoo user=pet_master host=localhost password=dashakuromi application_name=amzoo')
 
 # ==================================== CHECK BLOCK
 
@@ -85,7 +85,7 @@ def db_get_player_info(tid):
     if b is None:
         result = 0
     else:
-        print(b)
+        #print(b)
         result = b
 
     return result
@@ -129,10 +129,10 @@ def db_get_owned_items(tid):
     """
         :param tid: telegram id of current player.
 
-        :return list: [property_id, item_name, price, (3) charged, location, item_id] from property and items tables
+        :return list: [property_id, item_name, price, (3) charged, location, item_id, 6 durability] from property and items tables
     """
-    print('-- get all players items --')
-    q = '''select  p.id, i."name", price, charged, location, i.id from  property p join items i on i.id = p.item_id  where owner = %s;'''
+    print('SQL get all players items --')
+    q = '''select  p.id, i."name", price, charged, location, i.id, durability from  property p join items i on i.id = p.item_id  where owner = %s;'''
     item_list = []
 
     with con.cursor() as cur:
@@ -361,7 +361,7 @@ def db_change_location(tid, value, coins):
     cur.close()
 
 def db_stamina_down(tid, value):
-    print('- - - update down stamina lvl to DB - - - ')
+    print(f"SQL stamina down {value}")
     q = '''UPDATE players set stamina = (CASE WHEN stamina - %(value)s < 0 THEN 0 ELSE stamina - %(value)s END) where telegram_id = %(tid)s;'''
     q2 = '''SELECT stamina FROM players WHERE telegram_id = %s;'''
     cur = con.cursor()
