@@ -17,7 +17,7 @@ from pathlib import Path
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -317,7 +317,15 @@ def shop_select(message):
 
 def zoo_management(message):
     tid = message.from_user.id
-    anti_forward(message.from_user.id, message.forward_date)
+    #anti_forward(message.from_user.id, message.forward_date)
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(tid,10)
+        sql_helper.db_remove_money(tid, penalty)
+        bot.send_message(tid, f"⚠ Мошенничество! -{penalty}💰")
+        return
     print('- - - ZOO MANAGEMENT - - -')
     #location =  sql_helper.db_check_location(tid)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -330,7 +338,7 @@ def zoo_management(message):
 
 def to_zoo_management(message):
     print('- - to_zoo_management - - ')
-    anti_forward(message.from_user.id, message.forward_date)
+    #anti_forward(message.from_user.id, message.forward_date)
     if re.match('Питомцы.*',message.text):           
         show_pets(message)
     elif re.match('Безопасность.*', message.text):
@@ -352,7 +360,15 @@ def set_cage_password(message):
 
 def lucky_way(message):
     tid = message.from_user.id
-    anti_forward(message.from_user.id, message.forward_date)
+    # anti_forward(message.from_user.id, message.forward_date)
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(tid,10)
+        sql_helper.db_remove_money(tid, penalty)
+        bot.send_message(tid, f"⚠ Мошенничество! -{penalty}💰")
+        return
     stamina = sql_helper.db_get_player_info(message.from_user.id)[2]
     if stamina == 0:
         bot.send_message(tid,"Недостаточно сил😪")
@@ -370,8 +386,17 @@ def lucky_way(message):
 
 def to_lucky_way(message):
     print('- - to_lucky_way - - ')
-    anti_forward(message.from_user.id, message.forward_date)
-    if re.match('Деньги.*',message.text):           
+    #anti_forward(message.from_user.id, message.forward_date)
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(message.from_user.id)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(message.from_user.id,10)
+        sql_helper.db_remove_money(message.from_user.id, penalty)
+        bot.send_message(message.from_user.id, f"⚠ Мошенничество! -{penalty}💰")
+        return
+    if re.match('.*Деньги.*',message.text):   
+        print('- - - money selected - - - ')        
         do_work(message)
     elif re.match('.*животное.*', message.text):
         print('- - - animal lucky selected - - - ')
@@ -713,8 +738,16 @@ def catch_pet(message):
         return
     tid = message.from_user.id
 
-    anti_forward(tid, message.forward_date)
-
+    #anti_forward(tid, message.forward_date)
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(message.from_user.id)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(message.from_user.id,10)
+        sql_helper.db_remove_money(message.from_user.id, penalty)
+        bot.send_message(message.from_user.id, f"⚠ Мошенничество! -{penalty}💰")
+        return
+    
     info = sql_helper.db_get_player_info(message.from_user.id)
     coins = info[0]
     stamina = info[2]
@@ -879,7 +912,15 @@ def do_work(message):
     print(' - - - play minigames - - -')
     tid = message.from_user.id
 
-    anti_forward(tid, message.forward_date)
+    #anti_forward(tid, message.forward_date)
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(message.from_user.id)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(message.from_user.id,10)
+        sql_helper.db_remove_money(message.from_user.id, penalty)
+        bot.send_message(message.from_user.id, f"⚠ Мошенничество! -{penalty}💰")
+        return
 
     info = sql_helper.db_get_player_info(message.from_user.id)
     stamina = info[2]
@@ -924,7 +965,15 @@ def search_money(message, stamina):
     print("-- PLAY: " + str(tid) + " type: " + message.text + " at " + str(datetime.now()) + " stamina: " + str(stamina))
     
     #print(message.__dict__)
-    anti_forward(tid, message.forward_date)
+    #anti_forward(tid, message.forward_date)
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(message.from_user.id)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(message.from_user.id,10)
+        sql_helper.db_remove_money(message.from_user.id, penalty)
+        bot.send_message(message.from_user.id, f"⚠ Мошенничество! -{penalty}💰")
+        return
 
     if re.match('.*удачн.*',message.text):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
