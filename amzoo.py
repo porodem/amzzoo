@@ -14,10 +14,11 @@ from telebot.util import update_types, quick_markup
 from pprint import pprint # to investigate what inside objects
 import threading # for parallel timer in difrent tasks like pet hunger timer
 from pathlib import Path
+from collections import defaultdict # anticheat - protect from very frequently messages
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -32,6 +33,13 @@ with open("update_note.md", 'r', encoding='utf-8') as f:
 with open("game_help.md", 'r', encoding='utf-8') as f:
     help_text = f.readlines()
 #print(list(note_text))
+
+# Rate limit configuration
+MESSAGE_LIMIT = 3  # Maximum number of messages allowed
+TIME_WINDOW = 5   # Time window in seconds
+
+# Dictionary to keep track of user message counts and timestamps
+user_message_count = defaultdict(lambda: {'count': 0, 'first_time': time.time()})
 
 c_start = types.BotCommand('start','Начать')
 help_command = types.BotCommand('show_help','Справка')
@@ -360,6 +368,9 @@ def set_cage_password(message):
 
 def lucky_way(message):
     tid = message.from_user.id
+    if slow_down(message.from_user.id):
+        return
+    print(message.__dict__)
     # anti_forward(message.from_user.id, message.forward_date)
     if message.forward_date is not None:
         print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
@@ -387,6 +398,8 @@ def lucky_way(message):
 def to_lucky_way(message):
     print('- - to_lucky_way - - ')
     #anti_forward(message.from_user.id, message.forward_date)
+    if slow_down(message.from_user.id):
+        return
     if message.forward_date is not None:
         print(f"-- ANTI CHEAT for {str(message.from_user.id)} - - -- - -- - - - -")
         #print("forward: " + str(message.forward_date))
@@ -1070,27 +1083,35 @@ def shop_select(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
         btn2 = types.KeyboardButton("🏜 Африка 💰 25",)
-        btn3 = types.KeyboardButton("🌊 Море 💰 35",)
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2,btn3,btn_back)
+        markup.add(btn1,btn2,btn_back)
     elif location == 3: # forest
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn1 = types.KeyboardButton("🏜 Африка 💰 25",)
+        btn1 = types.KeyboardButton("🌊 Море 💰 35",)
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn_home,btn_back)
     elif location == 1: # desert africa
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
+        #btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
+        btn1 = types.KeyboardButton("🌊 Море 💰 35",)
+        btn2 = types.KeyboardButton("🌎 Америка 💰 20",)
         btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn_home,btn_back)
+        markup.add(btn1,btn2,btn_home,btn_back)
     elif location == 4: # sea 
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
+        btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
+        btn2 = types.KeyboardButton("🏜 Африка 💰 25",)
+        #btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn_home,btn_back)
+        markup.add(btn1,btn2,btn_back)
+    elif location == 6: # America 
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("🏜 Африка 💰 25",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn_back)
     else:
         # TODO make home available
         print('- - - - UNKNOWN LOCATION  - - - - -')
@@ -1131,6 +1152,16 @@ def travel(message):
             bot.send_message(message.from_user.id, "✈ Вы улетели на море 🏜!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+        else:
+            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+    if re.match('.*Америка.*',message.text):
+        #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        if coins >= 20:
+            # TODO variable for ticket price
+            sql_helper.db_change_location(tid,6,20)
+            bot.send_message(message.from_user.id, "✈ Вы улетели в Америку 🌎!")
+            # new location image
+            #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     if re.match('.*Дом.*',message.text):
@@ -1319,6 +1350,14 @@ def pet_emoji(id):
         e = "🦢"
     elif id == 24:
         e = "🐳"
+    elif id == 25:
+        e = "🦜"
+    elif id == 26:
+        e = "🐛"
+    elif id == 27:
+        e = "🦙"
+    elif id == 28:
+        e = "🦩"
     elif id == 0:
         e = "☠"
     else:
@@ -1359,6 +1398,8 @@ def habitat_emoji(id):
         e = "🌲"
     elif id == 4:
         e = "🌊"
+    elif id == 6:
+        e = "🌎"
     else:
         e = "🏠"
     return e
@@ -1394,11 +1435,38 @@ def anti_forward(tid, forward_date):
         sql_helper.db_remove_money(tid, penalty)
         bot.send_message(tid, f"⚠ Мошенничество! -{penalty}💰")
         return
+    
+def slow_down(tid):
+    current_time = time.time()
+
+    # Reset the count if the time window has passed
+    if current_time - user_message_count[tid]['first_time'] > TIME_WINDOW:
+        user_message_count[tid] = {'count': 1, 'first_time': current_time}
+    else:
+        # Increment the count and check if it exceeds the limit
+        user_message_count[tid]['count'] += 1
+
+    if user_message_count[tid]['count'] > MESSAGE_LIMIT:
+        print('-----------You are sending messages too quickly! Please wait a moment.')
+        #bot.reply_to(message, 'You are sending messages too quickly! Please wait a moment.')
+        return True
+    else:
+        # Process the message as needed
+        print('- - - FREQUENCY OK')
+        return False
+       # bot.reply_to(message, 'Message received!')
 
 # - - - - - - -  M A I N  M E N U  - - - - - - - 
 
 def next_option(message):
     print('-- -- NEXT option ----')
+    #print(message.__dict__)
+    if slow_down(message.from_user.id):
+        return
+
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
+        return
     if re.match('.*Зоо.*',message.text):
         #bot.register_next_step_handler(message, show_pets)
         zoo_management(message)
@@ -1450,6 +1518,15 @@ def echo_allimage(message):
 def echo_all(message):
     print('---------- ANYTHING -----------')
     tid = message.from_user.id
+
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(message.from_user.id)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        #penalty = 10
+        #sql_helper.db_stamina_down(message.from_user.id,10)
+        #sql_helper.db_remove_money(message.from_user.id, penalty)
+        #bot.send_message(message.from_user.id, f"⚠ Мошенничество! -{penalty}💰")
+        return
  
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🐇 Зоопарк")
