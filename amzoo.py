@@ -85,17 +85,28 @@ def get_hunger():
     previous_epidemic_day = None
     while True:
         print("- - -  get hunger - - - ")
-        time.sleep(hunger_interval * 60 * 60)
+        print(str(datetime.now()) + f";GET_HUNGER" )
+        #time.sleep(hunger_interval * 60 * 60)
+        time.sleep(10)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
             health = player[2]
             if player[1] == 0:
-                bot.send_message(player[0], pet_emoji(player[1]) + " Один из питомцев умер 😥")
+                try:
+                    bot.send_message(player[0], pet_emoji(player[1]) + " Один из питомцев умер 😥")
+                except apihelper.ApiTelegramException:
+                    print('ERROR notify dead of hunger ' + str(player[0]) )
             elif health < 6:
-                bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} заболел! Срочно вылечите его!💊 ")
+                try:
+                    bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} заболел! Срочно вылечите его!💊 ")
+                except apihelper.ApiTelegramException:
+                    print('ERROR notify ill of hunger ' + str(player[0]) )
             else:
-                bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} голоден! Покормите его!")
+                try:
+                    bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} голоден! Покормите его!")
+                except apihelper.ApiTelegramException:
+                    print('ERROR notify hunger ' + str(player[0]) )
         
         today = datetime.now().day
         

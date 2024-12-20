@@ -536,7 +536,7 @@ def db_change_hunger_all():
     """
     print(' - - change hunger all pet DB func - -')
     q = '''select change_hunger(id, false , 1) from pets p where health > 0;;'''
-    q2 = '''select "owner", animal_id, health FROM pets p where hunger < 3;'''
+    q2 = '''select "owner", animal_id, health FROM pets p join players u on u.telegram_id = p.owner where hunger < 3 and pet_space <> 0;'''
     cur = con.cursor()
     cur.execute(q)
     cur.execute(q2)
