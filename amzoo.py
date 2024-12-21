@@ -18,7 +18,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -35,7 +35,7 @@ with open("game_help.md", 'r', encoding='utf-8') as f:
 #print(list(note_text))
 
 # Rate limit configuration
-MESSAGE_LIMIT = 3  # Maximum number of messages allowed
+MESSAGE_LIMIT = 4  # Maximum number of messages allowed
 TIME_WINDOW = 5   # Time window in seconds
 
 # Dictionary to keep track of user message counts and timestamps
@@ -86,8 +86,7 @@ def get_hunger():
     while True:
         print("- - -  get hunger - - - ")
         print(str(datetime.now()) + f";GET_HUNGER" )
-        #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(10)
+        time.sleep(hunger_interval * 60 * 60)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -482,7 +481,7 @@ def stealing(query):
             strong_lock = True
             break
     
-    pwr = 8 if strong_lock else 3
+    pwr = 8 if strong_lock else 2
     lock_info = 'Здесь установлены хорошие🔒 (-8 💪)' if strong_lock else ''
     
     stamina = sql_helper.db_get_player_info(query.from_user.id)[2]    
@@ -499,13 +498,18 @@ def stealing(query):
         print(list(chapest_pet))
         #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
         bot.delete_message(query.message.chat.id, query.message.id)
-        pet_stays = random.randrange(0,9)
+        pet_stays = random.randrange(1,100)
         sql_helper.db_stamina_down(query.from_user.id, 2)
-        if not pet_stays:
+        bot.send_message(query.from_user.id, "🔐")
+        escape_percent = 15
+        
+        if pet_stays < escape_percent:
                 print('Successful harm: pet escaped!')
                 sql_helper.db_remove_pet(chapest_pet[0])
-        bot.send_message(query.from_user.id, "🔐")
-        bot.send_message(query.from_user.id, "Успешно! Вероятность 10% что самый дешевый петомец убежит.")
+                for tid in [query.from_user.id, victim]:
+                    bot.send_message(tid, f"Успешно! {pet_emoji(chapest_pet[2])} убежал.")
+        else:
+            bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но {pet_emoji(chapest_pet[2])} не убежал из клетки. Шанс {escape_percent}%")
     else:
         search_victims(query)
         #bot.send_message(query.from_user.id, "🔒 Неудалось")
@@ -1083,6 +1087,8 @@ def check_relax(tid):
         print('hours rest ' + str(hours_rest) + 'not enough')
     print(str(datetime.now()) + f" check_relax;tid {str(tid)} last work: {str(last_work)} t_dif: {time_diff}; hours_rest: {hours_rest}; stm_up: {relax}; day_left: {day_left} ")
     return relax
+
+# TODO protect from travel enywhere by text message
 
 @bot.message_handler(regexp=".*Путешествие.*")
 def shop_select(message):

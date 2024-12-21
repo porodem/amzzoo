@@ -298,8 +298,11 @@ def db_get_zoo_password(tid):
     return p[0]
 
 def db_get_cheapest_pet(tid):
+    '''
+    Returns: list: [pet ID, PRICE, animal_id]
+    '''
     print('SQL get cheapest pet')
-    q = '''select p.id, al.price from pets p join animal_list al on al.id = p.animal_id where "owner" = %s order by price limit 1;'''
+    q = '''select p.id, al.price, p.animal_id from pets p join animal_list al on al.id = p.animal_id where "owner" = %s order by price limit 1;'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     pet = cur.fetchone()
