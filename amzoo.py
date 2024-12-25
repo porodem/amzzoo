@@ -223,7 +223,7 @@ def show_pets(query):
 
         if int(extract_numbers(query.data,1)) == 1:
             print('feed option')
-            feed_price = int(pet_info[8] / 10)
+            feed_price = int(pet_info[8] / 10) - int(pet_info[8]/10 * float(f"0.{pet_info[2]}"))
             sql_helper.db_remove_money(query.from_user.id,feed_price)
             sql_helper.db_change_hunger(pet_info[0], True, 10)
             healty = random.randrange(0,9)
@@ -252,7 +252,7 @@ def show_pets(query):
     print('pet_info: ')
     print(list(pet_info))
     mood = define_mood(pet_info)
-    feed_price = int(pet_info[8] / 10)
+    feed_price = int(pet_info[8] / 10) - int(pet_info[8]/10 * float(f"0.{pet_info[2]}"))
     habitat = habitat_emoji(pet_info[6])
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
     btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
