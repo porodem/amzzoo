@@ -122,6 +122,7 @@ def db_get_owned_pets(tid):
           #print(list(b))
           for record in b:
                pet_list.append(record)
+          con.commit()
                
      return pet_list
 
@@ -141,6 +142,7 @@ def db_get_owned_items(tid):
         #print(list(b))
         for record in b:
             item_list.append(record)
+        con.commit()
             
     return item_list
 
@@ -160,6 +162,7 @@ def db_get_owned_items_group(tid):
         #print(list(b))
         for record in b:
             item_list.append(record)
+        con.commit()
             
     return item_list
 
@@ -199,6 +202,7 @@ def db_get_animal_shop(location_id, catch_mode=False):
           #print(list(b))
           for record in b:
                pet_list.append(record)
+          con.commit()
                
      return pet_list
 
@@ -218,6 +222,7 @@ def db_get_animal_for_catch(location_id):
         #print(list(b))
         for record in b:
             pet_list.append(record)
+        con.commit()
                
     return pet_list
 
@@ -234,6 +239,7 @@ def db_get_bazar_shop_items(location_id):
         b = cur.fetchall()
         for record in b:
             items_available.append(record)
+        con.commit()
 
     return items_available;
 
@@ -270,6 +276,7 @@ def db_get_all_tids():
         b = cur.fetchall()
         for line in b:
             all_players.append(line[0])
+    con.commit()
     print(str(len(all_players)) + " " + str(list(all_players)))
     return(all_players)
 
@@ -285,6 +292,7 @@ def db_get_nearby_players(location = None):
         b = cur.fetchall()
         for line in b:
             all_players.append(line)
+        con.commit()
     print(str(len(all_players)) + " " + str(list(all_players)))
     return(all_players)
 
