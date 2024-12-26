@@ -474,12 +474,15 @@ def stealing(query):
 
     v_items = sql_helper.db_get_owned_items(victim)
     strong_lock = False
+    zoo_alarm = False
     for i in v_items:
         #print('items:')
         #print(i[5])
         if i[5] == 6:
             strong_lock = True
-            break
+        elif i[5] == 7:
+            zoo_alarm = True
+            #break
     
     pwr = 8 if strong_lock else 2
     lock_info = 'Здесь установлены хорошие🔒 (-8 💪)' if strong_lock else ''
@@ -507,9 +510,13 @@ def stealing(query):
                 print('Successful harm: pet escaped!')
                 sql_helper.db_remove_pet(chapest_pet[0])
                 for tid in [query.from_user.id, victim]:
-                    bot.send_message(tid, f"Успешно! {pet_emoji(chapest_pet[2])} убежал.")
+                    bot.send_message(tid, f" {pet_emoji(chapest_pet[2])} убежал.")
         else:
             bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но {pet_emoji(chapest_pet[2])} не убежал из клетки. Шанс {escape_percent}%")
+
+            if zoo_alarm:
+                print('ZOO_ALARM')
+                bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
     else:
         search_victims(query)
         #bot.send_message(query.from_user.id, "🔒 Неудалось")
@@ -1390,6 +1397,8 @@ def item_emoji(id):
         e = "💉"
     elif id == 6:
         e = "🔐"
+    elif id == 7:
+        e = "🚨"
     elif id == 10:
         e = "📔"
     elif id == 11:
