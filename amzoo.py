@@ -1382,6 +1382,8 @@ def pet_emoji(id):
         e = "🦙"
     elif id == 28:
         e = "🦩"
+    elif id == 29:
+        e = "🐍"
     elif id == 0:
         e = "☠"
     else:
