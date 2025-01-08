@@ -349,8 +349,9 @@ def zoo_management(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("Питомцы",)
     btn2 = types.KeyboardButton("Безопасность",)
+    btn3 = types.KeyboardButton("Исследования",)
     btn_back = types.KeyboardButton("🔙 Назад")
-    markup.add(btn1,btn2,btn_back)
+    markup.add(btn1,btn2,btn3,btn_back)
     bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_zoo_management)
 
@@ -363,6 +364,8 @@ def to_zoo_management(message):
         print('- - - security selected - - - ')
         bot.send_message(message.from_user.id, "введите только одну цифру! (0-9)")
         bot.register_next_step_handler(message, set_cage_password)
+    elif re.match('Исследования.*',message.text):
+        do_tech(message)
     else:
         echo_all(message)
 
@@ -374,6 +377,10 @@ def set_cage_password(message):
     else:
         bot.send_message(message.from_user.id, "❌ только одну цифру!")
         bot.register_next_step_handler(message, set_cage_password)
+
+def do_tech(message):
+    print('- - TECH - -')
+    return
     
 
 def lucky_way(message):
@@ -1519,7 +1526,8 @@ def get_statistics(tid):
     #box = '📦' if len(items) > 0 else ' '
     item_overview = ''
     for i in items:
-        item_overview = item_overview + f"{item_emoji(i[0])}x{i[2]}"
+        q = '' if i[2] == 1 else f"x{i[2]}"
+        item_overview = item_overview + f"{item_emoji(i[0])}{q}"
     check_relax(tid)
     pinfo = sql_helper.db_get_player_info(tid)
     lvl = pinfo[1]
