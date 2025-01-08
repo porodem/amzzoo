@@ -18,7 +18,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -711,7 +711,7 @@ def bazar_shop_new(message):
     action = '_0'
 
     markup = types.InlineKeyboardMarkup()
-    if item[0] in [1,2] and is_owned:
+    if item[0] in [1,2,3] and is_owned:
         btn_buy = types.InlineKeyboardButton('✖', callback_data='bazar' + str(next_cid) + action)
     else:
         btn_buy = types.InlineKeyboardButton(f"💰 {price} ", callback_data='bazar' + str(cidx) + '_1')
@@ -1209,21 +1209,27 @@ def travel(message):
             print(list(owned_items))
             #cage_counter = 0
             for i in owned_items:
-                if i[1] == 'Клетка' and i[3] == False:
+                if i[5] in [1,2,3] and i[3] == False:
                     sql_helper.db_change_pet_space(tid,1)
-                    sql_helper.db_update_property(i[0],switch=True)    
+                    sql_helper.db_update_property(i[0],switch=True)
                     bot.send_message(tid, "Место для питомцев увеличено!")
-                elif i[1] == 'Железная Клетка' and i[3] == False:
-                    sql_helper.db_change_pet_space(tid,1)
-                    bot.send_message(tid, "Место для питомцев увеличено!")
-                    #cage_counter += 1
-                    #sql_helper.db_remove_property(i[0])                    
-                    sql_helper.db_update_property(i[0],switch=True)            
+                # if i[1] == 'Клетка' and i[3] == False:
+                #     sql_helper.db_change_pet_space(tid,1)
+                #     sql_helper.db_update_property(i[0],switch=True)    
+                #     bot.send_message(tid, "Место для питомцев увеличено!")
+                # elif i[1] == 'Железная Клетка' and i[3] == False:
+                #     sql_helper.db_change_pet_space(tid,1)
+                #     bot.send_message(tid, "Место для питомцев увеличено!")
+                #             #cage_counter += 1
+                #             #sql_helper.db_remove_property(i[0])                    
+                #     sql_helper.db_update_property(i[0],switch=True)            
             # if cage_counter == 1:
             #     sql_helper.db_change_pet_space(tid,1)
             #     bot.send_message(tid, "Место для питомцев увеличено!")
             # elif cage_counter > 1:
-            #     bot.send_message(tid, "У вас уже есть такая клетка для животных!")            
+            #     bot.send_message(tid, "У вас уже есть такая клетка для животных!")    
+            # 
+            print('home return done')        
         else:
             bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     echo_all(message)
@@ -1402,6 +1408,8 @@ def item_emoji(id):
         e = "⬜"
     elif id == 2:
         e = "🟦"
+    elif id == 3:
+        e = "🟪"
     elif id == 5:
         e = "💉"
     elif id == 6:
