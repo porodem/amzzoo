@@ -38,3 +38,4 @@
 8. Show personal player place in info
 9. Name as nickname from telegram
 10. restore stamina 1 per hour, but remember about profit nex day problem
+11. maby consume stamine on feeding animals and travels?
