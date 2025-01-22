@@ -4,8 +4,6 @@ import telebot
 import time # for sleep (don't give dice result in second but wait a little)
 import re
 import sql_helper
-# https://pypi.org/project/emoji/
-import emoji
 import random # for flu illnes
 
 from datetime import datetime, timedelta
@@ -18,7 +16,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
