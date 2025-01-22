@@ -28,4 +28,4 @@ id;species ;habitat;food_type;price;catch_price;catch_difficulty;catch_chance
 26;Гусеницы;6;2;30;;;
 27;Лама;6;2;60;;;
 28;Фламинго;6;3;70;13;4;17
-29;Змея;5;3;30;10;4;17
+29;Змея;;3;30;10;4;17
