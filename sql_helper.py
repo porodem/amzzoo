@@ -620,6 +620,7 @@ def db_change_health(pet_id: int, cure: bool=False, val: int=1):
     print('sql sel result: ' + str(result))
     con.commit()
     cur.close()
+    return
 
 def db_change_zoo_pass(tid, password):
     '''
@@ -632,6 +633,18 @@ def db_change_zoo_pass(tid, password):
     con.commit()
     cur.close()
     return 
+
+def db_save_feedback(tid, rtype, text):
+    '''
+    save message from player to developer
+    '''
+    q = '''INSERT INTO feedbacks(msg, type, rdate, tid) VALUES (%s,%s, now(), %s);'''
+    cur = con.cursor()
+    cur.execute(q,(text,rtype,tid))
+    con.commit()
+    cur.close()
+    return
+
 # ==================================== SHOW BLOCK
 
 

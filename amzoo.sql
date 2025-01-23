@@ -493,3 +493,14 @@ end;
 $$ language plpgsql;
 
 create trigger t_health_down before update of health on pets for each row execute function health_down();
+
+
+create table feedbacks(
+	id int primary key generated always as identity, 
+	msg text,
+	type int, -- 0 negative 1 posttive 2 question
+	rdate timestamp,
+	tid int8
+)
+
+select username, tid, rdate, msg from feedbacks f join players p on p.telegram_id  = f.tid ;

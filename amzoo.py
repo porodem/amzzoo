@@ -42,11 +42,12 @@ user_message_count = defaultdict(lambda: {'count': 0, 'first_time': time.time()}
 c_start = types.BotCommand('start','Начать')
 help_command = types.BotCommand('show_help','Справка')
 patch_notes_command = types.BotCommand('patch_notes','Что нового')
+feedback = types.BotCommand('feedback','Написать разработчику')
 #main_menu = types.BotCommand('main_menu','Меню')
 #main_menu = types.BotCommand('earn_money','Найти деньги')
-bot.set_my_commands([help_command, patch_notes_command])
+bot.set_my_commands([help_command, patch_notes_command, feedback])
 
-@bot.message_handler(commands=['show_help','patch_notes'])
+@bot.message_handler(commands=['show_help','patch_notes','feedback'])
 def show_help(message):
     print('000000')
     print(message.text)
@@ -55,6 +56,14 @@ def show_help(message):
     elif message.text == '/patch_notes':
         print('-------- NOTE SHOW')
         bot.send_message(message.from_user.id, ''.join(note_text), parse_mode='markdown' )
+    elif message.text == '/feedback':
+        print('-- feedback option')
+        bot.send_message(message.from_user.id, "Напишите сообщение и отправьте:")        
+        bot.register_next_step_handler(message, send_feedback)
+
+def send_feedback(message):
+    sql_helper.db_save_feedback(message.from_user.id, 0, message.text)
+    bot.send_message(message.from_user.id, '📨 Сообщение разработчику отправлено!')
     
 
 
