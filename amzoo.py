@@ -63,7 +63,12 @@ def show_help(message):
 
 def send_feedback(message):
     sql_helper.db_save_feedback(message.from_user.id, 0, message.text)
-    bot.send_message(message.from_user.id, '📨 Сообщение разработчику отправлено!')
+    coins = sql_helper.db_check_owned_coins(message.from_user.id)
+    if coins < 3:
+        bot.send_message(message.from_user.id, '💰 Нужно 3 монеты. Попробуйте сыграть в мини-играх 🍀')
+    else:
+        sql_helper.db_remove_money(message.from_user.id,3)
+        bot.send_message(message.from_user.id, '📨 Сообщение разработчику отправлено!')
     
 
 
