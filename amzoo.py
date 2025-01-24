@@ -374,7 +374,7 @@ def to_zoo_management(message):
         show_pets(message)
     elif re.match('Безопасность.*', message.text):
         print('- - - security selected - - - ')
-        bot.send_message(message.from_user.id, "введите только одну цифру! (0-9)")
+        bot.send_message(message.from_user.id, "Введите только одну цифру! (0-9). Это будет пароль на открытие клетки. При взломе друой игрок попытается её угадать. Если угадает самый дешевый петомец может убежать")
         bot.register_next_step_handler(message, set_cage_password)
     elif re.match('Исследования.*',message.text):
         do_tech(message)
@@ -504,11 +504,11 @@ def stealing(query):
             #break
     
     pwr = 8 if strong_lock else 2
-    lock_info = 'Здесь установлены хорошие🔒 (-8 💪)' if strong_lock else ''
+    lock_info = 'Здесь установлены хорошие🔒 (требуется 8 💪)' if strong_lock else ''
     
     stamina = sql_helper.db_get_player_info(query.from_user.id)[2]    
     if stamina < pwr:
-        bot.send_message(query.from_user.id, lock_info + "Ты устал 😪")
+        bot.send_message(query.from_user.id, lock_info + "Недостаточно сил 😪")
         bot.delete_message(query.message.chat.id, query.message.id)
         #echo_all()
         return
