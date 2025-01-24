@@ -16,7 +16,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -1158,7 +1158,7 @@ def shop_select(message):
     else:
         # TODO make home available
         print('- - - - UNKNOWN LOCATION  - - - - -')
-    bot.send_message(tid, 'Куда отправимся?:', reply_markup=markup)  
+    bot.send_message(tid, 'Куда отправимся? 💪-1:', reply_markup=markup)  
     bot.register_next_step_handler(message, travel)
 
 
@@ -1169,47 +1169,47 @@ def travel(message):
     coins = sql_helper.db_get_player_info(message.from_user.id)[0]
     if re.match('.*Лес.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-        if coins >= 12:
+        if coins >= 12 and sql_helper.db_stamina_drain(tid,1) > -1:
             sql_helper.db_change_location(tid,3,12)
             bot.send_message(message.from_user.id, "✈ Вы отправились в лес 🌲!")
             # new location image
             # any picture have unique id, that we receive when send this pic for the first time to telegram. See picture grabber code block in the end.
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
         else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+            bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Африка.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-        if coins >= 25:
+        if coins >= 25 and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,1,25)
             bot.send_message(message.from_user.id, "✈ Вы улетели в Африку 🏜!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEmcuA05mlhg-HQfSqDbYL8ixtHZTAAIv6DEbItVxSfetuCF-nurtAQADAgADcwADNgQ')
         else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+            bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Море.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-        if coins >= 35:
+        if coins >= 35 and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,4,35)
             bot.send_message(message.from_user.id, "✈ Вы улетели на море 🏜!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
         else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+            bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Америка.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-        if coins >= 20:
+        if coins >= 20 and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,6,20)
             bot.send_message(message.from_user.id, "✈ Вы улетели в Америку 🌎!")
             # new location image
             #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
         else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+            bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Дом.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-        if coins >= 5:
+        if coins >= 5 and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,5,5)
             bot.send_message(message.from_user.id, "✈ Вы улетели домой 🏠!")
@@ -1243,7 +1243,7 @@ def travel(message):
             # 
             print('home return done')        
         else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+            bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     echo_all(message)
 
 @bot.callback_query_handler(lambda query: 'cure' in query.data )

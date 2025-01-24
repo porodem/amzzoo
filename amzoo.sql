@@ -504,3 +504,22 @@ create table feedbacks(
 )
 
 select username, tid, rdate, msg from feedbacks f join players p on p.telegram_id  = f.tid ;
+
+create or replace function get_tired(tid int8, value int) 
+returns int
+language plpgsql
+as $$
+declare 
+stamina_before int;
+l_work timestamp;
+begin
+	select stamina, last_work into stamina_before, l_work from players where telegram_id = tid;
+	if stamina_before < value then
+		return -1;
+	else		
+		UPDATE players set stamina = (CASE WHEN stamina - value < 0 THEN 0 ELSE stamina - (value) END) where telegram_id = tid;
+	end if;
+    return (SELECT stamina FROM players WHERE telegram_id = tid);
+end;
+$$;
+end

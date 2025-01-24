@@ -383,6 +383,19 @@ def db_stamina_down(tid, value):
     con.commit()
     cur.close()
 
+def db_stamina_drain(tid, value):
+    """SQL function returns -1 if not enough stamina, number as result after succesful subtraction.
+    """
+    print('SQL stamina drain')
+    q = '''SELECT get_tired(%s,%s);'''
+    cur = con.cursor()
+    cur.execute(q,(tid,value))
+    stamina = cur.fetchone()[0]
+    print('-SQL stamina drain:' + str(stamina))
+    con.commit()
+    cur.close()
+    return(stamina)
+
 def db_stamina_up(tid, value):
     """  sql trigger updates last_work table field
         :param tid: telegram id of current player.
