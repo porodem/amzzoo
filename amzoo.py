@@ -16,7 +16,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -1087,30 +1087,35 @@ def check_relax(tid):
     info = sql_helper.db_get_player_info(tid)
     last_work = info[3]
     stamina_before = info[2]
-    if stamina_before == 10:
-        return stamina_before
+    
     
     #print(f"check+relax func: {str(tid)} last work: " + str(last_work))
     #ts = datetime.fromisoformat(last_work)
     #print(ts)
     this_moment = datetime.now()
     time_diff = this_moment - last_work
-    day_left = last_work.date().day != this_moment.date().day
+    day_left =  this_moment.date().day - last_work.date().day
     print('time dif:' + str(time_diff))
-    single_stamina_priod = 2
+    single_stamina_priod = 1
     hours_rest = time_diff.days * 24 + time_diff.seconds // 3600 // single_stamina_priod
     print('hours: ' + str(hours_rest))
-    if hours_rest > 0:
-        if day_left:
-            print('hours over 8 - -')
-            profit = sql_helper.db_get_profit(tid)  
-            bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
+    if day_left > 0:
+        print('relax day or more')
+        profit = sql_helper.db_get_profit(tid)  
+        bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
+        if stamina_before == 10:
+            sql_helper.db_stamina_up(tid,0) # set new last_work time to prevent profit loop
+            return stamina_before
         relax = hours_rest if (hours_rest + stamina_before) < 11 else 10 - stamina_before
-        print('stamina added: ' + str(hours_rest))
         sql_helper.db_stamina_up(tid,relax)
     else:
-        relax = 0
-        print('hours rest ' + str(hours_rest) + 'not enough')
+        if hours_rest > 0:
+            relax = hours_rest if (hours_rest + stamina_before) < 11 else 10 - stamina_before
+            print('stamina added: ' + str(hours_rest))
+            sql_helper.db_stamina_up(tid,relax)
+        else:
+            relax = 0
+            print('hours rest ' + str(hours_rest) + 'not enough')
     print(str(datetime.now()) + f" check_relax;tid {str(tid)} last work: {str(last_work)} t_dif: {time_diff}; hours_rest: {hours_rest}; stm_up: {relax}; day_left: {day_left} ")
     return relax
 
