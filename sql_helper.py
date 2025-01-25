@@ -50,6 +50,9 @@ def db_check_owned_pets(tid):
     else:
         print(b[0])
         result = b[0]
+    con.commit()
+    cur.close()
+
 
     return result
 
@@ -87,6 +90,8 @@ def db_get_player_info(tid):
     else:
         #print(b)
         result = b
+    
+    cur.close()
 
     return result
 
@@ -180,7 +185,23 @@ def db_get_profit(tid):
     b = cur.fetchone()
     profit = 0 if b[0] is None else b[0]
     db_add_money(tid, profit)
+    cur.close()
+    con.commit()
     return profit
+
+def db_get_profit_pg(tid, percent):
+    """
+    calculate and add profit with PGSQL function. Also check if player try to repeat it (cheating).
+    In PG get_profit fucntion we use SELECT ... FOR UPDATE to prevent players from spam multiple message to repeat profit.
+    """
+    q = 'SELECT  get_profit(%s,%s) ;'
+    cur = con.cursor()
+    cur.execute(q,(tid,percent))
+    b = cur.fetchone()[0]
+    cur.close()
+    con.commit()
+    return b
+
 
 def db_get_animal_shop(location_id, catch_mode=False):
      """

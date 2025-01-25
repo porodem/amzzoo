@@ -1101,7 +1101,11 @@ def check_relax(tid):
     print('hours: ' + str(hours_rest))
     if day_left > 0:
         print('relax day or more')
-        profit = sql_helper.db_get_profit(tid)  
+        profit = sql_helper.db_get_profit_pg(tid, 18) #sql_helper.db_get_profit(tid)  
+        if profit == -1:
+            bot.send_message(tid,"⚠️ Мошенничество -10💰 " )
+            sql_helper.db_remove_money(tid,10)
+            return
         bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
         if stamina_before == 10:
             sql_helper.db_stamina_up(tid,0) # set new last_work time to prevent profit loop
@@ -1579,7 +1583,6 @@ def echo_allimage(message):
 def echo_all(message):
     print('---------- ANYTHING -----------')
     tid = message.from_user.id
-
     if message.forward_date is not None:
         print(f"-- ANTI CHEAT for {str(message.from_user.id)} - - -- - -- - - - -")
         #print("forward: " + str(message.forward_date))
