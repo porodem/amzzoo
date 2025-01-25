@@ -172,10 +172,11 @@ def db_get_profit(tid):
 
         :return sum of coins for owned pets
     """
+    profit_percent = 18
     print(f"Profit {tid} at " + str(datetime.now()))
-    q = '''select sum(price)/6 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = %s'''
+    q = '''select sum(price) * %s / 100 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = %s'''
     cur = con.cursor()
-    cur.execute(q,(tid,))
+    cur.execute(q,(profit_percent,tid,))
     b = cur.fetchone()
     profit = 0 if b[0] is None else b[0]
     db_add_money(tid, profit)
