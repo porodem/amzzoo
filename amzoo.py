@@ -304,8 +304,11 @@ def show_pets(query):
     if pet_info[2] < 10 and pet_info[1] != 0:
         btn_feed = types.InlineKeyboardButton(f"🍽💰{feed_price}",callback_data="pet" + str(cidx) + '_1')
         if len(owned_pets) > 1:
-            btn_feed_all = types.InlineKeyboardButton(f"🍽️🍽️💰{total_feed_price} всех",callback_data="pet" + str(cidx) + '_3')
-        btn_pack = btn_pack + [btn_feed, btn_feed_all]
+            smart_feed = sql_helper.db_check_owned_item(query.from_user.id, 30)
+            if smart_feed > 0:
+                btn_feed_all = types.InlineKeyboardButton(f"🍽️🍽️💰{total_feed_price} всех",callback_data="pet" + str(cidx) + '_3')
+                btn_pack = btn_pack + [btn_feed_all]
+        btn_pack = btn_pack + [btn_feed]
     if pet_info[3] < 10 and pet_info[1] != 0:
         items = sql_helper.db_get_owned_items_group(query.from_user.id)
         have_antibiotic = False
@@ -1474,6 +1477,8 @@ def item_emoji(id):
         e = "🗺"
     elif id == 20:
         e = "🔑"
+    elif id == 30:
+        e = "🥣"
     else:
         e = "✖"
     return e

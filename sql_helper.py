@@ -171,6 +171,17 @@ def db_get_owned_items_group(tid):
             
     return item_list
 
+def db_check_owned_item(tid, id):
+    """
+    Check if player owns exact item
+    """
+    q = "SELECT count(*) FROM property WHERE owner = %s AND item_id = %s"
+    cur = con.cursor()
+    cur.execute(q,(tid,id))
+    b = cur.fetchone()[0]
+    print('check item' + str(b))
+    return b
+
 def db_get_profit(tid):
     """
         :param tid: telegram id of current player.
