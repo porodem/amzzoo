@@ -115,10 +115,10 @@ def db_get_owned_pets(tid):
      """
         :param tid: telegram id of current player.
 
-        :return list: [id, animal_id, price, health] from pets table
+        :return list: [id, animal_id, price, health, 4 hunger] from pets table
     """
      print('-- get all players pets --')
-     q = '''select pets.id, animal_id, price, health from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
+     q = '''select pets.id, animal_id, price, health, hunger from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
      pet_list = []
 
      with con.cursor() as cur:
@@ -592,6 +592,15 @@ def db_change_hunger_all():
     con.commit()
     cur.close()
     return hungry_pets
+
+def db_feed_all(tid):
+    """feed all animals of player to max"""
+    q = "update pets SET hunger = 10 where owner = %s;"
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    cur.close()
+    con.commit()
+    return
 
 def db_cure_pet(pet_id: int):
     """  

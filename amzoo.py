@@ -221,6 +221,14 @@ def begin_game(message):
 def show_pets(query):
     print(' - - show pets function (callback) -- : ')
     owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
+    total_pets_price = 0
+    total_pets_hunger = 0
+    total_feed_price = 0
+    for pet in owned_pets:
+        #total_pets_price = total_pets_price + pet[2]
+        #total_pets_hunger += pet[4]
+        total_feed_price += int(pet[2] / 10) - int(pet[2]/10 * float(f"0.{pet[4]}"))
+    print(f"total pet price: {total_pets_price} and gunger: {total_pets_hunger}")
     print(str(query.from_user.id) + f" has {len(owned_pets)}")
     if len(owned_pets) == 0:
         bot.send_message(query.from_user.id, "У вас нет питомцев")
@@ -236,6 +244,11 @@ def show_pets(query):
         if int(extract_numbers(query.data,1)) == 1:
             print('feed option')
             feed_price = int(pet_info[8] / 10) - int(pet_info[8]/10 * float(f"0.{pet_info[2]}"))
+            coins = sql_helper.db_get_player_info(query.from_user.id)[0]
+            if coins < feed_price:
+                bot.send_message(query.from_user.id, "❌ нехватает денег!")
+                bot.delete_message(query.message.chat.id, query.message.id)
+                return
             sql_helper.db_remove_money(query.from_user.id,feed_price)
             sql_helper.db_change_hunger(pet_info[0], True, 10)
             healty = random.randrange(0,9)
@@ -248,6 +261,17 @@ def show_pets(query):
             sql_helper.db_cure_pet(pet_info[0])
             sql_helper.db_delete_property(5)
             bot.send_message(query.from_user.id, "вылечен")
+        elif int(extract_numbers(query.data,1)) == 3:
+            print('feed all option')
+            #total_feed_price = int(total_pets_price / 10) - int(total_pets_price/10 * float(f"0.{total_pets_hunger}"))
+            coins = sql_helper.db_get_player_info(query.from_user.id)[0]
+            if coins < total_feed_price:
+                bot.send_message(query.from_user.id, "❌ нехватает денег!")
+                bot.delete_message(query.message.chat.id, query.message.id)
+                echo_all()
+            sql_helper.db_remove_money(query.from_user.id,total_feed_price)
+            sql_helper.db_feed_all(query.from_user.id)
+            #sql_helper.db_change_hunger(pet_info[0], True, 10) # TODO modify for all
             
         
         
@@ -265,6 +289,7 @@ def show_pets(query):
     print(list(pet_info))
     mood = define_mood(pet_info)
     feed_price = int(pet_info[8] / 10) - int(pet_info[8]/10 * float(f"0.{pet_info[2]}"))
+    #total_feed_price = int(total_pets_price / 10) - int(total_pets_price/10 * float(f"0.{total_pets_hunger}"))
     habitat = habitat_emoji(pet_info[6])
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
     btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
@@ -278,7 +303,9 @@ def show_pets(query):
         btn_pack = btn_pack + [btn_backward,btn_forward]
     if pet_info[2] < 10 and pet_info[1] != 0:
         btn_feed = types.InlineKeyboardButton(f"🍽💰{feed_price}",callback_data="pet" + str(cidx) + '_1')
-        btn_pack = btn_pack + [btn_feed]
+        if len(owned_pets) > 1:
+            btn_feed_all = types.InlineKeyboardButton(f"🍽️🍽️💰{total_feed_price} всех",callback_data="pet" + str(cidx) + '_3')
+        btn_pack = btn_pack + [btn_feed, btn_feed_all]
     if pet_info[3] < 10 and pet_info[1] != 0:
         items = sql_helper.db_get_owned_items_group(query.from_user.id)
         have_antibiotic = False
