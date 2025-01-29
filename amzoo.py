@@ -807,7 +807,7 @@ def pet_shop(message, catch_mode=False):
             if catch_mode:
                 btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
             else:
-                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰 " + str(a[2]))
+                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
             btn_pack.append(btn)
         btn_sell = types.KeyboardButton("Продать ")
         btn_back = types.KeyboardButton("🔙 Назад")
@@ -1415,37 +1415,37 @@ def pet_emoji(id):
     elif id == 10:
         e = "🦝"
     elif id == 11:
-        e = "🐂"
-    elif id == 12:
-        e = "🐠"
-    elif id == 13:
-        e = "🦢"
-    elif id == 14:
-        e = "🦜"
-    elif id == 15:
-        e = "🦑"
-    elif id == 16:
-        e = "🐛"
-    elif id == 17:
-        e = "🦐"
-    elif id == 18:
         e = "🦌"
-    elif id == 19:
+    elif id == 12:
         e = "🦍"
-    elif id == 20:
+    elif id == 13:
         e = "🦓"
-    elif id == 21:
-        e = "🐙"
-    elif id == 22:
+    elif id == 14:
         e = "🐅"
-    elif id == 23:
-        e = "🦭"
-    elif id == 24:
+    elif id == 15:
         e = "🐆"
-    elif id == 25:
+    elif id == 16:
+        e = "🦐"
+    elif id == 17:
+        e = "🐠"
+    elif id == 18:
+        e = "🦑"
+    elif id == 19:
+        e = "🐙"
+    elif id == 20:
+        e = "🦭"
+    elif id == 21:
+        e = "🐂"
+    elif id == 22:
         e = "🦒"
-    elif id == 26:
+    elif id == 23:
+        e = "🦢"
+    elif id == 24:
         e = "🐳"
+    elif id == 25:
+        e = "🦜"
+    elif id == 26:
+        e = "🐛"
     elif id == 27:
         e = "🦙"
     elif id == 28:
