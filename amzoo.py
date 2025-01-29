@@ -16,7 +16,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -58,7 +58,7 @@ def show_help(message):
         bot.send_message(message.from_user.id, ''.join(note_text), parse_mode='markdown' )
     elif message.text == '/feedback':
         print('-- feedback option')
-        bot.send_message(message.from_user.id, "Напишите сообщение и отправьте:")        
+        bot.send_message(message.from_user.id, "Напишите сообщение и отправьте (💰-3):")        
         bot.register_next_step_handler(message, send_feedback)
 
 def send_feedback(message):
@@ -67,8 +67,12 @@ def send_feedback(message):
     if coins < 3:
         bot.send_message(message.from_user.id, '💰 Нужно 3 монеты. Попробуйте сыграть в мини-играх 🍀')
     else:
-        sql_helper.db_remove_money(message.from_user.id,3)
-        bot.send_message(message.from_user.id, '📨 Сообщение разработчику отправлено!')
+        if len(message.text) > 10: 
+            sql_helper.db_remove_money(message.from_user.id,3)
+            bot.send_message(message.from_user.id, '📨 Сообщение разработчику отправлено! -3💰')
+            bot.send_message(master_tid, message.text)
+        else:
+            bot.send_message(message.from_user.id, 'Слишком короткое сообщение')
     
 
 
