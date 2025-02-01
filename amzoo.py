@@ -99,6 +99,7 @@ hunger_interval = 4
 
 def get_hunger():
     previous_epidemic_day = None
+    previous_fire_day = None
     while True:
         print("- - -  get hunger - - - ")
         print(str(datetime.now()) + f";GET_HUNGER" )
@@ -129,6 +130,10 @@ def get_hunger():
         if previous_epidemic_day == today:
             print('epidemic today was already executed')
             is_epidemic = False
+
+        is_fire = today % 7 == 0
+        if previous_fire_day == today:
+            is_fire = False
             
         # WARNING if bot restarts epidemic executes again !
         if is_epidemic:
@@ -141,6 +146,41 @@ def get_hunger():
                 bot.send_message(p[0],'🦠 Эпидемия! Проверьте питомцев!')
                 players.append(p[0])
             print(list(infected_pets))
+
+        if is_fire:
+            print(f" - - - - - fire FIRE today: {today}")
+            dmg_percent = 15
+            previous_fire_day = today
+            burned_tids = sql_helper.db_get_all_tids()
+            begin = random.randrange(0,2) 
+            friquency = 2 # every this number select tid for execute fire
+            fire_jumps = len(burned_tids) // friquency 
+            print(f"begin {begin} jumps {fire_jumps}")
+            for i in range(fire_jumps):
+                tid = burned_tids[begin]
+                
+                fire_protect = sql_helper.db_check_owned_item(tid,11) # check if has fire extinguisher
+                if fire_protect > 0:
+                    print(f"{tid} have fire extinguisher")
+                    dmg_percent = 8
+                    fire_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
+                    sql_helper.db_remove_money(tid,fire_damage)
+                    try:
+                        bot.send_message(tid, f"🔥 Пожар в зоопарке! -{fire_damage}💰")
+                    except apihelper.ApiTelegramException:
+                        print('EXEPTION tid error')
+                    sql_helper.db_remove_property(fire_protect)
+                else:
+                    print(f"{tid} HAVE NO fire extinguisher")
+                    fire_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
+                    sql_helper.db_remove_money(tid,fire_damage)
+                    try:
+                        bot.send_message(tid, f"🔥 Пожар в зоопарке! -{fire_damage}💰")
+                    except apihelper.ApiTelegramException:
+                        print('EXEPTION tid error')
+                print(f"Fire {burned_tids[begin]} every {fire_jumps}")
+                begin +=friquency
+
 
 thread_hunger = threading.Thread(target=get_hunger)
 thread_hunger.daemon = True # This makes sure the thread will exit when the main program does

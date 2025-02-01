@@ -153,6 +153,7 @@ def db_get_owned_items(tid):
 
 def db_get_owned_items_group(tid):
     """
+        return property group by item
         :param tid: telegram id of current player.
 
         :return list: [item_id, ttl_price, quantity] from property and items tables
@@ -174,13 +175,16 @@ def db_get_owned_items_group(tid):
 def db_check_owned_item(tid, id):
     """
     Check if player owns exact item
+
+    :return property id or 0 if have not item
     """
-    q = "SELECT count(*) FROM property WHERE owner = %s AND item_id = %s"
+    #q = "SELECT count(*) FROM property WHERE owner = %s AND item_id = %s"
+    q = "SELECT id FROM property WHERE owner = %s AND item_id = %s LIMIT 1;"
     cur = con.cursor()
     cur.execute(q,(tid,id))
-    b = cur.fetchone()[0]
-    print('check item' + str(b))
-    return b
+    b = cur.fetchone()
+    pid = 0 if b is None else b[0]
+    return pid
 
 def db_get_profit(tid):
     """
@@ -194,7 +198,7 @@ def db_get_profit(tid):
     cur = con.cursor()
     cur.execute(q,(profit_percent,tid,))
     b = cur.fetchone()
-    profit = 0 if b[0] is None else b[0]
+    profit = 0 if b is None else b[0]
     db_add_money(tid, profit)
     cur.close()
     con.commit()
@@ -285,6 +289,7 @@ def db_get_top_players():
       max(animal_id) ,
         count(*) over () ttl , telegram_id
             from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
+            where p.last_work > current_date - interval '14 days'
             group by username, nick_name, telegram_id order by 2 desc NULLS LAST LIMIT 10;'''
     leaders = []
     with con.cursor() as cur:
@@ -299,10 +304,10 @@ def db_get_top_players():
 
 def db_get_all_tids():
     """
-    :return all tids
+    :return all tids for 14 days
     """
     print(" - - get all tids - - ")
-    q = '''SELECT telegram_id FROM players where invite_date is not null;'''
+    q = '''SELECT telegram_id FROM players where last_work > current_date - interval '14 days';'''
     all_players = []
     with con.cursor() as cur:
         cur.execute(q) 
