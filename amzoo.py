@@ -4,6 +4,7 @@ import telebot
 import time # for sleep (don't give dice result in second but wait a little)
 import re
 import sql_helper
+from  zoo_emoji import *
 import random # for flu illnes
 
 from datetime import datetime, timedelta
@@ -16,7 +17,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -512,7 +513,7 @@ def lucky_way(message):
     tid = message.from_user.id
     if slow_down(message.from_user.id):
         return
-    print(message.__dict__)
+    #print(message.__dict__)
     # anti_forward(message.from_user.id, message.forward_date)
     if message.forward_date is not None:
         print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
@@ -1474,137 +1475,10 @@ def extract_numbers(str, v=0):
     print('extracted: ' + numbers[v])
     return numbers[v]
 
-def pet_emoji(id):
-    if id == 1:
-        e = "🥚"
-    elif id == 2:
-        e = "🐭"
-    elif id == 3:
-        e = "🕷"
-    elif id == 4:
-        e = "🐈"
-    elif id == 5:
-        e = "🐢"
-    elif id == 6:
-        e = "🦃"
-    elif id == 7:
-        e = "🦔"
-    elif id == 8:
-        e = "🦉"
-    elif id == 9:
-        e = "🦇"
-    elif id == 10:
-        e = "🦝"
-    elif id == 11:
-        e = "🦌"
-    elif id == 12:
-        e = "🦍"
-    elif id == 13:
-        e = "🦓"
-    elif id == 14:
-        e = "🐅"
-    elif id == 15:
-        e = "🐆"
-    elif id == 16:
-        e = "🦐"
-    elif id == 17:
-        e = "🐠"
-    elif id == 18:
-        e = "🦑"
-    elif id == 19:
-        e = "🐙"
-    elif id == 20:
-        e = "🦭"
-    elif id == 21:
-        e = "🐂"
-    elif id == 22:
-        e = "🦒"
-    elif id == 23:
-        e = "🦢"
-    elif id == 24:
-        e = "🐳"
-    elif id == 25:
-        e = "🦜"
-    elif id == 26:
-        e = "🐛"
-    elif id == 27:
-        e = "🦙"
-    elif id == 28:
-        e = "🦩"
-    elif id == 29:
-        e = "🐍"
-    elif id == 0:
-        e = "☠"
-    else:
-        e = "❌"
-    return e
-
-def item_emoji(id):
-    if id == 1:
-        e = "⬜"
-    elif id == 2:
-        e = "🟦"
-    elif id == 3:
-        e = "🟪"
-    elif id == 5:
-        e = "💉"
-    elif id == 6:
-        e = "🔐"
-    elif id == 7:
-        e = "🚨"
-    elif id == 10:
-        e = "📔"
-    elif id == 11:
-        e = "🧯"
-    elif id == 12:
-        e = "🔭"
-    elif id == 13:
-        e = "🗺"
-    elif id == 14:
-        e = "🥫"
-    elif id == 20:
-        e = "🔑"
-    elif id == 30:
-        e = "🥣"
-    else:
-        e = "✖"
-    return e
+# emoji was here
 
 
-# values(1,'desert'),(2,'field'),(3,'forest'),(4,'water'),(5,'any')
-def habitat_emoji(id):
-    if id == 1:
-        e = "🏜"
-    elif id == 2:
-        e = "🛣" # maby don't use at all
-    elif id == 3:
-        e = "🌲"
-    elif id == 4:
-        e = "🌊"
-    elif id == 6:
-        e = "🌎"
-    else:
-        e = "🏠"
-    return e
 
-
-def define_mood(pet: list, environment: list=None):
-    hunger = pet[2]
-    health = pet[3]
-    habitat = pet[6]
-    sum_points = hunger + health
-    mood = "😐"
-    if hunger == 0 or health == 1:
-        mood = "😢"
-    elif sum_points < 5:
-        mood = "🙁"
-    elif sum_points < 8:
-        mood = "😐"
-    elif sum_points >  12:
-        mood = "🙂"
-    elif sum_points > 16:
-        mood = "☺"
-    return mood
 
 def anti_forward(tid, forward_date):
     '''

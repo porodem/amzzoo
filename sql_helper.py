@@ -8,7 +8,7 @@ con = psycopg.connect('dbname=amzoo user=pet_master host=localhost password=dash
 # ==================================== CHECK BLOCK
 
 def db_check_player_exists(tid):
-    print('- - - check exist player - - -')
+    print('SQL check exist player')
     q = '''SELECT telegram_id from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
@@ -26,7 +26,7 @@ def db_check_location(tid):
     '''
     1	desert    2	field    3	forest    4	water    5	any
     '''
-    print('- - - check players location - - -')
+    print('SQL check players location - - -')
     q = '''SELECT h.id from players p join habitat h on h.id = p.game_location where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
@@ -34,13 +34,12 @@ def db_check_location(tid):
     if b is None:
         result = 0
     else:
-        print(b[0])
         result = b[0]
 
     return result
 
 def db_check_owned_pets(tid):
-    print('- - - check exist player - - -')
+    print('SQL check owned pets')
     q = '''SELECT count(*) from pets where owner = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
@@ -48,7 +47,7 @@ def db_check_owned_pets(tid):
     if b is None:
         result = 0
     else:
-        print(b[0])
+        print(f"pets: {b[0]}")
         result = b[0]
     con.commit()
     cur.close()
@@ -57,7 +56,7 @@ def db_check_owned_pets(tid):
     return result
 
 def db_check_owned_coins(tid):
-    print('- - - check exist player - - -')
+    print('SQL check owned coins')
     q = '''SELECT coins from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
@@ -79,7 +78,7 @@ def db_get_player_info(tid):
     '''
     coins, level, stamina, last_work, pet_space, game_location
     '''
-    print('- - - get player info- - -')
+    print(f"SQL get player info {tid}")
     q = '''SELECT coins, level, stamina, last_work, pet_space, game_location from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
@@ -101,14 +100,13 @@ def db_pet_info(id):
 
         :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price] of pets 
     """
-    print('--- DB pet_info ---')
+    print('SQL pet_info')
     q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
     cur = con.cursor()
     cur.execute(q,(id,))
     con.commit()
     b = cur.fetchone()
     result = b
-    print (b)
     return b
 
 def db_get_owned_pets(tid):
@@ -117,7 +115,7 @@ def db_get_owned_pets(tid):
 
         :return list: [id, animal_id, price, health, 4 hunger] from pets table
     """
-     print('-- get all players pets --')
+     print('SQL get all players pets --')
      q = '''select pets.id, animal_id, price, health, hunger from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
      pet_list = []
 
@@ -137,7 +135,7 @@ def db_get_owned_items(tid):
 
         :return list: [property_id, item_name, price, (3) charged, location, item_id, 6 durability] from property and items tables
     """
-    print('SQL get all players items --')
+    print('SQL get all players items')
     q = '''select  p.id, i."name", price, charged, location, i.id, durability from  property p join items i on i.id = p.item_id  where owner = %s;'''
     item_list = []
 
@@ -158,7 +156,7 @@ def db_get_owned_items_group(tid):
 
         :return list: [item_id, ttl_price, quantity] from property and items tables
     """
-    print('-- get all players items --')
+    print('SQL items group')
     q = '''select  i.id, sum(price) ttl_price, count(*) as quantity from  property p join items i on i.id = p.item_id where owner = %s group by 1;'''
     item_list = []
 
@@ -322,7 +320,7 @@ def db_get_nearby_players(location = None):
     """
     :return players in same locaton [0 tid 1 username 2 nick]
     """
-    print(" - - get all nearby players - - ")
+    print("SQL get nearby players")
     q = '''SELECT telegram_id, username, nick_name FROM players where game_location = %s and invite_date is not null;'''
     all_players = []
     with con.cursor() as cur:
@@ -358,7 +356,7 @@ def db_get_cheapest_pet(tid):
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):
-    print(' - - write new user to DB - -')
+    print('SQL write new user to DB - -')
     q = '''INSERT INTO players(telegram_id, invite_date, username, nick_name, coins) VALUES (%s, current_date, %s,%s, 0);'''
     cur = con.cursor()
     cur.execute(q,(tid,username,nickname))
@@ -377,7 +375,7 @@ def db_blocker_player(tid):
     '''
     bot was blocked by this user 
     '''
-    print(' SQL blocker player')
+    print('SQL blocker player')
     q = "UPDATE players SET invite_date = NULL, pet_space = 0 WHERE telegram_id = %s"
     cur = con.cursor()
     cur.execute(q,(tid,))
@@ -386,7 +384,7 @@ def db_blocker_player(tid):
 
 
 def db_add_money(tid, value):
-    print('- - - write money to DB - - - ')
+    print('SQL write money to DB')
     q = '''UPDATE players set coins = coins + %s where telegram_id = %s;'''
     cur = con.cursor()
     cur.execute(q,(value,tid))
@@ -394,7 +392,7 @@ def db_add_money(tid, value):
     cur.close()
 
 def db_remove_money(tid, value):
-    print('- - - SQL remove money  - - - ')
+    print('SQL remove money')
     q = '''UPDATE players set coins = (CASE WHEN coins - %(value)s < 0 THEN 0 ELSE coins - %(value)s END) where telegram_id = %(tid)s;'''
     cur = con.cursor()
     cur.execute(q,{'value':value,'tid':tid})
@@ -402,7 +400,7 @@ def db_remove_money(tid, value):
     cur.close()
 
 def db_change_location(tid, value, coins):
-    print('- - - write money to DB - - - ')
+    print('SQL db_change_location')
     q = '''UPDATE players set game_location = %s, coins = coins - %s where telegram_id = %s;'''
     cur = con.cursor()
     cur.execute(q,(value,coins,tid))
@@ -468,7 +466,7 @@ def db_get_pet(tid, animal_id):
 
         :return 1 if OK 0 for :
     """
-    print(' - - write to DB catch pet - -')
+    print('SQL write to DB catch pet - -')
     q = '''INSERT INTO pets(owner, animal_id ) values (%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(tid,animal_id))
