@@ -153,7 +153,7 @@ def get_hunger():
             previous_fire_day = today
             burned_tids = sql_helper.db_get_all_tids()
             begin = random.randrange(0,2) 
-            friquency = 2 # every this number select tid for execute fire
+            friquency = 3 # every this number select tid for execute fire
             fire_jumps = len(burned_tids) // friquency 
             print(f"begin {begin} jumps {fire_jumps}")
             for i in range(fire_jumps):
@@ -216,8 +216,10 @@ def begin_game(message):
 Зарабатывай деньги в мини играх и покупай 🐇 питомцев.
 💪 Сила восстанавливается 1 в час.
 ✈ Путешествуй чтобы купить других животных!
-💰 Каждый следующий день, ты получишь доход если у тебя есть питомцы и вчера ты тратил силы.''')
-        echo_all(message)
+💰 Каждый следующий день, ты получишь доход если у тебя есть питомцы и вчера ты тратил силы. Больше информации смотри в меню Справка''')
+        bot.send_message(message.from_user.id, "Введите код приглашения и нажмите отправить.")
+        bot.register_next_step_handler(message, check_invite)
+        
 
     else:
 
@@ -229,6 +231,22 @@ def begin_game(message):
         markup.add(btn1,btn2,btn3,btn4)
         bot.send_message(message.from_user.id, "select :", reply_markup=markup)  
         bot.register_next_step_handler(message, search_money)
+
+def check_invite(message):
+    invite_tid = message.text
+    if re.match('^\d{9,10}$',invite_tid):
+        ex = sql_helper.db_check_player_exists(invite_tid)
+        if ex is None:
+            bot.send_message(message.from_user.id, "❌ код не сработал!")
+        else:
+            sql_helper.db_get_item(invite_tid,14)
+            sql_helper.db_add_money(message.from_user.id,5)
+            bot.send_message(message.from_user.id, "✅ Успешно! +5💰")
+        echo_all(message)
+    else:
+        bot.send_message(message.from_user.id, "❌ код не сработал!")
+        echo_all(message)
+        #bot.register_next_step_handler(message, check_invite)
 
 # ----------   SHOW PETS 
 
@@ -333,6 +351,7 @@ def show_pets(query):
     print(list(pet_info))
     mood = define_mood(pet_info)
     feed_price = int(pet_info[8] / 10) - int(pet_info[8]/10 * float(f"0.{pet_info[2]}"))
+    print(f"{pet_info[8]} - {pet_info[2]}")
     #total_feed_price = int(total_pets_price / 10) - int(total_pets_price/10 * float(f"0.{total_pets_hunger}"))
     habitat = habitat_emoji(pet_info[6])
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
@@ -436,8 +455,14 @@ def zoo_management(message):
     btn1 = types.KeyboardButton("Питомцы",)
     btn2 = types.KeyboardButton("Безопасность",)
     btn3 = types.KeyboardButton("Исследования",)
+    btn4 = types.KeyboardButton("Пригласить 🙋‍♂️",)
     btn_back = types.KeyboardButton("🔙 Назад")
-    markup.add(btn1,btn2,btn3,btn_back)
+    reserv_energy = sql_helper.db_check_owned_item(tid, 14)
+    if reserv_energy > 0:
+        btn_energy = types.KeyboardButton("Энергетик 💪🥫",)
+        markup.add(btn1,btn2,btn3,btn4,btn_energy,btn_back)
+    else:        
+        markup.add(btn1,btn2,btn3,btn4,btn_back)
     bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_zoo_management)
 
@@ -452,6 +477,15 @@ def to_zoo_management(message):
         bot.register_next_step_handler(message, set_cage_password)
     elif re.match('Исследования.*',message.text):
         do_tech(message)
+    elif re.match('Пригласить.*',message.text):
+        bot.send_message(message.from_user.id, "Пригласи друга в игру и попроси его ввести код *" + str(message.from_user.id) + "* и ты получишь 🥫 энергетик!", parse_mode='markdown')
+    elif re.match('Энергетик.*',message.text):
+        #increase_stamina(message)
+        e = sql_helper.db_check_owned_item(message.from_user.id, 14)
+        sql_helper.db_stamina_up(message.from_user.id,10)
+        sql_helper.db_remove_property(e)
+        bot.send_message(message.from_user.id, "💪 Силы восстановлены!")
+        echo_all(message)
     else:
         echo_all(message)
 
@@ -463,6 +497,10 @@ def set_cage_password(message):
     else:
         bot.send_message(message.from_user.id, "❌ только одну цифру!")
         bot.register_next_step_handler(message, set_cage_password)
+
+def do_tech(message):
+    print('- - TECH - -')
+    return
 
 def do_tech(message):
     print('- - TECH - -')
@@ -1085,6 +1123,8 @@ def do_work(message):
         bot.send_message(message.from_user.id, "Твои силы : " + str(stamina), reply_markup=markup)
         bot.register_next_step_handler(message, search_money, stamina) 
     else:
+        # check energy reserve
+        
         bot.send_message(message.from_user.id, "😪 Ты устал, наберись сил :", reply_markup=markup)  
         bot.register_next_step_handler(message, echo_all)
 
@@ -1519,6 +1559,8 @@ def item_emoji(id):
         e = "🔭"
     elif id == 13:
         e = "🗺"
+    elif id == 14:
+        e = "🥫"
     elif id == 20:
         e = "🔑"
     elif id == 30:

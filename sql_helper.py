@@ -505,6 +505,22 @@ def db_buy_item(tid, item_id):
     print('result ' + str(result))
     return result[0]
 
+def db_get_item(tid, item_id):
+    print('- - - get item for free SQL INSERT- - -')
+    q = '''insert into property(item_id, durability, charged, "owner") values(%s,10,true,%s) RETURNING id;'''
+    cur = con.cursor()
+    cur.execute(q,(item_id, tid))
+    
+    b = cur.fetchone()
+    con.commit()
+    if b is None:
+        result = 0
+    else:
+        result = b[0]
+    con.commit()
+    print('GET PROPERTY: ' + str(result))
+    return result
+
 def db_remove_property(pid):
     print('- - - SQL remove property  - - -')
     q = '''DELETE FROM property where id = %s'''
