@@ -1173,7 +1173,7 @@ def check_relax(tid):
     single_stamina_priod = 1
     hours_rest = time_diff.days * 24 + time_diff.seconds // 3600 // single_stamina_priod
     print('hours: ' + str(hours_rest))
-    if day_left > 0:
+    if day_left != 0:
         print('relax day or more')
         profit = sql_helper.db_get_profit_pg(tid, 18) #sql_helper.db_get_profit(tid)  
         if profit == -1:
