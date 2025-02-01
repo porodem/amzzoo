@@ -16,7 +16,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -242,6 +242,7 @@ def check_invite(message):
             sql_helper.db_get_item(invite_tid,14)
             sql_helper.db_add_money(message.from_user.id,5)
             bot.send_message(message.from_user.id, "✅ Успешно! +5💰")
+            bot.send_message(invite_tid, "Получен 🥫")
         echo_all(message)
     else:
         bot.send_message(message.from_user.id, "❌ код не сработал!")
@@ -478,7 +479,7 @@ def to_zoo_management(message):
     elif re.match('Исследования.*',message.text):
         do_tech(message)
     elif re.match('Пригласить.*',message.text):
-        bot.send_message(message.from_user.id, "Пригласи друга в игру и попроси его ввести код *" + str(message.from_user.id) + "* и ты получишь 🥫 энергетик!", parse_mode='markdown')
+        bot.send_message(message.from_user.id, "Пригласи друга в игру и попроси его ввести код *" + str(message.from_user.id) + "* и ты получишь 🥫 энергетик (+10 💪)!", parse_mode='markdown')
     elif re.match('Энергетик.*',message.text):
         #increase_stamina(message)
         e = sql_helper.db_check_owned_item(message.from_user.id, 14)
