@@ -353,6 +353,41 @@ def db_get_cheapest_pet(tid):
     cur.close()
     return pet
 
+def db_get_field(location):
+    '''
+    Returns array of arrays of numbers that is cells to dig
+    '''
+    print('SQL treasure fild')
+    q = '''SELECT field FROM treasure_field WHERE location = %s'''
+    cur = con.cursor()
+    cur.execute(q,(location,))
+    f = cur.fetchone()
+    print(f)
+    cur.close()
+    return f[0]
+
+def db_dig_field(location, cell, deep_cell):
+    '''
+    Change element of subarray to 0 to mark it as digged
+    returns: update cell, treasure and [2]danger cells id
+    '''
+    print('SQL UPDATE dig field')
+    q0 = 'SELECT field[%(cell)s][%(deep_cell)s], treasure, danger FROM treasure_field WHERE location = %(location)s;'
+
+    q = '''UPDATE treasure_field SET field[%(cell)s][%(deep_cell)s] = 0 WHERE location = %(location)s;'''
+    cur = con.cursor()
+    cur.execute(q0,{'cell':cell, 'deep_cell':deep_cell, 'location':location})
+    b = cur.fetchone()
+    cur.execute(q,{'cell':cell, 'deep_cell':deep_cell, 'location':location})
+    #cur.execute(q,(cell, deep_cell, location))
+    con.commit()
+    
+    print(f"SQL {b}")
+    cur.close()
+    return b
+
+
+
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):

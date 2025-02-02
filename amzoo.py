@@ -533,8 +533,9 @@ def lucky_way(message):
     btn1 = types.KeyboardButton("🦓Поймать животное",)
     btn2 = types.KeyboardButton("💰Деньги",)
     btn3 = types.KeyboardButton("😈Преступник",)
+    btn4 = types.KeyboardButton("⛏️Клад",)
     btn_back = types.KeyboardButton("🔙 Назад")
-    markup.add(btn1,btn2,btn3,btn_back)
+    markup.add(btn1,btn2,btn3,btn4,btn_back)
     bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_lucky_way)
 
@@ -570,8 +571,86 @@ def to_lucky_way(message):
             echo_all(message)
             return
         search_victims(message)
+    elif re.match('.*Клад.*', message.text):
+        print('- - - digging treasure lucky selected - - - ')
+        lucky_treasure(message)
     else:
         echo_all(message)
+
+@bot.callback_query_handler(lambda query: 'dig' in query.data)
+def lucky_treasure(query):
+    tid = query.from_user.id
+    player = sql_helper.db_get_player_info(tid)
+    location = player[5]
+    stamina = player[2]
+
+    
+
+    msg = '⛏️Раскопки'
+
+    if hasattr(query,'data'):
+        print(query.data)
+        sql_helper.db_stamina_down(tid,1)
+        dig_cell = int(extract_numbers(query.data))
+        if dig_cell == 100:
+            bot.send_message(query.from_user.id, "выход")
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
+        deep = int(extract_numbers(query.data,1))
+        dig_result = sql_helper.db_dig_field(location,dig_cell,deep)        
+        
+        if not dig_result[0]:
+            print('it is a botton')
+            msg = f"❌ В этом месте уже слишком глубоко, врятли стоит капать здесь дальше. 💪{stamina}"
+        elif dig_result[0] == dig_result[1]:
+            print('Treasure FOUND')
+            # TODO add few random treasures
+            bot.send_message(query.from_user.id,'+50💰 Клад!')
+            sql_helper.db_add_money(tid,50)
+        elif dig_result[0] == dig_result[2]:
+            print('Danger FOUND')
+            bot.send_message(query.from_user.id,'🤕 Вы травмировались -4💪')
+            sql_helper.db_stamina_down(tid,4)
+        else:
+            msg = f"⛏️ 💪{stamina}"
+
+    cells = sql_helper.db_get_field(location)
+    field = len(cells)
+    pin_pad_buttons = []
+    victim = ''
+    markup = types.InlineKeyboardMarkup(row_width=3,)
+    counter = 1
+    for i in cells:
+        if i[0] == 0:
+            # 
+            deep = 2
+            cell_emoji = '◾️' if i[1] != 0 else '🚫'
+            btn = types.InlineKeyboardButton(f"{cell_emoji}{i[1]}",callback_data=f"dig_{counter}_{deep}")
+        else:
+            deep = 1
+            cell_emoji = '⬛️' if i[1] != 0 else '🚫'
+            btn = types.InlineKeyboardButton(f"{cell_emoji}{i[0]}",callback_data=f"dig_{counter}_{deep}")
+        counter +=1
+        pin_pad_buttons.append(btn)
+    btn_exit = types.InlineKeyboardButton(f"🔙",callback_data=f"dig_100")
+    pin_pad_buttons.append(btn_exit)
+    markup.add(*pin_pad_buttons)
+
+    if stamina < 1:
+        bot.send_message(query.from_user.id,'Ты устал, наберись сил')
+        bot.delete_message(query.message.chat.id, query.message.id)
+
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=msg,
+            chat_id=query.message.chat.id,
+            parse_mode='markdown', # to make some text bold with *this* in messages
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, "Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт!")
+        bot.send_message(query.from_user.id,'treasure', reply_markup=markup)
 
 @bot.callback_query_handler(lambda query: 'stealing' in query.data)
 def stealing(query):
