@@ -101,6 +101,7 @@ hunger_interval = 4
 def get_hunger():
     previous_epidemic_day = None
     previous_fire_day = None
+    prev_refil_pits_day = None
     while True:
         print("- - -  get hunger - - - ")
         print(str(datetime.now()) + f";GET_HUNGER" )
@@ -135,6 +136,14 @@ def get_hunger():
         is_fire = today % 7 == 0
         if previous_fire_day == today:
             is_fire = False
+
+        is_refiling_pits = today % 5 == 0
+        if prev_refil_pits_day == today:
+            is_refiling_pits = False
+
+        if is_refiling_pits:
+            print("REFILING HOLES")
+            sql_helper.db_refil_pits()
             
         # WARNING if bot restarts epidemic executes again !
         if is_epidemic:

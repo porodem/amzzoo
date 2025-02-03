@@ -523,3 +523,5 @@ begin
 end;
 $$;
 end
+
+create table treasure_field(id int8 generated always as identity, create_date date, location int, field int[][], hint_row int, treasure int, danger int);

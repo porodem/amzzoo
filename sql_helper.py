@@ -2,6 +2,7 @@
 
 import psycopg
 from datetime import datetime, timedelta
+import random
 
 con = psycopg.connect('dbname=amzoo user=pet_master host=localhost password=dashakuromi application_name=amzoo')
 
@@ -385,6 +386,36 @@ def db_dig_field(location, cell, deep_cell):
     print(f"SQL {b}")
     cur.close()
     return b
+
+def db_refil_pits():
+    '''
+    delete all old treasure feilds and create new for every location
+    '''
+    q = "delete from treasure_field;"
+    cur = con.cursor()
+    cur.execute(q,)
+    cur.close()
+    con.commit()
+    for i in range(6):
+        cel_win = random.randrange(1,18)
+        cel_fail = random.randrange(1,18)
+        cel_fail = random.randrange(1,18) if cel_fail == cel_win else cel_fail
+        print(f"win: {cel_win} fail:{cel_fail}")
+        loc = i
+        hint = 0
+        if cel_win < 7:
+            hint = 1
+        elif 6 < cel_win < 13:
+            hint = 2
+        else:
+            hint = 3
+        print(hint)
+        q = '''insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18}}', %s, %s, %s, %s );'''
+        q = '''insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18}}', %s, %s, %s, %s );'''
+        cur = con.cursor()
+        cur.execute(q,(loc,hint,cel_win,cel_fail))
+        cur.close()
+        con.commit()
 
 
 
