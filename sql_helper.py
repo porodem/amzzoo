@@ -99,10 +99,10 @@ def db_pet_info(id):
     """
         :param id: pet id from pets table.
 
-        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price] of pets 
+        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating] of pets 
     """
     print('SQL pet_info')
-    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
+    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
     cur = con.cursor()
     cur.execute(q,(id,))
     con.commit()
@@ -221,15 +221,15 @@ def db_get_animal_shop(location_id, catch_mode=False):
      """
         :param location_id: location of shop. [5 - any, 4 water, 3 forest, 2 field, 1 desert]
 
-        :return list: [animal_id, species, price] from pets table
+        :return list: [animal_id, species, price, rating 3] from pets table
     """
      
      if catch_mode:
          print('-- SQL get all animals for location to catch--')
-         q = '''select id, species, price from animal_list al where habitat = %s and price > 0 and catch_price > 0;'''
+         q = '''select id, species, price, rating from animal_list al where habitat = %s and price > 0 and catch_price > 0;'''
      else:
          print('-- SQL get all animals for location to buy--')
-         q = '''select id, species, price from animal_list al where habitat = %s and price > 0 and catch_price is null;'''
+         q = '''select id, species, price, rating from animal_list al where habitat = %s and price > 0 and catch_price is null;'''
      pet_list = []
 
      with con.cursor() as cur:
@@ -284,10 +284,11 @@ def db_get_top_players():
     :return list: [username, sum_points, best_animal, total_players]
     """
     q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
-      sum(animal_id) *  (1.0 + count(distinct animal_id)/10::numeric) ,
-      max(animal_id) ,
+      sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) ,
+      max(rating) ,
         count(*) over () ttl , telegram_id
             from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
+            JOIN animal_list al on al.id = pets.animal_id
             where p.last_work > current_date - interval '14 days'
             group by username, nick_name, telegram_id order by 2 desc NULLS LAST LIMIT 10;'''
     leaders = []

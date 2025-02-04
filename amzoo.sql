@@ -26,14 +26,41 @@ alter table players add constraint pkey_tid primary key (telegram_id)
 
 alter table players add column pet_space int default 4;
 
+alter table players add column zoo_pass int default 0 check (zoo_pass > -1 )
+
+alter table players add column plant_food int default 10 check (plant_food > -1)
+
+alter table players add column meat_food int default 10 check (plant_food > -1)
+
+comment on column players.pet_space is 'how maby pets can obtain. 0 if player blocks bot'
+
 drop  table players cascade;
 
+select * from pets p 
 
 select * from players p ;
 
+select
+
 delete from players where telegram_id = 775803031
 
-select buy_pet(775803031,1)
+select buy_pet(6472394157,3)
+
+create table zoo_system(owner int8 unique references players(telegram_id),
+name text, -- system name (guard, electric, fire etc.)
+zoo_pass int default 0,
+pass_update timestamp,
+beaking_tryes int default 0,
+beaking_success int default 0,
+last_stealing timestamp)
+
+insert into zoo_system(owner)  select telegram_id from players ;
+
+select * from zoo_system
+
+drop table zoo_system
+
+select * from players p 
 
 
 create table animal_list(
@@ -48,6 +75,8 @@ alter table animal_list add column catch_price int;
 alter table animal_list add column catch_difficulty int; -- how much stamina you loss on try
 
 alter table animal_list add column catch_chance int; -- percents % 17 for dice and other 1-6 games
+
+alter table animal_list add column rating int;
 
 select * from animal_list al ;
 
@@ -66,6 +95,9 @@ owner int8 references players(telegram_id),
 petname text,  hunger int default 6 check (hunger < 11 and hunger >= 0),
 health int default 10 check( health > -1), 
 mood int default 3);
+
+alter table pets add column shit smallint default 0;
+
 
 drop table pets;
 
@@ -100,30 +132,46 @@ food_type int,
 price int,
 catch_price int,
 catch_difficulty int ,
-catch_chance int
+catch_chance int,
+rating int
 )
 
 copy animal_list(id,species,habitat,food_type,price,catch_price,catch_difficulty,catch_chance) from 'C:\Python\Python310\Scripts\amzzoo\a.csv' delimiter ';' csv header encoding 'WIN1251'
 
 create temp table anlist(id int, name text)
 
-copy anlist from 'C:\Python\Python310\Scripts\amzzoo\animals.csv' delimiter ';' csv header -- encoding 'WIN1251'
+copy anlist from 'C:\Program Files\PostgreSQL\17\animals_b.csv' delimiter ';' csv header -- encoding 'WIN1251'
 
 insert into animal_list (
 select n.* from anlist n left join animal_list i on i.id = n.id where i.id is null
 )
 
+select * from anlist
+
 drop table  anlist 
+
+delete from property where owner = 775803031
 
 select * from players p 
 
-select * from pets p 
+select * from property p 
 
-select * from animal_list al where catch_price > 0 ;
+select * from pets p  where "owner" = 775803031
+
+select * from animal_list al --where catch_price > 0 ;
 
 update animal_list o set
 price = a.price, catch_price = a.catch_price, catch_difficulty = a.catch_difficulty , catch_chance = a.catch_chance
 from (select * from anlist ) a  where o.id = a.id;
+
+--29.01.2025 update all columnse from file but id
+update animal_list o set 
+price = a.price, catch_price = a.catch_price, catch_difficulty = a.catch_difficulty , catch_chance = a.catch_chance, species = a.species, habitat = a.habitat, 
+food_type = a.food_type, rating = a.rating
+from (select * from anlist ) a  where o.id = a.id;
+
+
+merge into animal_list a using anlist b on a.id = b.id
 
 insert into animal_list values(5,'Черепаха',5,2,15)
 
@@ -147,9 +195,11 @@ create table property(id int primary key , name text);
 
 select * from habitat h 
 
+insert into habitat values(6,'america',20) # TODO
+
 update habitat set travel_price = 12 where id = 3;
 
-select id, species, price from animal_list al where habitat = 5
+select * from animal_list al 
 
 union select * from  food_type ft 
 
@@ -174,6 +224,17 @@ create table property(
 	owner int8 references players(telegram_id)
 	);
 
+create table feedbacks(
+	id int primary key generated always as identity, 
+	msg text,
+	type int, -- 0 negative 1 posttive 2 question
+	rdate timestamp,
+	tid int8
+)
+
+select username, nick_name, tid, rdate, msg from feedbacks f join players p on p.telegram_id  = f.tid order by rdate desc;
+
+select * from pets p 
 
 -- db_get_owned_items_group
 
@@ -181,25 +242,27 @@ select  i.id, sum(price) ttl_price, count(*) as quantity from  property p join i
 	
 
 
-copy items from 'C:\Python\Python310\Scripts\amzzoo\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
+copy items from 'C:\Program Files\PostgreSQL\17\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
 
 copy animal_list(id,species,habitat,food_type,price) from 'C:\Python\Python310\Scripts\amzzoo\a.csv' delimiter ';' csv header encoding 'WIN1251'
 
-create temp table new_items4(id int, name text, price int, location int, description text )
+create temp table new_items4(id int, name text, price int, location int, description text );
 
-copy new_items4 from 'C:\Python\Python310\Scripts\amzzoo\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
+drop table new_items4
+
+copy new_items4 from 'C:\Program Files\PostgreSQL\17\items.csv' delimiter ';' csv header -- encoding 'WIN1251'
 
 insert into items select * from new_items n where (select id from items  ) <> n.id
 
 insert into items (
-select n.* from new_items3 n left join items i on i.id = n.id where i.id is null
+select n.* from new_items4 n left join items i on i.id = n.id where i.id is null
 )
 
 update items i set price = n.price, "location" = n.location, description = n.description from new_items4 n where n.id = i.id 
 
 insert into items values(10,'Пасспорт',5,5)
 
-select * from players p ;
+select * from items i ;
 
 UPDATE players set stamina = (case when stamina - 1 < 0 then 0 else stamina-1 end)  where telegram_id = 1969292042
 returning stamina 
@@ -210,12 +273,16 @@ select * from habitat h ;
 
 truncate items cascade;
 
+drop database amzoo
 
 
+create role pet_master with password 'dashakuromi'
 
 select p.id, i."name", price, location from  property p join items i on i.id = p.item_id ;
 
 select * from property p 
+
+select id from property p where item_id = 30 and "owner" = 775803031 limit 1;
 
 select * from players p ;
 
@@ -249,7 +316,7 @@ end;
 $$;
 end
 
-select buy_item(775803031, 1)
+select buy_item(6472394157, 6)
 
 select username, p2.* from players p join property p2  on p2."owner" = p.telegram_id ;
 
@@ -304,9 +371,9 @@ select 1 into a
 
 select sell_pet(37) 
 
-select  buy_pet(775803031,4)
+select  buy_pet(6472394157,3)
 
-select * from pets p ;
+select * from pets p --where "owner" = 6472394157;
 
 select * from players p ;
 
@@ -338,7 +405,7 @@ drop trigger t_work_res on  players;
 
 select * from players p 
 
-insert into players(telegram_id) values(3)
+insert into players(telegram_id) values(1452544471)
 
 -- change hunger level
 
@@ -378,7 +445,7 @@ select change_hunger(7, true , 12)
 
 select change_hunger(id, false , 1) from pets p where health > 0;
 
-select * from pets;
+select * from pets where id = 1111;
 
 select * from animal_list al ;
 
@@ -431,9 +498,33 @@ select p.username , sum(animal_id), max(animal_id) , count(*) over () ttl
 from pets right join players p on p.telegram_id = pets.owner 
 group by username order by 2  desc nulls last limit 5;
 
+
+select case when nick_name = 'x' then p.username
+      else nick_name end nick ,
+      sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) ,
+      max(rating) best_animal,
+        count(*) over () ttl_players , telegram_id
+            from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
+            join animal_list al on al.id = pets.animal_id
+            where p.last_work > current_date - interval '14 days'
+            group by username, nick_name, telegram_id
+		order by 2 desc NULLS LAST LIMIT 100;
+
 select * from players p --where nick_name = 'kozel'
 
 select "owner", count(distinct animal_id) from pets p group by "owner" 
+
+795547420
+
+select * from property p where "owner" = 795547420
+
+update players set coins = coins + 13 where telegram_id = 795547420
+
+insert into property(item_id, durability, charged, "owner") values(14,10,false,795547420) returning id
+
+delete from property where owner = 775803031
+
+select * from items i 
 
 
 -- EPIDEMIC
@@ -448,35 +539,17 @@ select (random() *10 + 1)::int
 
 update pets set health = health - 1 where animal_id <> 0 and  id % (random() *10 + 1)::int = 0 returning  *
 
+select * from pets p where "owner" = 6472394157
+
+select * from  players p join pets s on s."owner" = p.telegram_id where p.telegram_id = 823087014
 
 
-create or replace function change_health(pet_id int8, healing boolean, value int) 
-returns int
-language plpgsql
-as $$
-declare 
-health_before int;
-begin
-	select health into health_before from pets where id = pet_id;
-	if healing then
-		if health_before + value > 10 then
-			update pets set health = 10 where id = pet_id;
-		else
-			update pets set health = health + value where id = pet_id;
-		end if;
-	else			
---		if health_before - value < 1 then
---			update pets set animal_id = 0, mood = '3' where id = pet_id;
---		else
-		update pets set health = health - value where id = pet_id;
---		end if;
-	end if;
-    return 1;
-end;
-$$;
-end
+update players set invite_date = null where telegram_id = 775803031
 
-select * from pets
+delete  from property 
+
+select * from players p2 
+
 
 select change_health(54,false,1)
 
@@ -495,16 +568,32 @@ $$ language plpgsql;
 create trigger t_health_down before update of health on pets for each row execute function health_down();
 
 
-create table feedbacks(
-	id int primary key generated always as identity, 
-	msg text,
-	type int, -- 0 negative 1 posttive 2 question
-	rdate timestamp,
-	tid int8
-)
+select id, row_number() over() n from pets p where "owner" = 6472394157
 
-select username, tid, rdate, msg from feedbacks f join players p on p.telegram_id  = f.tid ;
+select p.id, al.price from pets p join animal_list al on al.id = p.animal_id where "owner" = 6472394157 order by price limit 1;
 
+-- TODO 30.12
+create or replace function update_shit(pet_id int8, cleaning bool, value int)
+returns int
+language plpgsql
+as $$
+declare
+prev_shit int;
+player_coins int;
+begin
+	select shit into prev_shit from pets where id  = pet_id;
+	if heal_cost > player_coins then
+		return -1;
+	end if;
+	UPDATE pets SET health = 10 where id = pet_id;
+	update players set coins = coins - heal_cost where telegram_id = t_id;
+	select animal_id into a_id from pets where id = pet_id;
+	return a_id; 
+end;
+$$;
+end
+
+--
 create or replace function get_tired(tid int8, value int) 
 returns int
 language plpgsql
@@ -524,4 +613,75 @@ end;
 $$;
 end
 
+select get_tired(775803031,1)
+
+select * from players p 
+
+select * from players p where telegram_id = 775803031
+
+select now() , current_timestamp  at time zone 'MSK',  last_work 
+from players p where p.username ~ 'deto'
+
+select * from pg_timezone_abbrevs
+
+create or replace function get_profit(tid int8, percent int) 
+returns int
+language plpgsql
+as $$
+declare 
+stamina_before int;
+l_work timestamp;
+profit int;
+begin
+	select stamina, last_work into stamina_before, l_work from players where telegram_id = tid for update;
+	update players set stamina = stamina where telegram_id = tid;
+	if l_work > now() - interval '10 minutes' then
+		return -1;
+	else	
+		select coalesce(sum(price) * percent / 100,0) into profit from pets p join animal_list a on a.id = p.animal_id where "owner" = tid;	
+		UPDATE players set coins = coins + profit where telegram_id = tid;
+	end if;
+    return profit;
+end;
+$$;
+end
+
+select change_health(775803031, false, 1)
+
+select get_profit(823087014, 18)
+
+select * from players --p where telegram_id = 775803031
+
+update players set stamina = 3 where telegram_id = 775803031
+
+select coalesce (null,0)
+
+-- show random infect pets
+select p2.first_name, p2.username, p2.nick_name, p.animal_id from pets p join players p2 on p2.telegram_id = p."owner" where p.id % (random() *10 + 1)::int = 0
+
+select (random()*15 +1);
+
+update pets set hunger = 10;
+
+SELECT telegram_id, username FROM players where last_work > current_date - interval '14 days'
+
+select * from animal_list al 
+
+-- 02.02.25 Treasure
+
 create table treasure_field(id int8 generated always as identity, create_date date, location int, field int[][], hint_row int, treasure int, danger int);
+
+truncate table treasure_field;
+
+select * from habitat h ;
+
+select unnest(field) from treasure_field;
+
+select * from treasure_field
+
+update treasure_field set field[1][1] = 1
+where id = 1 returning treasure = field[1][1], danger;
+
+delete  from treasure_field where id = 1
+
+insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18}}', 5, 1, 4, 9 )

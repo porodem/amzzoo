@@ -366,7 +366,7 @@ def show_pets(query):
     #total_feed_price = int(total_pets_price / 10) - int(total_pets_price/10 * float(f"0.{total_pets_hunger}"))
     habitat = habitat_emoji(pet_info[6])
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
-    btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat}"     
+    btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat} \nрейтинг⭐:{pet_info[9]}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn_pack = []
     action = '_0'
@@ -973,9 +973,9 @@ def pet_shop(message, catch_mode=False):
         print(list(animals))
         for a in animals:
             if catch_mode:
-                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
+                btn = types.KeyboardButton(f"⭐{a[3]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
             else:
-                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
+                btn = types.KeyboardButton(f"⭐{a[3]} " + pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
             btn_pack.append(btn)
         btn_sell = types.KeyboardButton("Продать ")
         btn_back = types.KeyboardButton("🔙 Назад")
