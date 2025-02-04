@@ -973,9 +973,9 @@ def pet_shop(message, catch_mode=False):
         print(list(animals))
         for a in animals:
             if catch_mode:
-                btn = types.KeyboardButton(f"⭐{a[3]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
+                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
             else:
-                btn = types.KeyboardButton(f"⭐{a[3]} " + pet_emoji(a[0]) + " " + a[1] + " 💰 " + str(a[2]))
+                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰 " + str(a[2]) + f" ⭐{a[3]}")
             btn_pack.append(btn)
         btn_sell = types.KeyboardButton("Продать ")
         btn_back = types.KeyboardButton("🔙 Назад")
