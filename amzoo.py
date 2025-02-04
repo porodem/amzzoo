@@ -633,12 +633,12 @@ def lucky_treasure(query):
         if i[0] == 0:
             # 
             deep = 2
-            cell_emoji = '◾️' if i[1] != 0 else '🚫'
-            btn = types.InlineKeyboardButton(f"{cell_emoji}{i[1]}",callback_data=f"dig_{counter}_{deep}")
+            cell_emoji = '⬛️' if i[1] != 0 else '🚫'
+            btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
         else:
             deep = 1
-            cell_emoji = '⬛️' if i[1] != 0 else '🚫'
-            btn = types.InlineKeyboardButton(f"{cell_emoji}{i[0]}",callback_data=f"dig_{counter}_{deep}")
+            cell_emoji = '◾️' if i[1] != 0 else '🚫'
+            btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
         counter +=1
         pin_pad_buttons.append(btn)
     btn_exit = types.InlineKeyboardButton(f"🔙",callback_data=f"dig_100")
@@ -658,7 +658,7 @@ def lucky_treasure(query):
             reply_markup=markup
         )
     else:
-        bot.send_message(query.from_user.id, "Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт!")
+        bot.send_message(query.from_user.id, "Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! Глубина каждой клетки 2")
         bot.send_message(query.from_user.id,'treasure', reply_markup=markup)
 
 @bot.callback_query_handler(lambda query: 'stealing' in query.data)
