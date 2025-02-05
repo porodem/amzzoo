@@ -1334,6 +1334,10 @@ def check_relax(tid):
 def shop_select(message):
     print('---------- SELECT TRAVEL -----------')
     tid = message.from_user.id
+    have_passport = sql_helper.db_check_owned_item(tid,10)
+    if have_passport == 0:
+        bot.send_message(tid, "У вас нет паспорта! 📔")
+        return
     # define location to show specific shop
     location =  sql_helper.db_check_location(tid)
     if location == 5:
