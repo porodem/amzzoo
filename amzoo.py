@@ -1546,8 +1546,15 @@ def show_top(message):
     print("total players: " + str(total_players))
     for player in leaders:
         pname = 'без имени' if player[0] is None else player[0]
+        pet_group = ''
+        show_limit = 0
+        for pet in player[2]:
+            if show_limit == 3:
+                break
+            show_limit += 1
+            pet_group += pet_emoji(pet)
         animal = player[2]
-        info += f"{i}) *{pname}* и его {pet_emoji(animal)}\n"
+        info += f"{i}) *{pname}* и его {pet_group}\n"
         i += 1
     #print(info)
     bot.send_message(message.from_user.id, info, parse_mode='markdown')
