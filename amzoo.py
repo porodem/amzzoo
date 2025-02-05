@@ -599,12 +599,13 @@ def lucky_treasure(query):
 
     if hasattr(query,'data'):
         print(query.data)
-        sql_helper.db_stamina_down(tid,1)
+        
         dig_cell = int(extract_numbers(query.data))
         if dig_cell == 100:
             bot.send_message(query.from_user.id, "выход")
             bot.delete_message(query.message.chat.id, query.message.id)
             return
+        sql_helper.db_stamina_down(tid,1)
         deep = int(extract_numbers(query.data,1))
         dig_result = sql_helper.db_dig_field(location,dig_cell,deep)        
         
@@ -658,8 +659,8 @@ def lucky_treasure(query):
             reply_markup=markup
         )
     else:
-        bot.send_message(query.from_user.id, "Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! Глубина каждой клетки 2")
-        bot.send_message(query.from_user.id,'treasure', reply_markup=markup)
+        bot.send_message(query.from_user.id, "Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! Глубина каждой клетки 2. Попытка 💪1", reply_markup=markup)
+        #bot.send_message(query.from_user.id,'treasure', reply_markup=markup)
 
 @bot.callback_query_handler(lambda query: 'stealing' in query.data)
 def stealing(query):
