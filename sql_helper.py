@@ -286,7 +286,8 @@ def db_get_top_players():
     """
     q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
       sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) best_pets,
-      array_agg(distinct animal_id order by animal_id desc) ,
+      --array_agg(distinct animal_id order by animal_id desc) ,
+      (select array_agg(animal_id order by rating desc) from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id) best_animal,
         count(*) over () ttl , telegram_id
             from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
             JOIN animal_list al on al.id = pets.animal_id
