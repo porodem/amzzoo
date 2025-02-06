@@ -300,7 +300,9 @@ def show_pets(query):
     for pet in owned_pets:
         #total_pets_price = total_pets_price + pet[2]
         #total_pets_hunger += pet[4]
-        total_feed_price += int(pet[2] / 10) - int(pet[2]/10 * float(f"0.{pet[4]}"))
+        hunger_x = float(f"0.{pet[4]}") if pet[4] < 10 else 1
+        total_feed_price += int(pet[2] / 10) - int(pet[2]/10 * hunger_x)
+        print(f"{str(pet[2])} h {pet[4]} total_feed_price {total_feed_price}")
     print(f"total pet price: {total_pets_price} and gunger: {total_pets_hunger}")
     print(str(query.from_user.id) + f" has {len(owned_pets)}")
     if len(owned_pets) == 0:
