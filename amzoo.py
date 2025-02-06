@@ -957,37 +957,40 @@ def pet_shop(message, catch_mode=False):
     # TODO add pet space addition by buying some item (maby just a box) and return to home
 
     if owned == pet_space: 
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True) 
-            bot.send_message(message.from_user.id,"Нет места для новых питомцев ☹")
-            btn_sell = types.KeyboardButton("Продать ")
-            btn_back = types.KeyboardButton("🔙 Назад")            
-            markup.add(btn_sell,btn_back)
-            bot.register_next_step_handler(message,sell_pets(message) )
-    else:
+            # markup = types.ReplyKeyboardMarkup(resize_keyboard=True) 
+            # bot.send_message(message.from_user.id,"Нет места для новых питомцев ☹")
+            # btn_sell = types.KeyboardButton("Продать ")
+            # btn_back = types.KeyboardButton("🔙 Назад")            
+            # markup.add(btn_sell,btn_back)
+            # bot.register_next_step_handler(message,sell_pets(message) )
+            bot.send_message(message.from_user.id, 'В вашем зоопарке нет свободного места!')
+    
         # define location to show animals specific for this location
-        location =  sql_helper.db_check_location(tid)
-        if catch_mode:
-            animals = sql_helper.db_get_animal_for_catch(location)
-        else:
-            animals = sql_helper.db_get_animal_shop(location, catch_mode)
-        btn_pack = []
+    location =  sql_helper.db_check_location(tid)
+    if catch_mode:
+        animals = sql_helper.db_get_animal_for_catch(location)
+    else:
+        animals = sql_helper.db_get_animal_shop(location, catch_mode)
+    btn_pack = []
 
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)                   
-        print(list(animals))
-        for a in animals:
-            if catch_mode:
-                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
-            else:
-                btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰 " + str(a[2]) + f" ⭐{a[3]}")
-            btn_pack.append(btn)
-        btn_sell = types.KeyboardButton("Продать ")
-        btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(*btn_pack,btn_sell,btn_back)
-        bot.send_message(tid, 'Выберите питомца:', reply_markup=markup)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)                   
+    print(list(animals))
+    for a in animals:
         if catch_mode:
-            bot.register_next_step_handler(message,catch_pet)
+            btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
+            msg = 'Здесь есть шанс поймать:'
         else:
-            bot.register_next_step_handler(message, buy_pet)
+            btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰 " + str(a[2]) + f" ⭐{a[3]}")
+            msg = 'Здесь можно купить:'
+        btn_pack.append(btn)
+    btn_sell = types.KeyboardButton("Продать ")
+    btn_back = types.KeyboardButton("🔙 Назад")
+    markup.add(*btn_pack,btn_sell,btn_back)
+    bot.send_message(tid, msg, reply_markup=markup)
+    if catch_mode:
+        bot.register_next_step_handler(message,catch_pet)
+    else:
+        bot.register_next_step_handler(message, buy_pet)
       
 
 def catch_pet(message):
@@ -1006,6 +1009,21 @@ def catch_pet(message):
         sql_helper.db_remove_money(message.from_user.id, penalty)
         bot.send_message(message.from_user.id, f"⚠ Мошенничество! -{penalty}💰")
         return
+    
+    owned = sql_helper.db_check_owned_pets(message.from_user.id)
+    pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
+    # TODO add pet space addition by buying some item (maby just a box) and return to home
+
+    if owned == pet_space: 
+            # markup = types.ReplyKeyboardMarkup(resize_keyboard=True) 
+            # bot.send_message(message.from_user.id,"Нет места для новых питомцев ☹")
+            # btn_sell = types.KeyboardButton("Продать ")
+            # btn_back = types.KeyboardButton("🔙 Назад")            
+            # markup.add(btn_sell,btn_back)
+            # bot.register_next_step_handler(message,sell_pets(message) )
+            bot.send_message(message.from_user.id, 'В зоопарке кончилось место!')
+            return
+    #elif owned < pet_space:
     
     info = sql_helper.db_get_player_info(message.from_user.id)
     coins = info[0]
@@ -1058,18 +1076,32 @@ def catch_pet(message):
         echo_all(message) 
 
 def buy_pet(message):
-    print(' - - - buy pet - - - ')
-    if re.match('.*#.*',message.text):
-        animal_id = int(extract_numbers(message.text))
-        ok = sql_helper.db_buy_pet(message.from_user.id, animal_id)
-        if ok:
-            bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
-            bot.send_message(message.from_user.id, pet_emoji(animal_id))
-            echo_all(message)
-        else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+
+    owned = sql_helper.db_check_owned_pets(message.from_user.id)
+    pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
+    # TODO add pet space addition by buying some item (maby just a box) and return to home
+
+    if owned == pet_space: 
+            # markup = types.ReplyKeyboardMarkup(resize_keyboard=True) 
+            # bot.send_message(message.from_user.id,"Нет места для новых питомцев ☹")
+            # btn_sell = types.KeyboardButton("Продать ")
+            # btn_back = types.KeyboardButton("🔙 Назад")            
+            # markup.add(btn_sell,btn_back)
+            # bot.register_next_step_handler(message,sell_pets(message) )
+            bot.send_message(message.from_user.id, 'В зоопарке кончилось место!')
+    elif owned < pet_space:
+        print(' - - - buy pet - - - ')
+        if re.match('.*#.*',message.text):
+            animal_id = int(extract_numbers(message.text))
+            ok = sql_helper.db_buy_pet(message.from_user.id, animal_id)
+            if ok:
+                bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
+                bot.send_message(message.from_user.id, pet_emoji(animal_id))
+                #echo_all(message)
+            else:
+                bot.send_message(message.from_user.id, "❌ Нехватает денег!")
     # selling pet
-    elif re.match('.*Продать.*',message.text):
+    if re.match('.*Продать.*',message.text):
         pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
         if len(pet_list) == 0:
             bot.send_message(message.from_user.id, "🚫 У вас нет питомцев!")
