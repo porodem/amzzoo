@@ -137,7 +137,7 @@ def get_hunger():
         if previous_fire_day == today:
             is_fire = False
 
-        is_refiling_pits = today % 5 == 0
+        is_refiling_pits = today % 7 == 0
         if prev_refil_pits_day == today:
             is_refiling_pits = False
 
@@ -584,6 +584,7 @@ def to_lucky_way(message):
         search_victims(message)
     elif re.match('.*Клад.*', message.text):
         print('- - - digging treasure lucky selected - - - ')
+        bot.send_message(message.from_user.id, "Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! Глубина каждой клетки 2. Попытка 💪1")
         lucky_treasure(message)
     else:
         echo_all(message)
@@ -630,7 +631,7 @@ def lucky_treasure(query):
     field = len(cells)
     pin_pad_buttons = []
     victim = ''
-    markup = types.InlineKeyboardMarkup(row_width=3,)
+    markup = types.InlineKeyboardMarkup(row_width=4,)
     counter = 1
     for i in cells:
         if i[0] == 0:
@@ -661,7 +662,7 @@ def lucky_treasure(query):
             reply_markup=markup
         )
     else:
-        bot.send_message(query.from_user.id, "Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! Глубина каждой клетки 2. Попытка 💪1", reply_markup=markup)
+        bot.send_message(query.from_user.id, msg, reply_markup=markup)
         #bot.send_message(query.from_user.id,'treasure', reply_markup=markup)
 
 @bot.callback_query_handler(lambda query: 'stealing' in query.data)
