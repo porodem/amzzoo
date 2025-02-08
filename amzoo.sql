@@ -706,3 +706,38 @@ where id = 1 returning treasure = field[1][1], danger;
 delete  from treasure_field where id = 1
 
 insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18}}', 5, 1, 4, 9 )
+
+create table levels(lvl smallint, exp int)
+
+insert into levels values (2, 100),(3,250),(4,400),(5,600),(6,900),(7,1250)
+
+select * from players p 
+
+	select l.exp from levels l join players p on p.level + 1 = l.lvl where p.telegram_id = 775803031;
+
+create or replace function exp_up(tid int8, value int) 
+returns int
+language plpgsql
+as $$
+declare 
+next_level_exp int;
+new_exp int;
+levelup int;
+begin
+	
+	select l.exp into next_level_exp from levels l join players p on p.level + 1 = l.lvl where p.telegram_id = 775803031;
+	
+	update players set exp = exp + value where telegram_id = tid
+	returning exp into new_exp;
+	
+	if new_exp >= next_level_exp then
+		levelup = 1;
+		update players set lvl_points = lvl_points + 1 , level = level + 1 where telegram_id = tid;
+	else
+		levelup = 0;
+	end if;
+
+	return levelup;
+end;
+$$;
+end

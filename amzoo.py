@@ -609,6 +609,7 @@ def lucky_treasure(query):
             bot.delete_message(query.message.chat.id, query.message.id)
             return
         sql_helper.db_stamina_down(tid,1)
+        
         deep = int(extract_numbers(query.data,1))
         dig_result = sql_helper.db_dig_field(location,dig_cell,deep)        
         
@@ -624,8 +625,10 @@ def lucky_treasure(query):
             print('Danger FOUND')
             bot.send_message(query.from_user.id,'🤕 Вы травмировались -4💪')
             sql_helper.db_stamina_down(tid,4)
+            sql_helper.db_exp_up(tid,2)
         else:
             msg = f"⛏️ 💪{stamina}"
+            sql_helper.db_exp_up(tid,1)
 
     cells = sql_helper.db_get_field(location)
     field = len(cells)
@@ -719,6 +722,7 @@ def stealing(query):
         #echo_all()
         return
     sql_helper.db_stamina_down(query.from_user.id, pwr)
+    sql_helper.db_exp_up(tid,pwr)
 
     if input_pass == secret:
         print('cage unlocked')
@@ -807,6 +811,7 @@ def search_victims(query):
 
         stamina = sql_helper.db_get_player_info(query.from_user.id)[2]
         sql_helper.db_stamina_down(query.from_user.id,1)
+        sql_helper.db_exp_up(query.from_user.id,1)
 
         ask = '-1💪 Ближайшие зоопарки:'
         location =  sql_helper.db_check_location(query.from_user.id)
@@ -1061,6 +1066,7 @@ def catch_pet(message):
         m = bot.send_dice(tid,'🎲')
         sql_helper.db_stamina_down(tid, pwr)
         sql_helper.db_remove_money(tid,catch_price)
+        
     else:
         print(' CHANCE PROBLEM - - - - - - - - - - ')
         
@@ -1071,7 +1077,8 @@ def catch_pet(message):
     if dig_result < 6:
         # TODO this and other sleep() stops all other players!
         time.sleep(3)
-        bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)         
+        bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
+        sql_helper.db_exp_up(tid,pwr)         
     elif dig_result == 6:
         time.sleep(3)
         sql_helper.db_get_pet(tid, animal_id)
@@ -1432,6 +1439,7 @@ def travel(message):
             # new location image
             # any picture have unique id, that we receive when send this pic for the first time to telegram. See picture grabber code block in the end.
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
+            sql_helper.db_exp_up(tid,1)
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Африка.*',message.text):
@@ -1442,6 +1450,7 @@ def travel(message):
             bot.send_message(message.from_user.id, "✈ Вы улетели в Африку 🏜!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEmcuA05mlhg-HQfSqDbYL8ixtHZTAAIv6DEbItVxSfetuCF-nurtAQADAgADcwADNgQ')
+            sql_helper.db_exp_up(tid,1)
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Море.*',message.text):
@@ -1452,6 +1461,7 @@ def travel(message):
             bot.send_message(message.from_user.id, "✈ Вы улетели на море 🏜!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+            sql_helper.db_exp_up(tid,1)
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Америка.*',message.text):
@@ -1460,6 +1470,7 @@ def travel(message):
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,6,20)
             bot.send_message(message.from_user.id, "✈ Вы улетели в Америку 🌎!")
+            sql_helper.db_exp_up(tid,1)
             # new location image
             #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
         else:
@@ -1695,8 +1706,9 @@ def get_statistics(tid):
     coins = pinfo[0]
     stamina = pinfo[2]    
     pet_space = pinfo[4]
+    exp = pinfo[6]
     loc = habitat_emoji(pinfo[5]) 
-    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins)
+    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + '\nОпыт 🌟: ' + str(exp)
     player_stats = player_stats + f"\nВещи: {item_overview}"
     # next line must be commented before run game in production
     # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
