@@ -26,6 +26,7 @@
 14. Make problems for other player - put bacteria in zoo to get his pets ill. Broke cage
 15. add items for protect zoo from other players
 16. add Favorite pet selection
+17. Premium: long name, cheap rename, hide animals in top, increace chance
 
 ### TODO List
 1. close cursor after SQL fucntion (idle in transaction)

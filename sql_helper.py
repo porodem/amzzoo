@@ -185,6 +185,17 @@ def db_check_owned_item(tid, id):
     pid = 0 if b is None else b[0]
     return pid
 
+def db_count_item_type(tid, id):
+    """
+    :param id: item id
+    :return  quantity of instances
+    """
+    q = "SELECT count(*) FROM property WHERE owner = %s AND item_id = %s;"
+    cur = con.cursor()
+    cur.execute(q,(tid,id))
+    b = cur.fetchone()
+    return b[0]
+
 def db_get_profit(tid):
     """
         :param tid: telegram id of current player.
@@ -563,11 +574,11 @@ def db_remove_pet(pid):
     con.commit()
     return
 
-def db_buy_item(tid, item_id):
+def db_buy_item(tid, item_id, extra = 0.0):
     print(' - -  write to DB buy item - -')
-    q = '''SELECT buy_item(%s,%s);'''
+    q = '''SELECT buy_item(%s,%s,%s);'''
     cur = con.cursor()
-    cur.execute(q,(tid,item_id))
+    cur.execute(q,(tid,item_id,extra))
     result = cur.fetchone()
     con.commit()
     print('result ' + str(result))

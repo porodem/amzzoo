@@ -896,11 +896,13 @@ def bazar_shop_new(message):
         if int(extract_numbers(message.data,1)):
             print(f" - {tid} buying item {cidx} - - - - ")
             item = available_items[cidx]
-            buying_ok = sql_helper.db_buy_item(tid,item[0])
+            total_pasports = sql_helper.db_count_item_type(tid,10)
+            extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
+            buying_ok = sql_helper.db_buy_item(tid,item[0], extra_price)
             if buying_ok:
                 bot.answer_callback_query(message.id, f"📦 Вы купили {item[1]}!")            
                 if item[0] == 10:
-                    bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре!")
+                    bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре! (20 символов)")
                     bot.register_next_step_handler(message.message, set_nickname)
                     # TODO get peni for more than one passport
             else:
@@ -922,6 +924,8 @@ def bazar_shop_new(message):
         if i[0] == item[0]:
             is_owned = True
             is_owned_info = f"\n✅ У вас уже имеется ({i[2]})"
+            if i[0] == 10: # every next pasport is more expensive
+                price = int(price * (1.0 + (0.6 * i[2]))) # ATTENTION THIS FORMULA USED IN TWO PLACES 
             break
     print(list(owned_items_id))        
 
@@ -1191,7 +1195,7 @@ def gen_inline_sell_buttons(data_list):
 
 def set_nickname(message):
     print(" - rename player -")
-    new_nickname = message.text[:99]
+    new_nickname = message.text[:20]
     sql_helper.db_rename_player(message.from_user.id, new_nickname)
     bot.send_message(message.from_user.id, "Теперь в топе вы будете отображаться с этим именем")
     print(new_nickname)

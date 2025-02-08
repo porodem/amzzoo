@@ -316,6 +316,27 @@ end;
 $$;
 end
 
+-- ver 2 08.02.25 price multiplier
+create or replace function buy_item(tid int8, item int8, extra_price double precision)
+returns int 
+language plpgsql
+as $$
+declare item_price int;
+player_coins int;
+begin
+	select coins into player_coins from players where telegram_id = tid;
+	select price into item_price from items where id = item; 
+	item_price = (item_price * extra_price)::int;
+	if item_price > player_coins then 
+		return 0;
+	end if;
+	insert into property(item_id, owner) values(item,tid);
+	update players set coins = (coins - item_price) where telegram_id = tid;
+	return 1;
+end;
+$$;
+end
+
 select buy_item(6472394157, 6)
 
 select username, p2.* from players p join property p2  on p2."owner" = p.telegram_id ;
