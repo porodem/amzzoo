@@ -137,7 +137,7 @@ def get_hunger():
         if previous_fire_day == today:
             is_fire = False
 
-        is_refiling_pits = today % 7 == 0
+        is_refiling_pits = today % 5 == 0
         if prev_refil_pits_day == today:
             is_refiling_pits = False
 
@@ -469,13 +469,9 @@ def zoo_management(message):
     btn2 = types.KeyboardButton("Безопасность",)
     btn3 = types.KeyboardButton("Исследования",)
     btn4 = types.KeyboardButton("Пригласить 🙋‍♂️",)
+    btn5 = types.KeyboardButton("🌟Возможности",)
     btn_back = types.KeyboardButton("🔙 Назад")
-    reserv_energy = sql_helper.db_check_owned_item(tid, 14)
-    if reserv_energy > 0:
-        btn_energy = types.KeyboardButton("Энергетик 💪🥫",)
-        markup.add(btn1,btn2,btn3,btn4,btn_energy,btn_back)
-    else:        
-        markup.add(btn1,btn2,btn3,btn4,btn_back)
+    markup.add(btn1,btn2,btn3,btn4,btn5,btn_back)
     bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
     bot.register_next_step_handler(message, to_zoo_management)
 
@@ -488,10 +484,38 @@ def to_zoo_management(message):
         print('- - - security selected - - - ')
         bot.send_message(message.from_user.id, "Введите только одну цифру! (0-9). Это будет пароль на открытие клетки. При взломе друой игрок попытается её угадать. Если угадает самый дешевый петомец может убежать")
         bot.register_next_step_handler(message, set_cage_password)
-    elif re.match('Исследования.*',message.text):
-        do_tech(message)
+    
     elif re.match('Пригласить.*',message.text):
         bot.send_message(message.from_user.id, "Пригласи друга в игру и попроси его ввести код *" + str(message.from_user.id) + "* и ты получишь 🥫 энергетик (+10 💪)!", parse_mode='markdown')
+    
+    elif re.match('.*Возможности.*',message.text):
+        stats_up(message)
+    else:
+        echo_all(message)
+
+def stats_up(message):
+    print('-stats')
+    tid = message.from_user.id
+    bot.send_message(tid, get_statistics(tid))
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("⬆️ Улучшения",)
+    btn2 = types.KeyboardButton("💻 Исследования",)
+    btn_back = types.KeyboardButton("🔙 Назад")
+    reserv_energy = sql_helper.db_check_owned_item(message.from_user.id, 14)
+    if reserv_energy > 0:
+        btn_energy = types.KeyboardButton("Энергетик 💪🥫",)
+        markup.add(btn1,btn2,btn_energy,btn_back)
+    else:        
+        markup.add(btn1,btn2,btn_back)
+    bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup) 
+    bot.register_next_step_handler(message, stats_up_selection)
+
+def stats_up_selection(message):
+    print('-stat selection')
+    if re.match('.*Исследования.*',message.text):
+        do_tech(message)
+    elif re.match('.*Улучшения.*', message.text):
+        do_ability_up(message)
     elif re.match('Энергетик.*',message.text):
         #increase_stamina(message)
         e = sql_helper.db_check_owned_item(message.from_user.id, 14)
@@ -501,6 +525,7 @@ def to_zoo_management(message):
         echo_all(message)
     else:
         echo_all(message)
+
 
 def set_cage_password(message):
     password = message.text
@@ -513,12 +538,57 @@ def set_cage_password(message):
 
 def do_tech(message):
     print('- - TECH - -')
+    bot.send_message(message.from_user.id, "🏗️В разработке")
     return
 
-def do_tech(message):
-    print('- - TECH - -')
-    return
+@bot.callback_query_handler(lambda query: 'up' in query.data)
+def do_ability_up(query):
+    print('- - ABILITY UP')
+    tid = query.from_user.id 
+    #exp_needed = sql_helper.show_lvlup_target(tid)
+    available_items = sql_helper.db_upgrade_list()
+    points = sql_helper.db_get_player_info(tid)[7]
+    btn_pack = [] 
+    if hasattr(query,'data'):
+        print(query.data)
+        cidx = int(extract_numbers(query.data))
+        # -------------------------------------------buy upgrade option -------------------------------------------------------
+        if int(extract_numbers(query.data,1)):
+            print(f" - {tid} buying item {cidx} - - - - ")
+            item = available_items[cidx]
+            #total_pasports = sql_helper.db_count_item_type(tid,10)
+            #extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
+            buying_ok = points
+            if buying_ok:
+                bot.answer_callback_query(query.id, f"🌟 Ваши способности улучшены!")  
+                bot.send_message(query.from_user.id, "🌟 Ваши способности улучшены!")
+                bot.delete_message(query.message.chat.id, query.message.id)  
+                return
+            else:
+                bot.answer_callback_query(query.id, f"❌ Нехватает очков талантов!") 
+                 
     
+    else:
+        cidx = 0
+
+    next_cid = 0 if cidx == len(available_items) - 1 else cidx + 1
+    item = available_items[cidx]
+    
+    markup = types.InlineKeyboardMarkup(row_width=2,)
+    lbl = item[1]
+    btn_buy = types.InlineKeyboardButton(f"❇️", callback_data='up' + str(cidx) + '_1')
+    btn_forward = types.InlineKeyboardButton('▶', callback_data='up' + str(next_cid) + '_0' )
+    markup.add(btn_buy,btn_forward)
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=lbl,
+            chat_id=query.message.chat.id,
+            parse_mode='markdown', # to make some text bold with *this* in messages
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
 
 def lucky_way(message):
     tid = message.from_user.id
@@ -584,7 +654,7 @@ def to_lucky_way(message):
         search_victims(message)
     elif re.match('.*Клад.*', message.text):
         print('- - - digging treasure lucky selected - - - ')
-        bot.send_message(message.from_user.id, "Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! Глубина каждой клетки 2. Попытка 💪1")
+        bot.send_message(message.from_user.id, "Это поле доступно для всех игроков. Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! \nГлубина каждой клетки 2. Попытка 💪1. \n⬛️ - Можно копать глубже. \n◾️ - не копали. 🚫 - Копать некуда.")
         lucky_treasure(message)
     else:
         echo_all(message)
@@ -900,9 +970,12 @@ def bazar_shop_new(message):
         # -------------------------------------------buy item option -------------------------------------------------------
         if int(extract_numbers(message.data,1)):
             print(f" - {tid} buying item {cidx} - - - - ")
-            item = available_items[cidx]
-            total_pasports = sql_helper.db_count_item_type(tid,10)
-            extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
+            item = available_items[cidx]          
+            if item[0] == 10:
+                total_pasports = sql_helper.db_count_item_type(tid,10)
+                extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
+            else:
+                extra_price = 0
             buying_ok = sql_helper.db_buy_item(tid,item[0], extra_price)
             if buying_ok:
                 bot.answer_callback_query(message.id, f"📦 Вы купили {item[1]}!")            
@@ -1695,6 +1768,7 @@ def next_option(message):
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
     items = sql_helper.db_get_owned_items_group(tid)
+    next_lvlexp = sql_helper.show_lvlup_target(tid)
     #box = '📦' if len(items) > 0 else ' '
     item_overview = ''
     for i in items:
@@ -1708,12 +1782,15 @@ def get_statistics(tid):
     pet_space = pinfo[4]
     exp = pinfo[6]
     loc = habitat_emoji(pinfo[5]) 
-    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + '\nОпыт 🌟: ' + str(exp)
+    lvl_points = f"\n❇️Очки талантов: {pinfo[7]}" if pinfo[7] != 0 else ""; 
+    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + lvl_points
     player_stats = player_stats + f"\nВещи: {item_overview}"
     # next line must be commented before run game in production
     # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
 
     return player_stats
+
+
 
 # picture grabber
 @bot.message_handler(func=lambda message: True, content_types=['photo'])
@@ -1745,7 +1822,7 @@ def echo_all(message):
     btn5 = types.KeyboardButton("✈ Путешествие")
     btn_top = types.KeyboardButton("🏆 ТОП")
     markup.add(btn1,btn_hospital,btn3,btn4,btn5,btn_top)
-    bot.send_message(tid, get_statistics(tid), reply_markup=markup)
+    bot.send_message(tid, get_statistics(tid),reply_markup=markup)
     #bot.register_next_step_handler(message, next_option)
     next_option(message)
 

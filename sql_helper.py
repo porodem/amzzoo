@@ -77,10 +77,10 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     '''
-    coins, level, stamina, last_work, pet_space, game_location, exp
+    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points
     '''
     print(f"SQL get player info {tid}")
-    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -535,16 +535,36 @@ def db_stamina_up(tid, value):
 def db_exp_up(tid, value=1):
     """
     Increase experience for player
-    :return 1 if levelup 0 if no
+    :return record (1 if levelup 0 if no; exp to next lvl)
     """
-    q = "select exp_up(%s,%s);"
+    q = "select * FROM exp_up(%s,%s) AS (lvlup int, next_exp_up int);"
     cur = con.cursor()
     cur.execute(q,(tid,value))
-    lvlup = cur.fetchone()[0]
+    record = cur.fetchone()
     con.commit()
     cur.close()
-    return lvlup
+    return record
 
+def show_lvlup_target(tid):
+    """
+    exp needed to levelup
+    """
+    q = "select l.exp from levels l join players p on p.level + 1 = l.lvl where p.telegram_id = %s;"
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    b = cur.fetchone()[0]
+    con.commit()
+    cur.close()
+    return b
+
+def db_upgrade_list():
+    q = "select lvl_required, info FROM zoo_upgrades;"
+    cur = con.cursor()
+    cur.execute(q,)
+    b = cur.fetchall()
+    con.commit()
+    cur.close()
+    return b
 
 def db_buy_pet(tid, animal_id):
     print(' - - write to DB buy pet - -')
