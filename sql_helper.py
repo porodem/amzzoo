@@ -77,10 +77,10 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     '''
-    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points
+    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max
     '''
     print(f"SQL get player info {tid}")
-    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -513,7 +513,7 @@ def db_stamina_drain(tid, value):
     cur.close()
     return(stamina)
 
-def db_stamina_up(tid, value):
+def db_stamina_up(tid, value, limit):
     """  sql trigger updates last_work table field
         :param tid: telegram id of current player.
         :param value: points up.
@@ -521,10 +521,10 @@ def db_stamina_up(tid, value):
         :return None:
     """
     print('- - - update up stamina lvl to DB - - - ')
-    q = '''UPDATE players set stamina = (CASE WHEN stamina + %(value)s > 10 THEN 10 ELSE stamina + %(value)s END) where telegram_id = %(tid)s;'''
+    q = '''UPDATE players set stamina = (CASE WHEN stamina + %(value)s > %(limit)s THEN %(limit)s ELSE stamina + %(value)s END) where telegram_id = %(tid)s;'''
     q2 = '''SELECT stamina FROM players WHERE telegram_id = %s;'''
     cur = con.cursor()
-    cur.execute(q,{'value':value,'tid':tid})
+    cur.execute(q,{'value':value,'tid':tid,'limit':limit})
     cur.execute(q2,(tid,))
     b = cur.fetchone()
     #print('db stamina up result: ' + str(b))
@@ -558,7 +558,10 @@ def show_lvlup_target(tid):
     return b
 
 def db_upgrade_list():
-    q = "select lvl_required, info FROM zoo_upgrades;"
+    """
+    returns: id, lvl_required, info
+    """
+    q = "select id, lvl_required, info FROM zoo_upgrades;"
     cur = con.cursor()
     cur.execute(q,)
     b = cur.fetchall()
@@ -566,15 +569,22 @@ def db_upgrade_list():
     cur.close()
     return b
 
+def db_stamina_max_up(tid):
+    q = "update players set stamina_max = stamina_max + 1, lvl_points = lvl_points - 1 where telegram_id = %s"
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    con.commit()
+    cur.close()
+    return 
+
 def db_buy_pet(tid, animal_id):
     print(' - - write to DB buy pet - -')
     q = '''SELECT buy_pet(%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(tid,animal_id))
-    result = cur.fetchone()
     con.commit()
-    print('result ' + str(result))
-    return result[0]
+    cur.close()
+    return
 
 def db_get_pet(tid, animal_id):
     """  assign new pet to player
@@ -587,6 +597,7 @@ def db_get_pet(tid, animal_id):
     cur.execute(q,(tid,animal_id))
     #result = cur.fetchone()
     con.commit()
+    cur.close()
     #print('result ' + str(result))
     return #result[0]
 

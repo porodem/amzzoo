@@ -32,6 +32,20 @@ alter table players add column plant_food int default 10 check (plant_food > -1)
 
 alter table players add column meat_food int default 10 check (plant_food > -1)
 
+alter table players add column exp int default 0;
+
+alter table players add column lvl_points int default 0;
+
+alter table players  drop constraint players_stamina_check 
+
+alter table players add constraint players_stamina_check check (stamina > -1)
+
+alter table players add column stamina_max int default 10;
+
+update players set stamina_max = stamina_max + 1 where telegram_id = 
+
+update players set stamina_max = 10;
+
 comment on column players.pet_space is 'how maby pets can obtain. 0 if player blocks bot'
 
 drop  table players cascade;
@@ -78,7 +92,7 @@ alter table animal_list add column catch_chance int; -- percents % 17 for dice a
 
 alter table animal_list add column rating int;
 
-select * from animal_list al ;
+select species, rating from animal_list al order by rating desc;
 
 insert into animal_list values(0,'bones',5,0,0)
 
@@ -337,6 +351,10 @@ end;
 $$;
 end
 
+select (10 * 1.1)::int
+
+delete from property where item_id = 10
+
 select buy_item(6472394157, 6)
 
 select username, p2.* from players p join property p2  on p2."owner" = p.telegram_id ;
@@ -345,9 +363,11 @@ delete from property p where id = (select id from property p where item_id = 5 l
 
 select id from property p where item_id = 5
 
-select * from players p ;
+delete from pets where animal_id = 0;
 
 UPDATE players set pet_space = pet_space + 1 where telegram_id =775803031
+
+update players set exp = 50 where invite_date < now() - interval '2 months' returning players.username , nick_name 
 
 create or replace function buy_pet(tid int8, animal int8)
 returns int 
@@ -523,8 +543,10 @@ group by username order by 2  desc nulls last limit 5;
 select case when nick_name = 'x' then p.username
       else nick_name end nick ,
       sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) ,
-      max(rating) best_animal,
-        count(*) over () ttl_players , telegram_id
+      --max(al.id) best_animal,
+      (select animal_id from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id order by rating desc limit 1) best_animal,
+      array_agg(distinct animal_id order by animal_id desc) ,
+        count(*) over () ttl , telegram_id
             from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
             join animal_list al on al.id = pets.animal_id
             where p.last_work > current_date - interval '14 days'
@@ -533,15 +555,32 @@ select case when nick_name = 'x' then p.username
 
 select * from players p --where nick_name = 'kozel'
 
+select animal_id, rating
+--(select animal_id from animal_list al2 where rating = (select max(rating) from animal_list al join pets pp on pp.animal_id = al.id where owner = p.telegram_id)) 
+--(select max(rating), max(owner)  from animal_list al join pets pp on pp.animal_id = al.id where pp."owner" = pets.owner)
+from pets right join players p on p.telegram_id = pets."owner" 
+join animal_list al on al.id = pets.animal_id 
+where owner = 775803031
+
+select id from animal_list al join pets p2 on p2.animal_id = al.id  where rating = (
+
+select max(rating),
+max(p."owner")  from animal_list al join pets p on p.animal_id = al.id where p."owner" = 775803031
+
+)
+
+select array_agg(animal_id order by rating) from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = 775803031 
+
+
 select "owner", count(distinct animal_id) from pets p group by "owner" 
 
 795547420
 
-select * from property p where "owner" = 795547420
+select * from property p -- where "owner" = 795547420
 
-update players set coins = coins + 13 where telegram_id = 795547420
+update players set coins = coins + 13 where telegram_id = 795547420 775803031 --my
 
-insert into property(item_id, durability, charged, "owner") values(14,10,false,795547420) returning id
+insert into property(item_id, durability, charged, "owner") values(14,10,false,775803031) returning id
 
 delete from property where owner = 775803031
 
@@ -560,16 +599,16 @@ select (random() *10 + 1)::int
 
 update pets set health = health - 1 where animal_id <> 0 and  id % (random() *10 + 1)::int = 0 returning  *
 
-select * from pets p where "owner" = 6472394157
+select * from pets p where "owner" = 775803031
 
-select * from  players p join pets s on s."owner" = p.telegram_id where p.telegram_id = 823087014
+select * from  players --p join pets s on s."owner" = p.telegram_id where p.telegram_id = 823087014
 
 
 update players set invite_date = null where telegram_id = 775803031
 
 delete  from property 
 
-select * from players p2 
+select * from players p2 order by "exp" desc
 
 
 select change_health(54,false,1)
@@ -671,6 +710,8 @@ select change_health(775803031, false, 1)
 
 select get_profit(823087014, 18)
 
+select count(*) from property p where "owner" = 77580303
+
 select * from players --p where telegram_id = 775803031
 
 update players set stamina = 3 where telegram_id = 775803031
@@ -705,18 +746,19 @@ where id = 1 returning treasure = field[1][1], danger;
 
 delete  from treasure_field where id = 1
 
-insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18}}', 5, 1, 4, 9 )
+insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,}', 5, 1, 4, 9 )
 
-create table levels(lvl smallint, exp int)
 
-insert into levels values (2, 100),(3,250),(4,400),(5,600),(6,900),(7,1250)
+create table levels(lvl smallint, exp int);
+
+insert into levels values (2, 100),(3,250),(4,400),(5,600),(6,900),(7,1250);
 
 select * from players p 
 
 	select l.exp from levels l join players p on p.level + 1 = l.lvl where p.telegram_id = 775803031;
 
 create or replace function exp_up(tid int8, value int) 
-returns int
+returns record
 language plpgsql
 as $$
 declare 
@@ -725,7 +767,7 @@ new_exp int;
 levelup int;
 begin
 	
-	select l.exp into next_level_exp from levels l join players p on p.level + 1 = l.lvl where p.telegram_id = 775803031;
+	select l.exp into next_level_exp from levels l join players p on p.level + 1 = l.lvl where p.telegram_id = tid;
 	
 	update players set exp = exp + value where telegram_id = tid
 	returning exp into new_exp;
@@ -737,7 +779,21 @@ begin
 		levelup = 0;
 	end if;
 
-	return levelup;
+	 return (select (levelup, next_level_exp)::record) ;
 end;
 $$;
 end
+
+drop exp_up
+
+select * from exp_up(775803031,1) as inf(a int, bb int)
+
+select 1
+
+create table zoo_upgrades(id int primary key, lvl_required int default 2, info text);
+
+select * from zoo_upgrades
+
+select * from players p 
+
+insert into zoo_upgrades values(1, 2, 'Лимит силы + 1'),(2,2,'Вместимость зоопарка + 1'),(3,2,'Шанс побега животных -5%'),(4,2,'Шанс поймать животное + 5%'),(5,2,'Взлом хороших замков потребует у вас меньше силы 8 -> 4')

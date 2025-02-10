@@ -261,35 +261,6 @@ def check_invite(message):
 
 # ----------   SHOW PETS 
 
-#TODELETE - DEPRICATED
-# @bot.message_handler(commands=['show_pets'])
-# def show_pets_old(message):
-#     owned_pets = sql_helper.db_get_owned_pets(message.from_user.id)
-#     print(list(owned_pets))
-#     #markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-#     markup = types.InlineKeyboardMarkup()
-#     markup.row_width = 2
-#     btn_pack = []
-#     first_pet = owned_pets[0]
-#     pet_info = sql_helper.db_pet_info(first_pet[0])
-#     btn_lbl = pet_emoji(pet_info[1]) + ' сытость: ' + pet_info[2]  
-#     # for p in owned_pets:
-#     #     print(p)
-#     #     cbdata = 'pet' + str(p[0])
-#     #     e = str(pet_emoji(p[1]))
-#     #     #btn = types.KeyboardButton(e)
-
-#     #     btn = types.InlineKeyboardButton(e,callback_data=cbdata)
-#     #     btn_back = types.InlineKeyboardButton(e,callback_data=cbdata)
-#     #     markup.add(btn,btn2)
-#     cidx = 0
-#     next_cid = 0 if cidx == len(owned_pets) - 1 else cidx + 1
-#     btn = types.InlineKeyboardButton('◀')
-#     btn2 = types.InlineKeyboardButton('▶')
-#     markup.add(btn,btn2)
-#     bot.send_message(message.from_user.id, btn_lbl, reply_markup=markup)  
-#     bot.register_next_step_handler(message, pet_details)
-
 @bot.callback_query_handler(lambda query: 'pet' in query.data )
 def show_pets(query):
     print(' - - show pets function (callback) -- : ')
@@ -347,10 +318,7 @@ def show_pets(query):
             sql_helper.db_remove_money(query.from_user.id,total_feed_price)
             sql_helper.db_feed_all(query.from_user.id)
             #sql_helper.db_change_hunger(pet_info[0], True, 10) # TODO modify for all
-            
-        
-        
-        
+                
     else:
         cidx = 0
     print('cidx: ' + str(cidx))
@@ -414,17 +382,6 @@ def show_pets(query):
     else:
         bot.send_message(query.from_user.id, btn_lbl, reply_markup=markup)
 
-
-
-# @bot.callback_query_handler(func=lambda call: 'feed' in call.data)
-# def pet_feeding(call):
-#     print(' - - pet feed -- : ')
-#     pet_id = extract_numbers(call.data)
-#     pet_info = sql_helper.db_pet_info(pet_id)
-#     animal_id = pet_info[1]
-#     print('animal id: ' + str(animal_id))
-#     sql_helper.db_change_hunger(pet_id, True, 10)
-#     bot.send_message(call.from_user.id, pet_emoji(animal_id))
 
 # - - - - - - SHOP  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -519,7 +476,8 @@ def stats_up_selection(message):
     elif re.match('Энергетик.*',message.text):
         #increase_stamina(message)
         e = sql_helper.db_check_owned_item(message.from_user.id, 14)
-        sql_helper.db_stamina_up(message.from_user.id,10)
+        stamina_limit = sql_helper.db_get_player_info(message.from_user.id)[8]
+        sql_helper.db_stamina_up(message.from_user.id,stamina_limit, stamina_limit)
         sql_helper.db_remove_property(e)
         bot.send_message(message.from_user.id, "💪 Силы восстановлены!")
         echo_all(message)
@@ -543,23 +501,27 @@ def do_tech(message):
 
 @bot.callback_query_handler(lambda query: 'up' in query.data)
 def do_ability_up(query):
-    print('- - ABILITY UP')
+    
     tid = query.from_user.id 
     #exp_needed = sql_helper.show_lvlup_target(tid)
     available_items = sql_helper.db_upgrade_list()
     points = sql_helper.db_get_player_info(tid)[7]
+    print(f"ABILITY UP {tid} {points}")
     btn_pack = [] 
     if hasattr(query,'data'):
         print(query.data)
         cidx = int(extract_numbers(query.data))
         # -------------------------------------------buy upgrade option -------------------------------------------------------
         if int(extract_numbers(query.data,1)):
-            print(f" - {tid} buying item {cidx} - - - - ")
+            print(f" - {tid} upgrading item {cidx} - - - - ")
             item = available_items[cidx]
             #total_pasports = sql_helper.db_count_item_type(tid,10)
             #extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
             buying_ok = points
             if buying_ok:
+                if item[0] == 1:
+                    sql_helper.db_stamina_max_up(tid)
+                    print(f"stamina_max_up {tid}")
                 bot.answer_callback_query(query.id, f"🌟 Ваши способности улучшены!")  
                 bot.send_message(query.from_user.id, "🌟 Ваши способности улучшены!")
                 bot.delete_message(query.message.chat.id, query.message.id)  
@@ -575,7 +537,7 @@ def do_ability_up(query):
     item = available_items[cidx]
     
     markup = types.InlineKeyboardMarkup(row_width=2,)
-    lbl = item[1]
+    lbl = item[2]
     btn_buy = types.InlineKeyboardButton(f"❇️", callback_data='up' + str(cidx) + '_1')
     btn_forward = types.InlineKeyboardButton('▶', callback_data='up' + str(next_cid) + '_0' )
     markup.add(btn_buy,btn_forward)
@@ -1411,6 +1373,7 @@ def check_relax(tid):
     info = sql_helper.db_get_player_info(tid)
     last_work = info[3]
     stamina_before = info[2]
+    stamina_limit = info[8]
     
     
     #print(f"check+relax func: {str(tid)} last work: " + str(last_work))
@@ -1432,15 +1395,15 @@ def check_relax(tid):
             return
         bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
         if stamina_before == 10:
-            sql_helper.db_stamina_up(tid,0) # set new last_work time to prevent profit loop
+            sql_helper.db_stamina_up(tid,0,stamina_limit) # set new last_work time to prevent profit loop
             return stamina_before
-        relax = hours_rest if (hours_rest + stamina_before) < 11 else 10 - stamina_before
-        sql_helper.db_stamina_up(tid,relax)
+        relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
+        sql_helper.db_stamina_up(tid,relax,stamina_limit)
     else:
         if hours_rest > 0:
-            relax = hours_rest if (hours_rest + stamina_before) < 11 else 10 - stamina_before
+            relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
             print('stamina added: ' + str(hours_rest))
-            sql_helper.db_stamina_up(tid,relax)
+            sql_helper.db_stamina_up(tid,relax,stamina_limit)
         else:
             relax = 0
             print('hours rest ' + str(hours_rest) + 'not enough')
@@ -1778,12 +1741,13 @@ def get_statistics(tid):
     pinfo = sql_helper.db_get_player_info(tid)
     lvl = pinfo[1]
     coins = pinfo[0]
-    stamina = pinfo[2]    
+    stamina = pinfo[2]   
+    stamina_max = pinfo[8] 
     pet_space = pinfo[4]
     exp = pinfo[6]
     loc = habitat_emoji(pinfo[5]) 
     lvl_points = f"\n❇️Очки талантов: {pinfo[7]}" if pinfo[7] != 0 else ""; 
-    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +'\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + lvl_points
+    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +' / ' + str(stamina_max) + '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + lvl_points
     player_stats = player_stats + f"\nВещи: {item_overview}"
     # next line must be commented before run game in production
     # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
