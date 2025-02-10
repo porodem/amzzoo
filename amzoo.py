@@ -975,7 +975,7 @@ def bazar_shop_new(message):
                 total_pasports = sql_helper.db_count_item_type(tid,10)
                 extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
             else:
-                extra_price = 0
+                extra_price = 1
             buying_ok = sql_helper.db_buy_item(tid,item[0], extra_price)
             if buying_ok:
                 bot.answer_callback_query(message.id, f"📦 Вы купили {item[1]}!")            
