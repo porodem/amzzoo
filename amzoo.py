@@ -518,12 +518,23 @@ def do_ability_up(query):
             #total_pasports = sql_helper.db_count_item_type(tid,10)
             #extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
             buying_ok = points
+            upgrade_ready = True
             if buying_ok:
                 if item[0] == 1:
                     sql_helper.db_stamina_max_up(tid)
                     print(f"stamina_max_up {tid}")
-                bot.answer_callback_query(query.id, f"🌟 Ваши способности улучшены!")  
-                bot.send_message(query.from_user.id, "🌟 Ваши способности улучшены!")
+                elif item[0] == 2:
+                    sql_helper.db_points_down(tid)
+                    sql_helper.db_change_pet_space(tid,1)
+                    print(f"ability up pet_space {tid}")
+                else:
+                    print('not ready yet')
+                    upgrade_ready = False
+                if upgrade_ready:
+                    bot.answer_callback_query(query.id, f"🌟 Ваши способности улучшены!")  
+                    bot.send_message(query.from_user.id, "🌟 Ваши способности улучшены!")
+                else:
+                    bot.send_message(query.from_user.id, "🌟 Ещё не реализовано, подождите новый патч, или потратьте на другое!")
                 bot.delete_message(query.message.chat.id, query.message.id)  
                 return
             else:

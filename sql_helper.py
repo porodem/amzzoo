@@ -569,6 +569,14 @@ def db_upgrade_list():
     cur.close()
     return b
 
+def db_points_down(tid):
+    q = "update players set lvl_points = lvl_points - 1 where telegram_id = %s"
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    con.commit()
+    cur.close()
+    return 
+
 def db_stamina_max_up(tid):
     q = "update players set stamina_max = stamina_max + 1, lvl_points = lvl_points - 1 where telegram_id = %s"
     cur = con.cursor()
