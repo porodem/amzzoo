@@ -46,6 +46,10 @@ update players set stamina_max = stamina_max + 1 where telegram_id =
 
 update players set stamina_max = 10;
 
+alter table players add column lockpicking smallint default 0;
+
+alter table players add column taming smallint default 0;
+
 comment on column players.pet_space is 'how maby pets can obtain. 0 if player blocks bot'
 
 drop  table players cascade;

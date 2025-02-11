@@ -527,6 +527,12 @@ def do_ability_up(query):
                     sql_helper.db_points_down(tid)
                     sql_helper.db_change_pet_space(tid,1)
                     print(f"ability up pet_space {tid}")
+                elif item[0] == 3:
+                    sql_helper.db_points_down(tid)
+                    sql_helper.taming_up(tid,1)
+                elif item[0] == 4:
+                    sql_helper.db_points_down(tid)
+                    sql_helper.lockpick_up(tid,1)
                 else:
                     print('not ready yet')
                     upgrade_ready = False
@@ -714,6 +720,8 @@ def lucky_treasure(query):
 @bot.callback_query_handler(lambda query: 'stealing' in query.data)
 def stealing(query):
     print('- STEALING (checking input pass):')
+
+    pinfo = sql_helper.db_get_player_info(query.from_user.id)
     
     victim = extract_numbers(query.data,0)
     input_pass = int(extract_numbers(query.data,1))
@@ -756,6 +764,7 @@ def stealing(query):
             #break
     
     pwr = 8 if strong_lock else 2
+    pwr = 4 if pinfo[9] == 1 else pwr
     lock_info = 'Здесь установлены хорошие🔒 (требуется 8 💪)' if strong_lock else ''
     
     stamina = sql_helper.db_get_player_info(query.from_user.id)[2]    
@@ -1122,6 +1131,12 @@ def catch_pet(message):
     dig_result = m.dice.value
     if dig_result < 6:
         # TODO this and other sleep() stops all other players!
+        if dig_result ==5  and info[10] > 0 and random.randrange(0,2):
+            time.sleep(3)
+            print(f"catching {tid}; upgrade worked")
+            sql_helper.db_get_pet(tid, animal_id)
+            bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)    
+            return
         time.sleep(3)
         bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
         sql_helper.db_exp_up(tid,pwr)         

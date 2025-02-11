@@ -77,10 +77,10 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     '''
-    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max
+    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming
     '''
     print(f"SQL get player info {tid}")
-    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -273,6 +273,8 @@ def db_get_animal_for_catch(location_id):
                
     return pet_list
 
+
+
 def db_get_bazar_shop_items(location_id):
     """
     :param location_id: location of shop. [5 - any, 4 water, 3 forest, 2 field, 1 desert]
@@ -433,6 +435,29 @@ def db_refil_pits():
         con.commit()
 
 
+def lockpick_up(tid,value):
+    """
+    Improve skill for stealing, and burgluring, unlocking any locks
+    """
+    print(' SQL lockpick up')
+    q = "UPDATE players SET lockpicking = lockpicking + %s WHERE telegram_id = %s"
+    cur = con.cursor()
+    cur.execute(q,(value,tid))
+    con.commit()
+    cur.close()
+    return
+
+def taming_up(tid,value):
+    """
+    Improve skill for catching animals
+    """
+    print(' SQL lockpick up')
+    q = "UPDATE players SET taming = taming + %s WHERE telegram_id = %s"
+    cur = con.cursor()
+    cur.execute(q,(value,tid))
+    con.commit()
+    cur.close()
+    return
 
 # ==================================== DML BLOCK
 
