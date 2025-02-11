@@ -292,7 +292,7 @@ def show_pets(query):
             feed_price = int(pet_info[8] / 10) - int(pet_info[8]/10 * float(f"0.{pet_info[2]}"))
             coins = sql_helper.db_get_player_info(query.from_user.id)[0]
             if coins < feed_price:
-                bot.send_message(query.from_user.id, "❌ нехватает денег!")
+                bot.send_message(query.from_user.id, "❌ не хватает денег!")
                 bot.delete_message(query.message.chat.id, query.message.id)
                 return
             sql_helper.db_remove_money(query.from_user.id,feed_price)
@@ -1157,7 +1157,7 @@ def buy_pet(message):
                 bot.send_message(message.from_user.id, pet_emoji(animal_id))
                 #echo_all(message)
             else:
-                bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+                bot.send_message(message.from_user.id, "❌ Не хватает денег!")
     # selling pet
     if re.match('.*Продать.*',message.text):
         pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
@@ -1193,7 +1193,7 @@ def buy_item(message):
             bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре!")
             bot.register_next_step_handler(message, set_nickname)
         else:
-            bot.send_message(message.from_user.id, "❌ Нехватает денег!")
+            bot.send_message(message.from_user.id, "❌ Не хватает денег!")
     # selling pet
     # elif re.match('.*Продать.*',message.text):
     #     pet_list = sql_helper.db_get_owned_pets(message.from_user.id)
@@ -1571,7 +1571,7 @@ def vet(query):
         cure_price = int(extract_numbers(query.data, 1))   
         print('cure_price from data:' + str(cure_price))     
         if coins < cure_price:
-            lbl = '❌ нехватает денег 💰'
+            lbl = '❌ не хватает денег 💰'
             bot.send_message(query.from_user.id, lbl, reply_markup=None)
             
         else:

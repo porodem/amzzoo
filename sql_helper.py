@@ -590,9 +590,10 @@ def db_buy_pet(tid, animal_id):
     q = '''SELECT buy_pet(%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(tid,animal_id))
+    b = cur.fetchone()[0]
     con.commit()
     cur.close()
-    return
+    return b
 
 def db_get_pet(tid, animal_id):
     """  assign new pet to player
