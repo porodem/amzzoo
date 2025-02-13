@@ -721,12 +721,13 @@ def lucky_treasure(query):
 def stealing(query):
     print('- STEALING (checking input pass):')
 
-    pinfo = sql_helper.db_get_player_info(query.from_user.id)
+    tid = query.from_user.id
+    pinfo = sql_helper.db_get_player_info(tid)
     
     victim = extract_numbers(query.data,0)
     input_pass = int(extract_numbers(query.data,1))
     if input_pass == 100:
-        bot.send_message(query.from_user.id, "выход")
+        bot.send_message(tid, "выход")
         bot.delete_message(query.message.chat.id, query.message.id)
         return
     #print(info)
@@ -734,7 +735,7 @@ def stealing(query):
     print(f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}")
 
     # decay key
-    items = sql_helper.db_get_owned_items(query.from_user.id)
+    items = sql_helper.db_get_owned_items(tid)
     tools = 0
     tools_durability = 0
     for i in items:
@@ -769,7 +770,7 @@ def stealing(query):
     
     stamina = sql_helper.db_get_player_info(query.from_user.id)[2]    
     if stamina < pwr:
-        bot.send_message(query.from_user.id, lock_info + "Недостаточно сил 😪")
+        bot.send_message(tid, lock_info + "Недостаточно сил 😪")
         bot.delete_message(query.message.chat.id, query.message.id)
         #echo_all()
         return
@@ -783,15 +784,15 @@ def stealing(query):
         #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
         bot.delete_message(query.message.chat.id, query.message.id)
         pet_stays = random.randrange(1,100)
-        sql_helper.db_stamina_down(query.from_user.id, 2)
-        bot.send_message(query.from_user.id, "🔐")
+        sql_helper.db_stamina_down(tid, 2)
+        bot.send_message(tid, "🔐")
         escape_percent = 15
         
         if pet_stays < escape_percent:
                 print('Successful harm: pet escaped!')
                 sql_helper.db_remove_pet(chapest_pet[0])
-                for tid in [query.from_user.id, victim]:
-                    bot.send_message(tid, f" {pet_emoji(chapest_pet[2])} убежал.")
+                for tidx in [query.from_user.id, victim]:
+                    bot.send_message(tidx, f" {pet_emoji(chapest_pet[2])} убежал.")
         else:
             bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но {pet_emoji(chapest_pet[2])} не убежал из клетки. Шанс {escape_percent}%")
 
@@ -817,25 +818,26 @@ def stealing(query):
 @bot.callback_query_handler(lambda query: 'victim' in query.data)
 def search_victims(query):
 
+    tid = query.from_user.id
     markup = None
     btn_pack = []
     
     if hasattr(query,'data'):
         print(query.data)
 
-        items = sql_helper.db_get_owned_items(query.from_user.id)
+        items = sql_helper.db_get_owned_items(tid)
         tools = 0
         for i in items:
             if i[5]== 20:
                 tools = i[0]
 
         if tools == 0:
-            bot.send_message(query.from_user.id, "Нужна отмычка!")
+            bot.send_message(tid, "Нужна отмычка!")
             bot.delete_message(query.message.chat.id, query.message.id)
             #echo_all()
             return
         
-        stamina = sql_helper.db_get_player_info(query.from_user.id)[2]
+        stamina = sql_helper.db_get_player_info(tid)[2]
         #sql_helper.db_stamina_down(query.from_user.id,1)
         ask = 'Зоопарк жертвы:'
         victim = int(extract_numbers(query.data,0))
@@ -861,12 +863,12 @@ def search_victims(query):
         print('------ have no data')
         markup = types.InlineKeyboardMarkup(row_width=1,)
 
-        stamina = sql_helper.db_get_player_info(query.from_user.id)[2]
-        sql_helper.db_stamina_down(query.from_user.id,1)
-        sql_helper.db_exp_up(query.from_user.id,1)
+        stamina = sql_helper.db_get_player_info(tid)[2]
+        sql_helper.db_stamina_down(tid,1)
+        sql_helper.db_exp_up(tid,1)
 
         ask = '-1💪 Ближайшие зоопарки:'
-        location =  sql_helper.db_check_location(query.from_user.id)
+        location =  sql_helper.db_check_location(tid)
         victims = sql_helper.db_get_nearby_players(location)
         i = 1
         #print("total players: " + str(total_players))
@@ -874,7 +876,7 @@ def search_victims(query):
             ask = 'Похоже рядом нет других игроков -1💪'
         
         for player in victims:
-            if player[0] == query.from_user.id:
+            if player[0] == tid:
                 continue
             pname = player[2] if player[1] is None else player[1]
             
