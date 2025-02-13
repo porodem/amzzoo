@@ -250,9 +250,10 @@ def check_invite(message):
             bot.send_message(message.from_user.id, "❌ код не сработал!")
         else:
             sql_helper.db_get_item(invite_tid,14)
+            sql_helper.db_get_item(invite_tid,14)
             sql_helper.db_add_money(message.from_user.id,5)
             bot.send_message(message.from_user.id, "✅ Успешно! +5💰")
-            bot.send_message(invite_tid, "Получен 🥫")
+            bot.send_message(invite_tid, "Получено 🥫🥫")
         echo_all(message)
     else:
         bot.send_message(message.from_user.id, "❌ код не сработал!")

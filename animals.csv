@@ -1,5 +1,5 @@
 id;species ;habitat;food_type;price;catch_price;catch_difficulty;catch_chance;rating
-0;Кости;5;0;0;;;;1
+0;Кости;5;0;0;;;;0
 1;Яйцо;5;1;1;;;;1
 2;Мышь;5;1;3;;;;2
 3;Паук;5;3;5;;;;3
