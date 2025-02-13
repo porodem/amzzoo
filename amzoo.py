@@ -1617,7 +1617,7 @@ def vet(query):
         if p[1] == 0 or health == 10: continue # escape corpses
         cure_price = int((p[2] * 0.7) * ((10-health) / 10))  #str(int(p[2] / 2)) # sell price its original price / 2
         if cure_price == 0: cure_price = 1
-        emj = str(pet_emoji(p[1]) + " ♥ " + str(health) +  " лечить за 💰x" + str(cure_price))
+        emj = str(pet_emoji(p[1]) + f" ♥ {str(health)}/10 💰x" + str(cure_price))
         cb_prefix = 'cure'
         cb_price_sfx = '_' + str(cure_price)
         btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]) + cb_price_sfx)
