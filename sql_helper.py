@@ -292,20 +292,31 @@ def db_get_bazar_shop_items(location_id):
 
     return items_available;
 
-def db_get_top_players():
+def db_get_top_players(top_order):
     """
     :return list: [username, sum_points, best_animal, total_players]
     #(select animal_id from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id order by rating desc limit 1) best_animal,
     """
-    q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
-      sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) best_pets,
-      --array_agg(distinct animal_id order by animal_id desc) ,
-      (select array_agg(animal_id order by rating desc) from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id) best_animal,
-        count(*) over () ttl , telegram_id
-            from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
-            JOIN animal_list al on al.id = pets.animal_id
-            where p.last_work > current_date - interval '14 days'
-            group by username, nick_name, telegram_id order by 2 desc NULLS LAST LIMIT 10;'''
+    if top_order == 'pets':
+        q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
+        sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) best_pets,
+        --array_agg(distinct animal_id order by animal_id desc) ,
+        (select array_agg(animal_id order by rating desc) from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id) best_animal,
+            count(*) over () ttl , telegram_id
+                from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
+                JOIN animal_list al on al.id = pets.animal_id
+                where p.last_work > current_date - interval '14 days'
+                group by username, nick_name, telegram_id order by 2 desc NULLS LAST LIMIT 10;'''
+    elif top_order == 'exp':
+        q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
+        sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) best_pets,
+        --array_agg(distinct animal_id order by animal_id desc) ,
+        (select array_agg(animal_id order by rating desc) from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id) best_animal,
+            count(*) over () ttl , telegram_id, p.exp
+                from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
+                JOIN animal_list al on al.id = pets.animal_id
+                where p.last_work > current_date - interval '14 days'
+                group by username, nick_name, telegram_id order by 6 desc NULLS LAST LIMIT 10;'''
     leaders = []
     with con.cursor() as cur:
           cur.execute(q)

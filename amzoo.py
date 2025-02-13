@@ -1650,29 +1650,84 @@ def vet(query):
 #     bot.answer_callback_query(query.id,text='You sold pet')
 #     bot.send_message(query.from_user.id, "Петомец продан")
 
-def show_top(message):
-    print('- - - SHOW TOP - - -')
+#def show_top(message):
+ #   print('- - - SHOW TOP - - -')
+
+@bot.callback_query_handler(lambda query: 'tops' in query.data)
+def show_top(query):
+    print('- -- SHOW TOPS -- -')
+    tid = query.from_user.id 
     
-    leaders = sql_helper.db_get_top_players()
-    total_players = leaders[0][3]
-    info = f"🏆 Лучшие игроки\n  10 из {total_players} \n----------------------------------\n"
-    i = 1
+    if hasattr(query,'data'):
+        cidx = int(extract_numbers(query.data))
+        if cidx == 1:
+            leaders = sql_helper.db_get_top_players('pets')
+            total_players = leaders[0][3]
+            info = f"🏆 Лучшие игроки 🐇\n  10 из {total_players} \n----------------------------------\n"
+            i = 1
+            
+            print("total players: " + str(total_players))
+            for player in leaders:
+                pname = 'без имени' if player[0] is None else player[0]
+                pet_group = ''
+                show_limit = 0
+                for pet in player[2]:
+                    if show_limit == 3:
+                        break
+                    show_limit += 1
+                    pet_group += pet_emoji(pet)
+                animal = player[2]
+                info += f"{i}) *{pname}* и его {pet_group}\n"
+                i += 1
+            #print(info)
+            bot.send_message(tid, info, parse_mode='markdown')
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
+        elif cidx == 2:
+            leaders = sql_helper.db_get_top_players('exp')
+            total_players = leaders[0][3]
+            info = f"🏆 Лучшие игроки 🌟\n  10 из {total_players} \n----------------------------------\n"
+            i = 1
+            
+            print("total players: " + str(total_players))
+            for player in leaders:
+                pname = 'без имени' if player[0] is None else player[0]
+                exp = f"🌟{player[5]}"
+                pet_group = ''
+                show_limit = 0
+                for pet in player[2]:
+                    if show_limit == 3:
+                        break
+                    show_limit += 1
+                    pet_group += pet_emoji(pet)
+                animal = player[2]
+                info += f"{i}) *{pname}* {exp} и его {pet_group}\n"
+                i += 1
+            #print(info)
+            bot.send_message(tid, info, parse_mode='markdown')
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
+    else:
+        cidx = 0
+
+    #next_cid = 0 if cidx == len(available_items) - 1 else cidx + 1
+    #item = available_items[cidx]
     
-    print("total players: " + str(total_players))
-    for player in leaders:
-        pname = 'без имени' if player[0] is None else player[0]
-        pet_group = ''
-        show_limit = 0
-        for pet in player[2]:
-            if show_limit == 3:
-                break
-            show_limit += 1
-            pet_group += pet_emoji(pet)
-        animal = player[2]
-        info += f"{i}) *{pname}* и его {pet_group}\n"
-        i += 1
-    #print(info)
-    bot.send_message(message.from_user.id, info, parse_mode='markdown')
+    markup = types.InlineKeyboardMarkup(row_width=2,)
+    lbl = 'рейтинг'
+    btn_top_pets = types.InlineKeyboardButton(f"🐇 Животные", callback_data='tops_1')
+    btn_exit = types.InlineKeyboardButton('🌟 Опыт', callback_data='tops_2' )
+    markup.add(btn_top_pets,btn_exit)
+    # if hasattr(query,'data'):
+    #     bot.edit_message_text(
+    #         text=lbl,
+    #         chat_id=query.message.chat.id,
+    #         parse_mode='markdown', # to make some text bold with *this* in messages
+    #         message_id=query.message.id,
+    #         reply_markup=markup
+    #     )
+    # else:
+    bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
 
 # - - - - - - -  U T I L S - - - - - - - 
 
