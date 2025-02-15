@@ -593,22 +593,28 @@ def show_lvlup_target(tid):
     cur.close()
     return b
 
-def db_upgrade_list():
+def db_upgrade_list(tid):
     """
-    returns: id, lvl_required, info
+    returns: id, lvl_required, info, is_available
     """
-    q = "select id, lvl_required, info FROM zoo_upgrades;"
+    #q = "select id, lvl_required, info FROM zoo_upgrades;"
+    q = '''select u.id, lvl_required, info, p."level" = u.lvl_required avail
+    FROM zoo_upgrades u join players p on p."level"+1  >= u.lvl_required and p.telegram_id = %(tid)s 
+    where u.id not in (select up_id from player_knows pk where tid = %(tid)s);'''
     cur = con.cursor()
-    cur.execute(q,)
+    cur.execute(q,{'tid':tid,})
     b = cur.fetchall()
     con.commit()
     cur.close()
     return b
 
-def db_points_down(tid):
+def db_points_down(tid, up_id):
     q = "update players set lvl_points = lvl_points - 1 where telegram_id = %s"
     cur = con.cursor()
     cur.execute(q,(tid,))
+    con.commit()
+    q = "insert into player_knows(ldate, tid, up_id) values (now(),%s,%s)"
+    cur.execute(q,(tid,up_id))
     con.commit()
     cur.close()
     return 

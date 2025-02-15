@@ -121,9 +121,9 @@ drop table pets;
 
 select * from pets;
 
-insert into pets(animal_id, owner /*petname*/) values(2,775803031)
-
 select * from pets;
+
+select * from players p 
 
 create or replace function fill_pet() returns trigger 
 as $$
@@ -217,7 +217,7 @@ insert into habitat values(6,'america',20) # TODO
 
 update habitat set travel_price = 12 where id = 3;
 
-select * from animal_list al 
+select species, rating from animal_list al order by rating 
 
 union select * from  food_type ft 
 
@@ -285,7 +285,7 @@ select * from items i ;
 UPDATE players set stamina = (case when stamina - 1 < 0 then 0 else stamina-1 end)  where telegram_id = 1969292042
 returning stamina 
 
-
+SELECT telegram_id, username, nick_name FROM players
 
 select * from habitat h ;
 
@@ -550,12 +550,26 @@ select case when nick_name = 'x' then p.username
       --max(al.id) best_animal,
       (select animal_id from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id order by rating desc limit 1) best_animal,
       array_agg(distinct animal_id order by animal_id desc) ,
-        count(*) over () ttl , telegram_id
+        count(*) over () ttl , telegram_id,
+        p."exp" 
             from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
             join animal_list al on al.id = pets.animal_id
             where p.last_work > current_date - interval '14 days'
             group by username, nick_name, telegram_id
 		order by 2 desc NULLS LAST LIMIT 100;
+
+select case when nick_name = 'x' then p.username
+      else nick_name end nick ,
+      sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) ,
+      --max(al.id) best_animal,
+      (select animal_id from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id order by rating desc limit 1) best_animal,
+      array_agg(distinct animal_id order by animal_id desc) ,
+        count(*) over () ttl , telegram_id, p."exp" 
+            from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
+            join animal_list al on al.id = pets.animal_id
+            where p.last_work > current_date - interval '14 days'
+            group by username, nick_name, telegram_id
+		order by 7 desc NULLS LAST LIMIT 100;
 
 select * from players p --where nick_name = 'kozel'
 
@@ -584,7 +598,7 @@ select * from property p -- where "owner" = 795547420
 
 update players set coins = coins + 13 where telegram_id = 795547420 775803031 --my
 
-insert into property(item_id, durability, charged, "owner") values(14,10,false,775803031) returning id
+
 
 delete from property where owner = 775803031
 
@@ -798,6 +812,50 @@ create table zoo_upgrades(id int primary key, lvl_required int default 2, info t
 
 select * from zoo_upgrades
 
+alter table zoo_upgrades add column way varchar(15);
+
+alter table zoo_upgrades add column value int;
+
 select * from players p 
 
 insert into zoo_upgrades values(1, 2, 'Лимит силы + 1'),(2,2,'Вместимость зоопарка + 1'),(3,2,'Шанс побега животных -5%'),(4,2,'Шанс поймать животное + 5%'),(5,2,'Взлом хороших замков потребует у вас меньше силы 8 -> 4')
+
+
+
+
+create temp table zup(id int primary key, lvl_required int default 2, info text, way varchar(15), value int);
+
+copy zup from 'C:\Program Files\PostgreSQL\17\abilities.csv' delimiter ';' csv header -- encoding 'WIN1251'
+
+insert into zoo_upgrades (
+select n.* from zup n left join zoo_upgrades i on i.id = n.id where i.id is null
+)
+
+--29.01.2025 update all columnse from file but id
+update zoo_upgrades o set 
+lvl_required = a.lvl_required, info = a.info , way = a.way, value = a.value
+from (select * from zup ) a  where o.id = a.id;
+
+
+
+
+insert into property(item_id, durability, charged, "owner") values(20,10,false,775803031) returning id
+
+insert into pets(animal_id, owner /*petname*/) values(2,6472394157)
+
+select * from pets
+
+select u.id, lvl_required, info, p."level" = u.lvl_required avail, p.nick_name 
+FROM zoo_upgrades u join players p on p."level"+1  >= u.lvl_required and p.telegram_id = 775803031 
+where u.id not in (select up_id from player_knows pk where tid = 775803031);
+
+
+
+
+create table player_knows(id int generated always as identity, ldate timestamp, tid int8 references players(telegram_id) not null, up_id int references zoo_upgrades(id) not null)
+
+insert into player_knows(ldate, tid, up_id) values (now(),775803031,1)
+
+select * from player_knows
+
+drop table  player_knows

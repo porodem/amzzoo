@@ -505,7 +505,7 @@ def do_ability_up(query):
     
     tid = query.from_user.id 
     #exp_needed = sql_helper.show_lvlup_target(tid)
-    available_items = sql_helper.db_upgrade_list()
+    available_items = sql_helper.db_upgrade_list(tid)
     points = sql_helper.db_get_player_info(tid)[7]
     print(f"ABILITY UP {tid} {points}")
     btn_pack = [] 
@@ -522,18 +522,26 @@ def do_ability_up(query):
             upgrade_ready = True
             if buying_ok:
                 if item[0] == 1:
+                    sql_helper.db_points_down(tid,item[0])
                     sql_helper.db_stamina_max_up(tid)
                     print(f"stamina_max_up {tid}")
                 elif item[0] == 2:
-                    sql_helper.db_points_down(tid)
+                    sql_helper.db_points_down(tid,item[0])
                     sql_helper.db_change_pet_space(tid,1)
                     print(f"ability up pet_space {tid}")
                 elif item[0] == 3:
-                    sql_helper.db_points_down(tid)
+                    sql_helper.db_points_down(tid,item[0])
                     sql_helper.taming_up(tid,1)
                 elif item[0] == 4:
-                    sql_helper.db_points_down(tid)
+                    sql_helper.db_points_down(tid,item[0])
                     sql_helper.lockpick_up(tid,1)
+                elif item[0] == 5:
+                    sql_helper.db_points_down(tid,item[0])
+                    sql_helper.db_stamina_max_up(tid)
+                    print(f"stamina_max_up {tid}")
+                elif item[0] == 6:
+                    sql_helper.db_points_down(tid,item[0])
+                    sql_helper.taming_up(tid,1)
                 else:
                     print('not ready yet')
                     upgrade_ready = False
@@ -555,7 +563,8 @@ def do_ability_up(query):
     item = available_items[cidx]
     
     markup = types.InlineKeyboardMarkup(row_width=2,)
-    lbl = item[2]
+    up_lbl_avail =  "" if item[3] else f"\n🟥 требуется {item[1]} уровень"
+    lbl = item[2] + up_lbl_avail
     btn_buy = types.InlineKeyboardButton(f"❇️", callback_data='up' + str(cidx) + '_1')
     btn_forward = types.InlineKeyboardButton('▶', callback_data='up' + str(next_cid) + '_0' )
     markup.add(btn_buy,btn_forward)
@@ -677,7 +686,7 @@ def lucky_treasure(query):
             sql_helper.db_stamina_down(tid,4)
             sql_helper.db_exp_up(tid,2)
         else:
-            msg = f"⛏️ 💪{stamina}"
+            msg = f"⛏️ 💪{stamina - 1}"
             sql_helper.db_exp_up(tid,1)
 
     cells = sql_helper.db_get_field(location)
