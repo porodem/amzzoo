@@ -143,6 +143,7 @@ def get_hunger():
 
         if is_refiling_pits:
             print("REFILING HOLES")
+            prev_refil_pits_day = today
             sql_helper.db_refil_pits()
             
         # WARNING if bot restarts epidemic executes again !
@@ -1832,6 +1833,9 @@ def get_statistics(tid):
         item_overview = item_overview + f"{item_emoji(i[0])}{q}"
     check_relax(tid)
     pinfo = sql_helper.db_get_player_info(tid)
+    this_moment = datetime.now()
+    time_rest = str(this_moment - pinfo[3])
+    time_rest = time_rest.split('.')[0]
     lvl = pinfo[1]
     coins = pinfo[0]
     stamina = pinfo[2]   
@@ -1840,7 +1844,7 @@ def get_statistics(tid):
     exp = pinfo[6]
     loc = habitat_emoji(pinfo[5]) 
     lvl_points = f"\n❇️Очки талантов: {pinfo[7]}" if pinfo[7] != 0 else ""; 
-    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) +' / ' + str(stamina_max) + '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + lvl_points
+    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) + f" / {stamina_max} ⏳{time_rest} " +  '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + lvl_points
     player_stats = player_stats + f"\nВещи: {item_overview}"
     # next line must be commented before run game in production
     # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
