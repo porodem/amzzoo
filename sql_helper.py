@@ -306,7 +306,7 @@ def db_get_top_players(top_order):
                 from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
                 JOIN animal_list al on al.id = pets.animal_id
                 where p.last_work > current_date - interval '14 days'
-                group by username, nick_name, telegram_id order by 2 desc NULLS LAST LIMIT 10;'''
+                group by username, nick_name, telegram_id order by 2 desc, 1 NULLS LAST LIMIT 10;'''
     elif top_order == 'exp':
         q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
         sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) best_pets,
@@ -423,7 +423,7 @@ def db_refil_pits():
     cur.execute(q,)
     cur.close()
     con.commit()
-    for i in range(6):
+    for i in range(7):
         cel_win = random.randrange(1,32)
         cel_fail = random.randrange(1,32)
         cel_fail = random.randrange(1,32) if cel_fail == cel_win else cel_fail
