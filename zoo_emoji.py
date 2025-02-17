@@ -57,6 +57,8 @@ def pet_emoji(id):
         e = "🦩"
     elif id == 29:
         e = "🐍"
+    elif id == 30:
+        e = "🦘"
     elif id == 0:
         e = "☠"
     else:
@@ -107,6 +109,8 @@ def habitat_emoji(id):
         e = "🌊"
     elif id == 6:
         e = "🌎"
+    elif id == 7:
+        e = "🇦🇺"
     else:
         e = "🏠"
     return e

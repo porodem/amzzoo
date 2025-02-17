@@ -41,3 +41,5 @@
 10. restore stamina 1 per hour, but remember about profit nex day problem
 11. maby consume stamine on feeding animals and travels?
 12. fix double daily profit form animals
+13. fix exp on trying dig without stamina
+14. travel only on button click not writing location name

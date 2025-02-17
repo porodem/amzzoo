@@ -1118,9 +1118,10 @@ def catch_pet(message):
         print(f"lastwork {last_work} less than {hour_ago} - NO checking relax")
 
     animal_id = int(extract_numbers(message.text))
+    catch_price = int(extract_numbers(message.text,1))
     chance = int(extract_numbers(message.text,3))
     pwr = int(extract_numbers(message.text,2)) 
-    catch_price = int(extract_numbers(message.text,1))
+    
     print("-- CATCHING: " + str(tid) + " type: " + message.text + f" animal:{animal_id} chance:{chance} at " + str(datetime.now()))
     #print(message.__dict__)
     
@@ -1134,32 +1135,50 @@ def catch_pet(message):
         m = bot.send_dice(tid,'🎲')
         sql_helper.db_stamina_down(tid, pwr)
         sql_helper.db_remove_money(tid,catch_price)
-        
+    elif chance == 11:
+        print('chance 11')
+        m = bot.send_dice(tid,'🎰')
+        sql_helper.db_stamina_down(tid, pwr)
+        sql_helper.db_remove_money(tid,catch_price)
     else:
-        print(' CHANCE PROBLEM - - - - - - - - - - ')
+        print('ERROR CHANCE PERCENT PROBLEM - - - - - - - - - - ')
         
     bot.register_next_step_handler(message, lucky_way)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     # m = bot.send_dice(tid,'🎲')
     dig_result = m.dice.value
-    if dig_result < 6:
-        # TODO this and other sleep() stops all other players!
-        if dig_result ==5  and info[10] > 0 and random.randrange(0,2):
-            time.sleep(3)
+    if chance == 11:
+        print(f"Rare catching {tid}")
+        if dig_result in [1,16,22,32,43,48,64]:
+            time.sleep(2)
             print(f"catching {tid}; upgrade worked")
             sql_helper.db_get_pet(tid, animal_id)
             bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)    
             return
-        time.sleep(3)
-        bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
-        sql_helper.db_exp_up(tid,pwr)         
-    elif dig_result == 6:
-        time.sleep(3)
-        sql_helper.db_get_pet(tid, animal_id)
-        bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)            
-    else:
-        print('-- unknown catching animal none --')
-        echo_all(message) 
+        else:
+            print(f"failed with slot: {dig_result}")
+            time.sleep(2)
+            bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
+            sql_helper.db_exp_up(tid,pwr)  
+    elif chance == 16:
+        if dig_result < 6:
+            # TODO this and other sleep() stops all other players!
+            if dig_result ==5  and info[10] > 0 and random.randrange(0,2):
+                time.sleep(3)
+                print(f"catching {tid}; upgrade worked")
+                sql_helper.db_get_pet(tid, animal_id)
+                bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)    
+                return
+            time.sleep(3)
+            bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
+            sql_helper.db_exp_up(tid,pwr)         
+        elif dig_result == 6:
+            time.sleep(3)
+            sql_helper.db_get_pet(tid, animal_id)
+            bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)            
+        else:
+            print('-- unknown catching animal none --')
+            echo_all(message) 
 
 def buy_pet(message):
 
@@ -1486,12 +1505,19 @@ def shop_select(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
         btn2 = types.KeyboardButton("🏜 Африка 💰 25",)
+        btn3 = types.KeyboardButton("🇦🇺 Австралия 💰 50",)
         #btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
-        markup.add(btn1,btn2,btn_back)
+        markup.add(btn1,btn2,btn3,btn_back)
     elif location == 6: # America 
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🏜 Африка 💰 25",)
+        btn2 = types.KeyboardButton("🇦🇺 Австралия 💰 50",)
+        btn_back = types.KeyboardButton("🔙 Назад")
+        markup.add(btn1,btn2,btn_back)
+    elif location == 7: # Australia 
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)   
+        btn1 = types.KeyboardButton("🌎 Америка 💰 20",)     
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn_back)
     else:
@@ -1533,7 +1559,7 @@ def travel(message):
         if coins >= 35 and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,4,35)
-            bot.send_message(message.from_user.id, "✈ Вы улетели на море 🏜!")
+            bot.send_message(message.from_user.id, "✈ Вы улетели на море 🌊!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
             sql_helper.db_exp_up(tid,1)
@@ -1545,6 +1571,17 @@ def travel(message):
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,6,20)
             bot.send_message(message.from_user.id, "✈ Вы улетели в Америку 🌎!")
+            sql_helper.db_exp_up(tid,1)
+            # new location image
+            #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+        else:
+            bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
+    if re.match('.*Австралия.*',message.text):
+        #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        if coins >= 50 and sql_helper.db_stamina_drain(tid,1) > -1:
+            # TODO variable for ticket price
+            sql_helper.db_change_location(tid,7,50)
+            bot.send_message(message.from_user.id, "✈ Вы улетели в Австралию 🇦🇺!")
             sql_helper.db_exp_up(tid,1)
             # new location image
             #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
