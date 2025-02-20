@@ -96,17 +96,15 @@ def admin_announce(message):
         print(f"announce: {master_tid} " + str(message.from_user.id))
 
 # Timer for all pets to get hunger every 8 hours (28000 sec)
-hunger_interval = 240
+hunger_interval = 4
 
 def get_hunger():
     previous_epidemic_day = None
     previous_fire_day = None
     prev_refil_pits_day = None
     while True:
-        print("- - -  get hunger - - - ")
         print(str(datetime.now()) + f";GET_HUNGER" )
-        #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(hunger_interval )
+        time.sleep(hunger_interval * 60 * 60)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -704,11 +702,11 @@ def lucky_treasure(query):
             # 
             deep = 2
             cell_emoji = '⬛️' if i[1] != 0 else '🚫'
-            btn = types.InlineKeyboardButton(f"{cell_emoji} ",callback_data=f"dig_{counter}_{deep}")
+            btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
         else:
             deep = 1
             cell_emoji = '◾️' if i[1] != 0 else '🚫'
-            btn = types.InlineKeyboardButton(f"{cell_emoji} ",callback_data=f"dig_{counter}_{deep}")
+            btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
         counter +=1
         pin_pad_buttons.append(btn)
     btn_exit = types.InlineKeyboardButton(f"🔙",callback_data=f"dig_100")
