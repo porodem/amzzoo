@@ -620,7 +620,7 @@ def db_points_down(tid, up_id):
     return 
 
 def db_stamina_max_up(tid):
-    q = "update players set stamina_max = stamina_max + 1, lvl_points = lvl_points - 1 where telegram_id = %s"
+    q = "update players set stamina_max = stamina_max + 1 where telegram_id = %s"
     cur = con.cursor()
     cur.execute(q,(tid,))
     con.commit()

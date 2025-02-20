@@ -508,7 +508,7 @@ def do_ability_up(query):
     #exp_needed = sql_helper.show_lvlup_target(tid)
     available_items = sql_helper.db_upgrade_list(tid)
     points = sql_helper.db_get_player_info(tid)[7]
-    print(f"ABILITY UP {tid} {points}")
+    print(f"{str(datetime.now())} ABILITY UP {tid} {points}")
     btn_pack = [] 
     if hasattr(query,'data'):
         print(query.data)
@@ -555,6 +555,8 @@ def do_ability_up(query):
                 return
             else:
                 bot.answer_callback_query(query.id, f"❌ Нехватает очков талантов!") 
+                bot.delete_message(query.message.chat.id, query.message.id)  
+                return
                  
     
     else:
