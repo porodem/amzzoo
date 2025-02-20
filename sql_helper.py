@@ -424,22 +424,24 @@ def db_refil_pits():
     cur.close()
     con.commit()
     for i in range(7):
-        cel_win = random.randrange(1,32)
-        cel_fail = random.randrange(1,32)
-        cel_fail = random.randrange(1,32) if cel_fail == cel_win else cel_fail
+        cel_win = random.randrange(1,40)
+        cel_fail = random.randrange(1,40)
+        cel_fail = random.randrange(1,40) if cel_fail == cel_win else cel_fail
         print(f"win: {cel_win} fail:{cel_fail}")
         loc = i+1
         hint = 0
         if cel_win < 9:
             hint = 1
-        elif 6 < cel_win < 17:
+        elif 8 < cel_win < 17: 
             hint = 2
-        elif 13 < cel_win < 25:
+        elif 16 < cel_win < 25:
             hint = 3
-        else:
+        elif 24 < cel_win < 33:
             hint = 4
+        else:
+            hint = 5
         print(hint)
-        q = '''insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,20},{21,22},{23,24},{25,26},{27,28},{29,30},{31,32}}', %s, %s, %s, %s );'''
+        q = '''insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,20},{21,22},{23,24},{25,26},{27,28},{29,30},{31,32}, {33,34},{35,36},{37,38},{39,40}}', %s, %s, %s, %s );'''
         cur = con.cursor()
         cur.execute(q,(loc,hint,cel_win,cel_fail))
         cur.close()
