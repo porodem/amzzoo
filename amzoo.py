@@ -672,7 +672,7 @@ def lucky_treasure(query):
         sql_helper.db_stamina_down(tid,1)
         
         deep = int(extract_numbers(query.data,1))
-        dig_result = sql_helper.db_dig_field(location,dig_cell,deep)        
+        dig_result = sql_helper.db_dig_field(location,dig_cell,deep,tid)        
         
         if not dig_result[0]:
             print('it is a botton')
@@ -692,9 +692,7 @@ def lucky_treasure(query):
             sql_helper.db_exp_up(tid,1)
 
     cells = sql_helper.db_get_field(location)
-    field = len(cells)
     pin_pad_buttons = []
-    victim = ''
     markup = types.InlineKeyboardMarkup(row_width=4,)
     counter = 1
     for i in cells:
@@ -1792,7 +1790,7 @@ def extract_numbers(str, v=0):
     "rtype: string
     '''
     numbers = re.findall(r'\d+',str)
-    print('extracted: ' + numbers[v])
+    #print('extracted: ' + numbers[v])
     return numbers[v]
 
 # emoji was here

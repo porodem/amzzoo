@@ -385,21 +385,21 @@ def db_get_field(location):
     '''
     Returns array of arrays of numbers that is cells to dig
     '''
-    print('SQL treasure fild')
+    print(f"SQL treasure fild loc:{location}")
     q = '''SELECT field FROM treasure_field WHERE location = %s'''
     cur = con.cursor()
     cur.execute(q,(location,))
     f = cur.fetchone()
-    print(f)
+    #print(f) # show all feild array 
     cur.close()
     return f[0]
 
-def db_dig_field(location, cell, deep_cell):
+def db_dig_field(location, cell, deep_cell, tid):
     '''
     Change element of subarray to 0 to mark it as digged
+    tid for log only
     returns: update cell, treasure and [2]danger cells id
     '''
-    print('SQL UPDATE dig field')
     q0 = 'SELECT field[%(cell)s][%(deep_cell)s], treasure, danger FROM treasure_field WHERE location = %(location)s;'
 
     q = '''UPDATE treasure_field SET field[%(cell)s][%(deep_cell)s] = 0 WHERE location = %(location)s;'''
@@ -410,7 +410,7 @@ def db_dig_field(location, cell, deep_cell):
     #cur.execute(q,(cell, deep_cell, location))
     con.commit()
     
-    print(f"SQL {b}")
+    print(f"SQL digging {tid} target;treasure;danger {b}")
     cur.close()
     return b
 
