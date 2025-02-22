@@ -433,12 +433,14 @@ begin
 end;
 $$ language plpgsql;
 
--- last work reset v2 (have side effect - player after more than one hour rest begin receive stamina up inlimited, every time after check_relax executed on info message)
+-- 22.02.25 it works
 create or replace function work_reset() returns trigger 
 as $$
 begin 
 	if new.stamina < old.stamina then
-		new.last_work =  now() ;
+		new.last_work = now();
+	else
+		new.last_work = date_trunc('hour',now()) + interval '1 minute' * date_part('minute', old.last_work)  ;
 	end if;
 	return new;
 end;
