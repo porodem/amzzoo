@@ -965,10 +965,12 @@ def bazar_shop_new(message):
         cidx = int(extract_numbers(message.data))
         # -------------------------------------------buy item option -------------------------------------------------------
         if int(extract_numbers(message.data,1)):
-            print(f" - {tid} buying item {cidx} - - - - ")
-            item = available_items[cidx]          
+            
+            item = available_items[cidx]
+            print(f"{datetime.now()}, {tid} buying item {item[0]} in loc: {location}")          
             if item[0] == 10:
                 total_pasports = sql_helper.db_count_item_type(tid,10)
+                total_pasports = 0 if total_pasports is None else total_pasports
                 extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
             else:
                 extra_price = 1
