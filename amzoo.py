@@ -1506,14 +1506,14 @@ def shop_select(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🌲 Лес 💰 12",)
         btn2 = types.KeyboardButton("🏜 Африка 💰 25",)
-        btn3 = types.KeyboardButton("🇦🇺 Австралия 💰 50",)
+        btn3 = types.KeyboardButton("🇦🇺 Авст.💰 50",)
         #btn_home = types.KeyboardButton("🏠 Домой 💰 5",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn2,btn3,btn_back)
     elif location == 6: # America 
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🏜 Африка 💰 25",)
-        btn2 = types.KeyboardButton("🇦🇺 Австралия 💰 50",)
+        btn2 = types.KeyboardButton("🇦🇺 Авст.💰 50",)
         btn_back = types.KeyboardButton("🔙 Назад")
         markup.add(btn1,btn2,btn_back)
     elif location == 7: # Australia 
@@ -1577,7 +1577,7 @@ def travel(message):
             #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
-    if re.match('.*Австралия.*',message.text):
+    if re.match('.*Авст.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
         if coins >= 50 and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
