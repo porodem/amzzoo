@@ -101,7 +101,16 @@ hunger_interval = 4
 def get_hunger():
     previous_epidemic_day = None
     previous_fire_day = None
+    
     prev_refil_pits_day = None
+    #prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
+    today = datetime.now().day
+    print(f"EVENT STATES: {prev_refil_pits_day} and today: {today}")
+
+    if prev_refil_pits_day == today:
+            print('TEST OK')
+            is_refiling_pits = False
+
     while True:
         print(str(datetime.now()) + f";GET_HUNGER" )
         time.sleep(hunger_interval * 60 * 60)
@@ -125,6 +134,10 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify hunger ' + str(player[0]) )
         
+        prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
+        previous_epidemic_day = int(sql_helper.event_get('epidemic')[1])
+        previous_fire_day = int(sql_helper.event_get('fire')[1])
+
         today = datetime.now().day
         
         is_epidemic = today % 9 == 0 # every 9 18 21 day of month
@@ -136,13 +149,14 @@ def get_hunger():
         if previous_fire_day == today:
             is_fire = False
 
-        is_refiling_pits = today % 5 == 0
+        is_refiling_pits = today % 22 == 0
         if prev_refil_pits_day == today:
             is_refiling_pits = False
 
         if is_refiling_pits:
             print("REFILING HOLES")
-            prev_refil_pits_day = today
+            sql_helper.event_exe('refill')
+            #prev_refil_pits_day = today
             sql_helper.db_refil_pits()
             
         # WARNING if bot restarts epidemic executes again !

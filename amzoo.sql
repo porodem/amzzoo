@@ -860,4 +860,6 @@ insert into player_knows(ldate, tid, up_id) values (now(),775803031,1)
 
 select * from player_knows
 
-drop table  player_knows
+create table events(name varchar(20), last_executed date, is_active bool);
+
+insert into events values('refill', '2025-02-20', false), ('fire', '2025-02-20', false),  ('epidemic', '2025-02-20', false)

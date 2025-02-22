@@ -472,6 +472,25 @@ def taming_up(tid,value):
     cur.close()
     return
 
+def event_exe(event):
+    print(' SQL update event')
+    #q = "UPDATE events SET last_executed =%s, is_active = %s WHERE name = %s"
+    q = "UPDATE events SET last_executed = current_date WHERE name = %s"
+    cur = con.cursor()
+    cur.execute(q,(event,))
+    con.commit()
+    cur.close()
+    return
+
+def event_get(event):
+    print('SQL get event')
+    q = '''SELECT is_active, date_part('day',last_executed) FROM events WHERE name = %s'''
+    cur = con.cursor()
+    cur.execute(q,(event,))
+    p = cur.fetchone()
+    cur.close()
+    return p
+
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):
