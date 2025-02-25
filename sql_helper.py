@@ -71,7 +71,6 @@ def db_check_owned_coins(tid):
     return result
 
 
-
 # ==================================== GET BLOCK
 
 # maybe use this function for any type of player's info instead of many of singled 
@@ -490,6 +489,55 @@ def event_get(event):
     p = cur.fetchone()
     cur.close()
     return p
+
+def tech_list():
+    """
+    returns: id, name, code_name, 3 price, 4 time_hours, stamina, 6 item_id, 7 item_name, 8 description
+    """
+    #q = "select id, lvl_required, info FROM zoo_upgrades;"
+    q = '''select t.id tech_id, t.name , code_name, t.price, time_hours, stamina, item_id, i."name", info from tech t join items i on t.item_id = i.id'''
+    t_list = []
+    cur = con.cursor()
+    cur.execute(q)
+    b = cur.fetchall()
+    for i in  b:
+        t_list.append(i)
+    con.commit()
+    cur.close()
+    return b
+
+#insert into player_tech(time_start, time_point, time_left, tid, tech_id) values (now(), now(), null, tid, id);
+
+def tech_player_start(tid, tech_id):
+    print('SQL new technology start to learn - -')
+    q = '''insert into player_tech(time_start, time_point, stamina_spend, tid, tech_id) values (now(), now(), 0, %s, %s);'''
+    cur = con.cursor()
+    cur.execute(q,(tid,tech_id))
+    con.commit()
+    cur.close()
+
+def tech_player_list(tid):
+    """
+    returns: id, time_start, time_point, stamina_spend, tid, tech_id 
+    """
+    q = "SELECT * FROM player_tech WHERE tid = %s"
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    b = cur.fetchall()
+    con.commit()
+    cur.close()
+    return b
+
+def tech_player_work(tid, tech_id):
+    print(f"SQL {tid} tech {tech_id}")
+    #q = "update player_tech set time_start = now(), time_point = now() + (interval '1 hour' * 1), stamina_spend  = stamina_spend + 1 where tid = %s and tech_id = %s returning time_point ;"
+    q = "SELECT tech_devote(%s,%s)"
+    cur = con.cursor()
+    cur.execute(q,(tid,tech_id))
+    b = cur.fetchone()
+    con.commit()
+    cur.close()
+    return b
 
 # ==================================== DML BLOCK
 

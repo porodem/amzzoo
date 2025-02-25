@@ -96,7 +96,8 @@ alter table animal_list add column catch_chance int; -- percents % 17 for dice a
 
 alter table animal_list add column rating int;
 
-select species, rating from animal_list al order by rating desc;
+
+select species, catch_price, catch_difficulty from animal_list al order by catch_price desc nulls last , catch_difficulty desc nulls last
 
 insert into animal_list values(0,'bones',5,0,0)
 
@@ -158,13 +159,15 @@ copy animal_list(id,species,habitat,food_type,price,catch_price,catch_difficulty
 
 create temp table anlist(id int, name text)
 
-copy anlist from 'C:\Program Files\PostgreSQL\17\animals_b.csv' delimiter ';' csv header -- encoding 'WIN1251'
+copy anlist from 'C:\Program Files\PostgreSQL\17\animals.csv' delimiter ';' csv header -- encoding 'WIN1251'
 
 insert into animal_list (
 select n.* from anlist n left join animal_list i on i.id = n.id where i.id is null
 )
 
-select * from anlist
+select * from animal_list al 
+
+insert into habitat values (7,'australia',50)
 
 drop table  anlist 
 
@@ -174,7 +177,7 @@ select * from players p
 
 select * from property p 
 
-select * from pets p  where "owner" = 775803031
+select * from pets p  where "owner" = 465471236
 
 select * from animal_list al --where catch_price > 0 ;
 
@@ -349,11 +352,13 @@ begin
 		return 0;
 	end if;
 	insert into property(item_id, owner) values(item,tid);
-	update players set coins = (coins - item_price) where telegram_id = tid;
+	update players set coins = (case when coins - item_price < 0 then (coins - item_price) else 0 end) where telegram_id = tid;
 	return 1;
 end;
 $$;
 end
+
+ = (CASE WHEN stamina - value < 0 THEN 0 ELSE stamina - (value) END)
 
 select (10 * 1.1)::int
 
@@ -365,9 +370,11 @@ select username, p2.* from players p join property p2  on p2."owner" = p.telegra
 
 delete from property p where id = (select id from property p where item_id = 5 limit 1);
 
-select id from property p where item_id = 5
+select * from players  --p where telegram_id = 5595245916--where item_id = 5
 
 delete from pets where animal_id = 0;
+
+select * from property p 
 
 UPDATE players set pet_space = pet_space + 1 where telegram_id =775803031
 
@@ -451,6 +458,10 @@ create trigger t_work_res before update of stamina on players for each row execu
 drop trigger t_work_res on  players; 
 
 select * from players p 
+
+select now() - interval '1 minute' * date_part('minute', now()) 
+
+select date_part('day',current_date) 
 
 insert into players(telegram_id) values(1452544471)
 
@@ -558,7 +569,7 @@ select case when nick_name = 'x' then p.username
             join animal_list al on al.id = pets.animal_id
             where p.last_work > current_date - interval '14 days'
             group by username, nick_name, telegram_id
-		order by 2 desc NULLS LAST LIMIT 100;
+		order by 2 desc, 1  NULLS LAST LIMIT 100;
 
 select case when nick_name = 'x' then p.username
       else nick_name end nick ,
@@ -747,7 +758,7 @@ update pets set hunger = 10;
 
 SELECT telegram_id, username FROM players where last_work > current_date - interval '14 days'
 
-select * from animal_list al 
+select species, price from animal_list al 
 
 -- 02.02.25 Treasure
 
@@ -766,14 +777,14 @@ where id = 1 returning treasure = field[1][1], danger;
 
 delete  from treasure_field where id = 1
 
-insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,}', 5, 1, 4, 9 )
+insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,20},{21,22},{23,24},{25,26},{27,28},{29,30},{31,32},{33,34},{35,36},{37,38},{39,40}}', 5, 3, 4, 9 )
 
 
 create table levels(lvl smallint, exp int);
 
 insert into levels values (2, 100),(3,250),(4,400),(5,600),(6,900),(7,1250);
 
-select * from players p 
+select * from levels p 
 
 	select l.exp from levels l join players p on p.level + 1 = l.lvl where p.telegram_id = 775803031;
 
@@ -810,9 +821,11 @@ select * from exp_up(775803031,1) as inf(a int, bb int)
 
 select 1
 
-create table zoo_upgrades(id int primary key, lvl_required int default 2, info text);
+create table zoo_upgrades(id int primary key, lvl_required int default 2, info text,way varchar(15), value int);
 
 select * from zoo_upgrades
+
+drop table zoo_upgrades 
 
 alter table zoo_upgrades add column way varchar(15);
 
@@ -841,25 +854,114 @@ from (select * from zup ) a  where o.id = a.id;
 
 
 
-insert into property(item_id, durability, charged, "owner") values(20,10,false,775803031) returning id
+insert into property(item_id, durability, charged, "owner") values(12,10,false,775803031) returning id
 
 insert into pets(animal_id, owner /*petname*/) values(2,6472394157)
 
-select * from pets
+select * from players p 
 
 select u.id, lvl_required, info, p."level" = u.lvl_required avail, p.nick_name 
 FROM zoo_upgrades u join players p on p."level"+1  >= u.lvl_required and p.telegram_id = 775803031 
 where u.id not in (select up_id from player_knows pk where tid = 775803031);
 
-
+select * from players p where telegram_id = 2115169032
 
 
 create table player_knows(id int generated always as identity, ldate timestamp, tid int8 references players(telegram_id) not null, up_id int references zoo_upgrades(id) not null)
 
-insert into player_knows(ldate, tid, up_id) values (now(),775803031,1)
+insert into player_knows(ldate, tid, up_id) values (now() - interval '2 days' ,465471236,2)
 
 select * from player_knows
+
+drop table  player_knows
+
+select * from items i 
+
+select telegram_id, username, pet_space from players p --where "level" > 1;
+
+795547420
+1464022328
+465471236
 
 create table events(name varchar(20), last_executed date, is_active bool);
 
 insert into events values('refill', '2025-02-20', false), ('fire', '2025-02-20', false),  ('epidemic', '2025-02-20', false)
+
+create table tech(id smallint primary key,
+	name text, 
+	code_name varchar(30),
+	price int not null,
+	time_hours int,
+	stamina int,
+	item_id int references items(id),
+	info text
+	);
+
+create temp table ttech (id smallint primary key,	name text, code_name varchar(30),	price int not null,	time_hours int,	stamina int,	item_id int  ,	info text	);
+
+copy ttech from 'C:\Program Files\PostgreSQL\17\tech.csv' delimiter ';' csv header 
+
+insert into tech (
+select n.* from ttech n left join tech i on i.id = n.id where i.id is null
+)
+
+select t.id tech_id, t.name , code_name, t.price, time_hours, stamina, item_id, i."name" info from tech t join items i on t.item_id = i.id
+where t.id not in (select tech_id from player_tech pt where tid = 775803031);
+	
+	drop table tech cascade;
+	
+	select * from tech p 
+
+create table player_tech(id int generated always as identity,
+time_start timestamp, 
+time_point timestamp,
+stamina_spend int,
+tid int8 references players(telegram_id) not null,
+tech_id int references tech(id)
+);
+
+drop table player_tech
+
+select * --, time_start = time_point 
+from player_tech pt 
+
+insert into player_tech(time_start, time_point, stamina_spend, tid, tech_id) values (now(), now(), null, tid, id);
+
+update player_tech set time_point = time_point + (interval '1 hour' * 2) where id = 5 returning time_point 
+
+select now()  + interval '1 hour' * 1
+
+update player_tech set time_start = now(), time_point = now() + (interval '1 hour' * 1), stamina_spend  = stamina_spend + 1 where tid = %s and tech_id = %s returning time_point ;
+
+select tech_devote(775803031,1)
+
+create or replace function tech_devote(tg_id int8, tch_id int) 
+returns date
+language plpgsql
+as $$
+declare 
+prev_start_time timestamp;
+p_time_point timestamp;
+new_time_point timestamp;
+begin
+	
+	select time_start, time_point into prev_start_time, p_time_point from player_tech where tid = tg_id and tech_id = tch_id;
+	raise notice 'times % %  ', prev_start_time, p_time_point;
+
+	if p_time_point < now() then
+		update player_tech set  time_start = now(), time_point = now() + (interval '1 hour' * 1), stamina_spend  = stamina_spend + 1 where tid = tg_id and tech_id = tch_id returning time_point into new_time_point;
+		raise notice '1st if';
+	--elseif prev_start_time < now()  then
+	--	update player_tech set time_start = now(), time_point = now() + interval '1 hour' * 1, stamina_spend  = stamina_spend + 1 where   tid = tid and tech_id = tch_id returning time_point into new_time_point;
+	else
+		update player_tech set time_point = time_point + (interval '1 hour' * 1), stamina_spend  = stamina_spend + 1 where tid = tg_id and tech_id = tch_id returning time_point into new_time_point;
+	end if;
+		
+	return new_time_point;
+
+	 --return (select (levelup, next_level_exp)::record) ;
+end;
+$$;
+end
+
+drop function tech_devote(int8, int)

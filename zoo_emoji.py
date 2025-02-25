@@ -88,6 +88,8 @@ def item_emoji(id):
         e = "🗺"
     elif id == 14:
         e = "🥫"
+    elif id == 15:
+        e = "🔬"
     elif id == 20:
         e = "🔑"
     elif id == 30:
@@ -132,3 +134,14 @@ def define_mood(pet: list, environment: list=None):
     elif sum_points > 16:
         mood = "☺"
     return mood
+
+def tech_emoji(id):
+    if id == 1:
+        e = "🌌"
+    elif id == 2:
+        e = "🦣" # maby don't use at all
+    elif id == 3:
+        e = "🦠"
+    else:
+        e = "❔"
+    return e

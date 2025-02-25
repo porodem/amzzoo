@@ -149,7 +149,7 @@ def get_hunger():
         if previous_fire_day == today:
             is_fire = False
 
-        is_refiling_pits = today % 22 == 0
+        is_refiling_pits = today % 5 == 0
         if prev_refil_pits_day == today:
             is_refiling_pits = False
 
@@ -509,10 +509,112 @@ def set_cage_password(message):
         bot.send_message(message.from_user.id, "❌ только одну цифру!")
         bot.register_next_step_handler(message, set_cage_password)
 
-def do_tech(message):
+@bot.callback_query_handler(lambda query: 'tech' in query.data)
+def do_tech(query):
     print('- - TECH - -')
-    bot.send_message(message.from_user.id, "🏗️В разработке")
-    return
+    tid = query.from_user.id 
+    available_items = sql_helper.tech_list()
+    player_items = sql_helper.db_get_owned_items_group(tid)
+    tech_status = ""
+    time_left = ""
+    state = ""
+    already = False
+    
+    if hasattr(query,'data'):
+        print(query.data)
+        cidx = int(extract_numbers(query.data))
+        print(f" - {tid} technology research item {cidx} - - - - ")
+        action = int(extract_numbers(query.data,1))
+        pinfo = sql_helper.db_get_player_info(tid)
+        item = available_items[cidx]
+        if action == 1: # start learn technology option
+
+            
+            required_item = item[6]
+            required_coins = item[3]
+            
+            if sql_helper.db_check_owned_item(tid,required_item) and (required_coins <= pinfo[0]):
+                print(f"{tid} OWNS {required_item}")
+                sql_helper.tech_player_start(tid,item[0])                
+            else:
+                print(f"{tid} has NO required {required_item}")
+                #bot.answer_callback_query(query.id, f"❌ У вас нет {item_emoji(required_item)}") 
+                bot.send_message(tid, f"❌ Требуется {item_emoji(required_item)} и {required_coins}💰")
+                bot.delete_message(query.message.chat.id, query.message.id)  
+                return
+        elif action == 2: # give stamina for research technology
+            stamina = pinfo[2]
+            if stamina == 0:
+                bot.send_message(tid, f"❌ Нужна сила 💪 чтобы заниматься исследованиями")
+                bot.delete_message(query.message.chat.id, query.message.id)  
+                return
+            else:
+                print(f"tech {item[0]} tid {tid}")
+                sql_helper.db_stamina_down(tid,1)
+                # TODO 23.02.25 consume stamina on tech work
+                # control limit of added stamina
+                # get profit on complete
+                sql_helper.tech_player_work(tid, item[0])
+                # this_moment = datetime.now()
+                # time_rest = str(research_untill - this_moment)
+                # time_rest = time_rest.split('.')[0]
+
+
+
+    else:
+        cidx = 0
+    next_cid = 0 if cidx == len(available_items) - 1 else cidx + 1
+    item = available_items[cidx]
+
+    in_progress = sql_helper.tech_player_list(tid) #  id, 1 time_start, 2 time_point, 3 stamina_spend, 4 tid, 5 tech_id
+    print(in_progress)
+    for t in in_progress:
+        print(f"{t}")
+        if t[5]== item[0]: # If players have start learn tech and its = selected tech
+            already = True
+            #time_left = "♾️" if t[3] is None else t[3]
+            spend_stamina = t[3]
+            required_stamina = item[5]
+            this_moment = datetime.now()
+            time_rest = str(t[2] - this_moment)
+            time_left = "♾️" if t[1] == t[2] or t[2] < this_moment  else time_rest.split('.')[0]
+            research_completed = True if t[2] < this_moment and spend_stamina >= required_stamina else False
+            print(f"research completed: {research_completed}" )
+            if research_completed:
+                print('COMPLETE')
+                #stop_type = "⭐ Изучено"
+                tech_status = f"{tech_emoji(t[5]) + item[1]}\n⭐ Исследование завершено \nℹ️Теперь вы способны {item[8]}"
+            else:
+                #stop_type = "🔴 Остановлено"
+                state = "🟢 Активно" if datetime.now() < t[2] else "🔴 Остановлено"
+                tech_status = f"\n⚒️ Вы приступили к исследованию {tech_emoji(t[5])}\n 💪Сил вложено: {spend_stamina} / {required_stamina} \n⏳ Времени запланировано: {time_left}\nСтатус: {state}"
+
+            
+
+    markup = types.InlineKeyboardMarkup(row_width=2,)
+    
+    if already:
+        lbl = tech_status
+        if research_completed:
+            btn_buy = types.InlineKeyboardButton(f"✖️", callback_data='tech' + str(cidx) + '_0')
+        else:
+            btn_buy = types.InlineKeyboardButton(f"➖💪", callback_data='tech' + str(cidx) + '_2')
+    else:
+        lbl = tech_emoji(item[0]) + " " + item[1] + f"💰{item[3]} ⏳ {item[4]}\n 💪 {item[5]} \nТребуется:{item_emoji(item[6])} {tech_status}"
+        btn_buy = types.InlineKeyboardButton(f"❇️", callback_data='tech' + str(cidx) + '_1')
+    btn_forward = types.InlineKeyboardButton('▶', callback_data='tech' + str(next_cid) + '_0' )
+    markup.add(btn_buy,btn_forward)
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=lbl,
+            chat_id=query.message.chat.id,
+            parse_mode='markdown', # to make some text bold with *this* in messages
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
+
 
 @bot.callback_query_handler(lambda query: 'up' in query.data)
 def do_ability_up(query):
@@ -690,7 +792,7 @@ def lucky_treasure(query):
         
         if not dig_result[0]:
             print('it is a botton')
-            msg = f"❌ В этом месте уже слишком глубоко, врятли стоит капать здесь дальше. 💪{stamina}"
+            msg = f"❌ В этом месте уже слишком глубоко, вряд ли стоит копать здесь дальше. 💪{stamina}"
         elif dig_result[0] == dig_result[1]:
             print('Treasure FOUND')
             # TODO add few random treasures
