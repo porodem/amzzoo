@@ -518,7 +518,7 @@ def tech_player_start(tid, tech_id):
 
 def tech_player_list(tid):
     """
-    returns: id, time_start, time_point, stamina_spend, tid, tech_id 
+    returns: id, time_start, time_point, stamina_spend, tid, tech_id, lvl 
     """
     q = "SELECT * FROM player_tech WHERE tid = %s"
     cur = con.cursor()
@@ -537,6 +537,18 @@ def tech_player_work(tid, tech_id):
     b = cur.fetchone()
     con.commit()
     cur.close()
+    return b
+
+def tech_done(tid, tech_id):
+    q = "UPDATE player_tech SET lvl = lvl + 1 WHERE tid = %s and tech_id = %s returning lvl;"
+    b = con.execute(q,(tid,tech_id)).fetchone()[0]
+    con.commit()
+    return b
+
+def tech_done_check(tid, tech_id):
+    q = "SELECT count(*) FROM player_tech WHERE tid = %s and tech_id = %s and lvl > 0;"
+    b = con.execute(q,(tid,tech_id)).fetchone()[0]
+    con.commit()
     return b
 
 # ==================================== DML BLOCK

@@ -566,28 +566,33 @@ def do_tech(query):
     next_cid = 0 if cidx == len(available_items) - 1 else cidx + 1
     item = available_items[cidx]
 
-    in_progress = sql_helper.tech_player_list(tid) #  id, 1 time_start, 2 time_point, 3 stamina_spend, 4 tid, 5 tech_id
+    in_progress = sql_helper.tech_player_list(tid) #  id, 1 time_start, 2 time_point, 3 stamina_spend, 4 tid, 5 tech_id, 6 lvl (now lvl means complete bcz only 1 lvl exists)
     print(in_progress)
     for t in in_progress:
         print(f"{t}")
         if t[5]== item[0]: # If players have start learn tech and its = selected tech
             already = True
-            #time_left = "♾️" if t[3] is None else t[3]
-            spend_stamina = t[3]
-            required_stamina = item[5]
-            this_moment = datetime.now()
-            time_rest = str(t[2] - this_moment)
-            time_left = "♾️" if t[1] == t[2] or t[2] < this_moment  else time_rest.split('.')[0]
-            research_completed = True if t[2] < this_moment and spend_stamina >= required_stamina else False
-            print(f"research completed: {research_completed}" )
-            if research_completed:
-                print('COMPLETE')
-                #stop_type = "⭐ Изучено"
+            if t[6] > 0:
                 tech_status = f"{tech_emoji(t[5]) + item[1]}\n⭐ Исследование завершено \nℹ️Теперь вы способны {item[8]}"
+                research_completed = True
             else:
-                #stop_type = "🔴 Остановлено"
-                state = "🟢 Активно" if datetime.now() < t[2] else "🔴 Остановлено"
-                tech_status = f"\n⚒️ Вы приступили к исследованию {tech_emoji(t[5])}\n 💪Сил вложено: {spend_stamina} / {required_stamina} \n⏳ Времени запланировано: {time_left}\nСтатус: {state}"
+                #time_left = "♾️" if t[3] is None else t[3]
+                spend_stamina = t[3]
+                required_stamina = item[5]
+                this_moment = datetime.now()
+                time_rest = str(t[2] - this_moment)
+                time_left = "♾️" if t[1] == t[2] or t[2] < this_moment  else time_rest.split('.')[0]
+                research_completed = True if t[2] < this_moment and spend_stamina >= required_stamina else False
+                print(f"research completed: {research_completed}" )
+                if research_completed:
+                    print('COMPLETE')
+                    sql_helper.tech_done(tid,item[0])
+                    #stop_type = "⭐ Изучено"
+                    tech_status = f"{tech_emoji(t[5]) + item[1]}\n⭐ Исследование завершено \nℹ️Теперь вы способны {item[8]}"
+                else:
+                    #stop_type = "🔴 Остановлено"
+                    state = "🟢 Активно" if datetime.now() < t[2] else "🔴 Остановлено"
+                    tech_status = f"\n⚒️ Вы приступили к исследованию {tech_emoji(t[5])}\n 💪Сил вложено: {spend_stamina} / {required_stamina} \n⏳ Времени запланировано: {time_left}\nСтатус: {state}"
 
             
 
@@ -796,8 +801,18 @@ def lucky_treasure(query):
         elif dig_result[0] == dig_result[1]:
             print('Treasure FOUND')
             # TODO add few random treasures
-            bot.send_message(query.from_user.id,'+50💰 Клад!')
-            sql_helper.db_add_money(tid,50)
+            #paleontology_ready = sql_helper.tech_player_list
+            if sql_helper.tech_done_check(tid,2) > 0:
+                mamont_intact = random.randrange(1,10) # whole body. not damaged
+                print("MAMONT")
+                if mamont_intact > 5:
+                    sql_helper.db_buy_pet(tid,31)
+                    bot.send_message(query.from_user.id, "🦣 Мамонт! Вы нашли целого мамонта! Он не живой, но выглядит как настоящий!")
+                else:
+                    bot.send_message(query.from_user.id, "🦴 Вы нашли останки древнего животного. Похоже это мамонт. К сожалению он плохо сохранился.")
+            else:
+                bot.send_message(query.from_user.id,'+50💰 Клад!')
+                sql_helper.db_add_money(tid,50)
         elif dig_result[0] == dig_result[2]:
             print('Danger FOUND')
             bot.send_message(query.from_user.id,'🤕 Вы травмировались -4💪')
@@ -806,6 +821,7 @@ def lucky_treasure(query):
         else:
             msg = f"⛏️ 💪{stamina - 1}"
             sql_helper.db_exp_up(tid,1)
+            
 
     cells = sql_helper.db_get_field(location)
     pin_pad_buttons = []
@@ -1946,6 +1962,8 @@ def slow_down(tid):
         print('- - - FREQUENCY OK')
         return False
        # bot.reply_to(message, 'Message received!')
+
+# TODO write func that gets array from SQL and search target value in it if it exists
 
 # - - - - - - -  M A I N  M E N U  - - - - - - - 
 

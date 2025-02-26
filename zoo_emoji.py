@@ -59,6 +59,8 @@ def pet_emoji(id):
         e = "🐍"
     elif id == 30:
         e = "🦘"
+    elif id == 31:
+        e = "🦣"        
     elif id == 0:
         e = "☠"
     else:
@@ -109,12 +111,14 @@ def habitat_emoji(id):
         e = "🌲"
     elif id == 4:
         e = "🌊"
+    elif id == 5:
+        e = "🏠"
     elif id == 6:
         e = "🌎"
     elif id == 7:
         e = "🇦🇺"
     else:
-        e = "🏠"
+        e = "❔"
     return e
 
 def define_mood(pet: list, environment: list=None):

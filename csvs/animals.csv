@@ -30,3 +30,4 @@ id;species ;habitat;food_type;price;catch_price;catch_difficulty;catch_chance;ra
 28;Фламинго;6;3;70;13;4;17;20
 29;Змея;7;3;40;;;;15
 30;Кенгуру;7;2;120;15;2;11;21
+31;Мамонт (Чучело);100;0;1;;;;20
