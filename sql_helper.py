@@ -113,10 +113,10 @@ def db_get_owned_pets(tid):
      """
         :param tid: telegram id of current player.
 
-        :return list: [id, animal_id, price, health, 4 hunger] from pets table
+        :return list: [id, animal_id, price, health, 4 hunger, 5 max_health, shit] from pets table
     """
      print('SQL get all players pets --')
-     q = '''select pets.id, animal_id, price, health, hunger from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
+     q = '''select pets.id, animal_id, price, health, hunger, max_health, shit from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
      pet_list = []
 
      with con.cursor() as cur:
@@ -890,7 +890,7 @@ def db_feed_all(tid):
     con.commit()
     return
 
-def db_cure_pet(pet_id: int):
+def db_cure_pet(pet_id: int, tech_upgrade: bool=False):
     """  
         DEPRICATED
         :param pet_id: id of cured pet.
@@ -898,7 +898,12 @@ def db_cure_pet(pet_id: int):
         :return None:
     """
     print(' - - SQL pet curing - -')
-    q = '''UPDATE pets SET health = 10 where id = %s;'''
+    if tech_upgrade:
+        q = '''UPDATE pets SET health = max_health, max_health = max_health + 1 where id = %s;'''
+        print(' TECH cure')
+    else:
+        q = '''UPDATE pets SET health = 10 where id = %s;'''
+        print(' x - usual cure')
     q2 = '''SELECT animal_id from pets WHERE id = %s'''
     cur = con.cursor()
     cur.execute(q,(pet_id,))
@@ -907,6 +912,12 @@ def db_cure_pet(pet_id: int):
     con.commit()
     cur.close()
     return result
+
+def tech_antibiotic_use(tid, tech_id):
+    q = "UPDATE player_tech SET lvl = lvl + 1 WHERE tid = %s and tech_id = %s returning lvl;"
+    b = con.execute(q,(tid,tech_id)).fetchone()[0]
+    con.commit()
+    return b
 
 def db_buy_healing(pet_id: int, cost: int, tid: int):
     """

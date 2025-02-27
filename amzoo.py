@@ -319,9 +319,13 @@ def show_pets(query):
             bot.send_message(query.from_user.id, pet_emoji(animal_id))
         elif int(extract_numbers(query.data,1)) == 2:
             print('cure option')
-            sql_helper.db_cure_pet(pet_info[0])
+            
             antibio = sql_helper.db_check_owned_item(query.from_user.id,5)
             #sql_helper.db_change_health(pet_info[0],cure=True,val=15)
+            if sql_helper.tech_done_check(query.from_user.id,3) > 0:
+                sql_helper.db_cure_pet(pet_info[0], tech_upgrade=True)
+            else:
+                sql_helper.db_cure_pet(pet_info[0], tech_upgrade=False)
             sql_helper.db_delete_property(antibio)
             bot.send_message(query.from_user.id, "вылечен")
         elif int(extract_numbers(query.data,1)) == 3:
@@ -1798,10 +1802,11 @@ def vet(query):
     for p in owned_pets:
         print(p)
         health = p[3]
-        if p[1] == 0 or health == 10: continue # escape corpses
-        cure_price = int((p[2] * 0.7) * ((10-health) / 10))  #str(int(p[2] / 2)) # sell price its original price / 2
+        max_health = p[5]
+        if p[1] == 0 or health == max_health: continue # escape corpses
+        cure_price = int((p[2] * 0.7) * ((max_health-health) / max_health))  #str(int(p[2] / 2)) # sell price its original price / 2
         if cure_price == 0: cure_price = 1
-        emj = str(pet_emoji(p[1]) + f" ♥ {str(health)}/10 💰x" + str(cure_price))
+        emj = str(pet_emoji(p[1]) + f" ♥ {str(health)}/{max_health} 💰x" + str(cure_price))
         cb_prefix = 'cure'
         cb_price_sfx = '_' + str(cure_price)
         btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]) + cb_price_sfx)
