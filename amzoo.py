@@ -933,7 +933,7 @@ def stealing(query):
         #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
         bot.delete_message(query.message.chat.id, query.message.id)
         pet_stays = random.randrange(1,100)
-        sql_helper.db_stamina_down(tid, 2)
+        sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove whan stealing (lockpicking improved)
         bot.send_message(tid, "🔐")
         escape_percent = 15
         
