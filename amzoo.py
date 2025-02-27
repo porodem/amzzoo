@@ -606,6 +606,8 @@ def do_tech(query):
             
 
     markup = types.InlineKeyboardMarkup(row_width=2,)
+
+    #TODO add button exit and delete window
     
     if already:
         lbl = tech_status
@@ -1312,9 +1314,10 @@ def catch_pet(message):
                 sql_helper.db_get_pet(tid, animal_id)
                 bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)    
                 return
-            time.sleep(3)
-            bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
-            sql_helper.db_exp_up(tid,pwr)         
+            else:
+                time.sleep(3)
+                bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
+                sql_helper.db_exp_up(tid,pwr)         
         elif dig_result == 6:
             time.sleep(3)
             sql_helper.db_get_pet(tid, animal_id)
