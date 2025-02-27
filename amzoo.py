@@ -1305,7 +1305,7 @@ def catch_pet(message):
             time.sleep(2)
             bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
             sql_helper.db_exp_up(tid,pwr)  
-    elif chance == 16:
+    elif chance == 17:
         if dig_result < 6:
             # TODO this and other sleep() stops all other players!
             if dig_result ==5  and info[10] > 0 and random.randrange(0,2):
@@ -1314,10 +1314,9 @@ def catch_pet(message):
                 sql_helper.db_get_pet(tid, animal_id)
                 bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)    
                 return
-            else:
-                time.sleep(3)
-                bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
-                sql_helper.db_exp_up(tid,pwr)         
+            time.sleep(3)
+            bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
+            sql_helper.db_exp_up(tid,pwr)         
         elif dig_result == 6:
             time.sleep(3)
             sql_helper.db_get_pet(tid, animal_id)
