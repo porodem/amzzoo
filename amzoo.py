@@ -543,7 +543,8 @@ def do_tech(query):
             
             if sql_helper.db_check_owned_item(tid,required_item) and (required_coins <= pinfo[0]):
                 print(f"{tid} OWNS {required_item}")
-                sql_helper.tech_player_start(tid,item[0])                
+                sql_helper.tech_player_start(tid,item[0])  
+                sql_helper.db_remove_money(tid,required_coins)              
             else:
                 print(f"{tid} has NO required {required_item}")
                 #bot.answer_callback_query(query.id, f"❌ У вас нет {item_emoji(required_item)}") 
