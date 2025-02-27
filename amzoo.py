@@ -320,7 +320,9 @@ def show_pets(query):
         elif int(extract_numbers(query.data,1)) == 2:
             print('cure option')
             sql_helper.db_cure_pet(pet_info[0])
-            sql_helper.db_delete_property(5)
+            antibio = sql_helper.db_check_owned_item(query.from_user.id,5)
+            #sql_helper.db_change_health(pet_info[0],cure=True,val=15)
+            sql_helper.db_delete_property(antibio)
             bot.send_message(query.from_user.id, "вылечен")
         elif int(extract_numbers(query.data,1)) == 3:
             print('feed all option')
@@ -808,6 +810,7 @@ def lucky_treasure(query):
                 if mamont_intact > 5:
                     sql_helper.db_buy_pet(tid,31)
                     bot.send_message(query.from_user.id, "🦣 Мамонт! Вы нашли целого мамонта! Он не живой, но выглядит как настоящий!")
+                    # TODO prevent escape and health drop
                 else:
                     bot.send_message(query.from_user.id, "🦴 Вы нашли останки древнего животного. Похоже это мамонт. К сожалению он плохо сохранился.")
             else:
