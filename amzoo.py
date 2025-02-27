@@ -162,7 +162,8 @@ def get_hunger():
         # WARNING if bot restarts epidemic executes again !
         if is_epidemic:
             print(f" - - - - - E P I D E M I C today: {today}")
-            previous_epidemic_day = today
+            #previous_epidemic_day = today
+            sql_helper.event_exe('epidemic')
             infected_pets = sql_helper.db_infect_pets()
             players = []
             for p in infected_pets:
@@ -174,7 +175,8 @@ def get_hunger():
         if is_fire:
             print(f" - - - - - fire FIRE today: {today}")
             dmg_percent = 15
-            previous_fire_day = today
+            #previous_fire_day = today
+            sql_helper.event_exe('fire')
             burned_tids = sql_helper.db_get_all_tids()
             begin = random.randrange(0,2) 
             friquency = 3 # every this number select tid for execute fire
