@@ -466,7 +466,7 @@ def to_zoo_management(message):
         bot.register_next_step_handler(message, set_cage_password)
     
     elif re.match('Пригласить.*',message.text):
-        bot.send_message(message.from_user.id, "Пригласи друга в игру и попроси его ввести код *" + str(message.from_user.id) + "* и ты получишь 🥫 энергетик (+10 💪)!", parse_mode='markdown')
+        bot.send_message(message.from_user.id, "Пригласи друга в игру и попроси его ввести код *" + str(message.from_user.id) + "* и ты получишь 🥫х2 энергетика (+10 💪)!", parse_mode='markdown')
     
     elif re.match('.*Возможности.*',message.text):
         stats_up(message)
@@ -1597,7 +1597,7 @@ def check_relax(tid):
             sql_helper.db_remove_money(tid,10)
             return
         bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
-        if stamina_before == 10:
+        if stamina_before == stamina_limit:
             sql_helper.db_stamina_up(tid,0,stamina_limit) # set new last_work time to prevent profit loop
             return stamina_before
         relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
