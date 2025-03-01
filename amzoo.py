@@ -794,7 +794,7 @@ def lucky_treasure(query):
     msg = '⛏️Раскопки'
 
     if hasattr(query,'data'):
-        print(query.data)
+        print(f"{datetime.now()};{tid};{query.data}")
         
         dig_cell = int(extract_numbers(query.data))
         if dig_cell == 100:
@@ -813,6 +813,19 @@ def lucky_treasure(query):
             print('Treasure FOUND')
             # TODO add few random treasures
             #paleontology_ready = sql_helper.tech_player_list
+            bot.send_message(query.from_user.id,'+30💰 Клад!')
+            sql_helper.db_add_money(tid,30)
+        elif dig_result[0] == dig_result[2]:
+            print('Treasure MINI FOUND')
+            bot.send_message(query.from_user.id,'+10💰 Клад!')
+            sql_helper.db_add_money(tid,10)
+        elif dig_result[0] == dig_result[3]:
+            print('Danger FOUND')
+            bot.send_message(query.from_user.id,'🤕 Вы травмировались -4💪')
+            sql_helper.db_stamina_down(tid,4)
+            sql_helper.db_exp_up(tid,2)
+        elif dig_result[0] == dig_result[4]:
+            print(f"{tid} Fossil found")
             if sql_helper.tech_done_check(tid,2) > 0:
                 mamont_intact = random.randrange(1,10) # whole body. not damaged
                 print("MAMONT")
@@ -823,16 +836,13 @@ def lucky_treasure(query):
                 else:
                     bot.send_message(query.from_user.id, "🦴 Вы нашли останки древнего животного. Похоже это мамонт. К сожалению он плохо сохранился.")
             else:
-                bot.send_message(query.from_user.id,'+50💰 Клад!')
-                sql_helper.db_add_money(tid,50)
-        elif dig_result[0] == dig_result[2]:
-            print('Danger FOUND')
-            bot.send_message(query.from_user.id,'🤕 Вы травмировались -4💪')
-            sql_helper.db_stamina_down(tid,4)
-            sql_helper.db_exp_up(tid,2)
+                bot.send_message(query.from_user.id, "🦴 Вы нашли останки древнего животного. Похоже это был 🦣 мамонт. К сожалению вы повредили его при раскопках и не знаете Как выкопать. Возможно изучив Палеонтологию вы смогли бы это сделать правильно.")
+                #bot.answer_callback_query(query.id, "", show_alert=True)
+                sql_helper.db_exp_up(tid,2)
         else:
             msg = f"⛏️ 💪{stamina - 1}"
             sql_helper.db_exp_up(tid,1)
+            bot.answer_callback_query(query.id, "🌟+1", show_alert=False)
             
 
     cells = sql_helper.db_get_field(location)
@@ -848,7 +858,7 @@ def lucky_treasure(query):
         else:
             deep = 1
             cell_emoji = '◾️' if i[1] != 0 else '🚫'
-            btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
+            btn = types.InlineKeyboardButton(f"{cell_emoji}{i}",callback_data=f"dig_{counter}_{deep}")
         counter +=1
         pin_pad_buttons.append(btn)
     btn_exit = types.InlineKeyboardButton(f"🔙",callback_data=f"dig_100")

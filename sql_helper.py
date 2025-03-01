@@ -397,9 +397,9 @@ def db_dig_field(location, cell, deep_cell, tid):
     '''
     Change element of subarray to 0 to mark it as digged
     tid for log only
-    returns: update cell, treasure and [2]danger cells id
+    returns: update cell, treasure , [2]mini_treasure, 3 danger, 4 fossil cells id
     '''
-    q0 = 'SELECT field[%(cell)s][%(deep_cell)s], treasure, danger FROM treasure_field WHERE location = %(location)s;'
+    q0 = 'SELECT field[%(cell)s][%(deep_cell)s], treasure, mini_treasure, danger, fossil FROM treasure_field WHERE location = %(location)s;'
 
     q = '''UPDATE treasure_field SET field[%(cell)s][%(deep_cell)s] = 0 WHERE location = %(location)s;'''
     cur = con.cursor()
@@ -422,10 +422,14 @@ def db_refil_pits():
     cur.execute(q,)
     cur.close()
     con.commit()
+    mamooth_location = random.randrange(1,7)
     for i in range(7):
         cel_win = random.randrange(1,40)
+        cel_mini_win = random.randrange(1,40)
         cel_fail = random.randrange(1,40)
         cel_fail = random.randrange(1,40) if cel_fail == cel_win else cel_fail
+        if mamooth_location == i:
+            cell_fossil = random.randrange(1,40)
         print(f"win: {cel_win} fail:{cel_fail}")
         loc = i+1
         hint = 0
@@ -440,9 +444,9 @@ def db_refil_pits():
         else:
             hint = 5
         print(hint)
-        q = '''insert into treasure_field(create_date, field, location , hint_row, treasure , danger ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,20},{21,22},{23,24},{25,26},{27,28},{29,30},{31,32}, {33,34},{35,36},{37,38},{39,40}}', %s, %s, %s, %s );'''
+        q = '''insert into treasure_field(create_date, field, location , hint_row, treasure , danger, mini_treasure, fossil ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,20},{21,22},{23,24},{25,26},{27,28},{29,30},{31,32}, {33,34},{35,36},{37,38},{39,40}}', %s, %s, %s, %s );'''
         cur = con.cursor()
-        cur.execute(q,(loc,hint,cel_win,cel_fail))
+        cur.execute(q,(loc,hint,cel_win,cel_fail, cel_mini_win, cell_fossil))
         cur.close()
         con.commit()
 
