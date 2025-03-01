@@ -683,7 +683,7 @@ def db_upgrade_list(tid):
     returns: id, lvl_required, info, is_available
     """
     #q = "select id, lvl_required, info FROM zoo_upgrades;"
-    q = '''select u.id, lvl_required, info, p."level" = u.lvl_required avail
+    q = '''select u.id, lvl_required, info, p."level" >= u.lvl_required avail
     FROM zoo_upgrades u join players p on p."level"+1  >= u.lvl_required and p.telegram_id = %(tid)s 
     where u.id not in (select up_id from player_knows pk where tid = %(tid)s);'''
     cur = con.cursor()
