@@ -527,6 +527,7 @@ def do_tech(query):
     time_left = ""
     state = ""
     already = False
+    resourses_required = False
     
     if hasattr(query,'data'):
         print(query.data)
@@ -542,11 +543,51 @@ def do_tech(query):
             required_coins = item[3]
             
             if sql_helper.db_check_owned_item(tid,required_item) and (required_coins <= pinfo[0]):
-                print(f"{tid} OWNS {required_item}")
+                print(f"{tid} OWNS {required_item}; {item}")
+                # DNA check bones countity
+                tech_id = item[0]
+                bracheo_bones = 0
+                trex_bones = 0
+
+                if tech_id in  [4,5]:
+                    print('- DNA branch - - -')
+                    for i in player_items:
+                        if i[0] == 40:
+                            bracheo_bones = i[2]
+                        elif i[0] == 41:
+                            trex_bones = i[2]
+                    if tech_id == 4:
+                        print(f"bracheosaur bones {bracheo_bones}")
+                        if bracheo_bones >= 3:
+                            sql_helper.tech_player_start(tid,item[0]) 
+                            sql_helper.db_remove_money(tid,required_coins) 
+                            bone = sql_helper.db_check_owned_item(tid, 40)
+                            sql_helper.db_remove_property(bone)
+                            bone = sql_helper.db_check_owned_item(tid, 40)
+                            sql_helper.db_remove_property(bone)
+                        else:
+                            tech_status = "\n⚠️Нужно больше (3) костей 🦕"
+                            resourses_required = True
+                    elif tech_id == 5:
+                        print(f"trex bones {trex_bones}")
+                        if trex_bones >= 3:
+                            sql_helper.tech_player_start(tid,item[0]) 
+                            sql_helper.db_remove_money(tid,required_coins) 
+                            bone = sql_helper.db_check_owned_item(tid, 41)
+                            sql_helper.db_remove_property(bone)
+                            bone = sql_helper.db_check_owned_item(tid, 41)
+                            sql_helper.db_remove_property(bone)
+                        else:
+                            tech_status = "\n⚠️Нужно больше (3) костей 🦖"
+                            resourses_required = True
+                else:
+                    print('TECH SOMETHING ELSE - - - ')
+                     
                 sql_helper.tech_player_start(tid,item[0])  
                 sql_helper.db_remove_money(tid,required_coins)              
             else:
                 print(f"{tid} has NO required {required_item}")
+                resourses_required = True
                 #bot.answer_callback_query(query.id, f"❌ У вас нет {item_emoji(required_item)}") 
                 bot.send_message(tid, f"❌ Требуется {item_emoji(required_item)} и {required_coins}💰")
                 bot.delete_message(query.message.chat.id, query.message.id)  
@@ -592,16 +633,58 @@ def do_tech(query):
                 time_rest = str(t[2] - this_moment)
                 time_left = "♾️" if t[1] == t[2] or t[2] < this_moment  else time_rest.split('.')[0]
                 research_completed = True if t[2] < this_moment and spend_stamina >= required_stamina else False
-                print(f"research completed: {research_completed}" )
                 if research_completed:
-                    print('COMPLETE')
-                    sql_helper.tech_done(tid,item[0])
-                    #stop_type = "⭐ Изучено"
-                    tech_status = f"{tech_emoji(t[5]) + item[1]}\n⭐ Исследование завершено \nℹ️Теперь вы способны {item[8]}"
+                    # DNA research 
+                    if item[0] in [4,5]: 
+                        if random.randrange(0,2):   # 50 percent success on revive dinosaur egg
+                            print(f"{datetime.now()};{tid};Research COMPLETED;{item[0]}")
+                            #sql_helper.tech_done(tid,item[0])
+                            trex_egg = 1 if item[0]== 5 else 0
+                            if trex_egg:
+                                sql_helper.db_get_item(tid,43) # trex
+                            else:
+                                sql_helper.db_get_item(tid,42) # bracheosaur
+                            #stop_type = "⭐ Изучено"
+                            sql_helper.tech_reset(tid,item[0])
+                            bot.send_message(tid, f"{tech_emoji(t[5]) + item[1]}\n⭐ Исследование завершено \n Вы получили яйцо динозавра!")
+                            bot.delete_message(query.message.chat.id, query.message.id) 
+                        else:
+                            print(f"TECH FAIL obtaining dino egg")
+                            sql_helper.tech_reset(tid,item[0])
+                            sql_helper.db_exp_up(tid,5)
+                    # ALIVE DINO
+                    elif item[0] in [6,7]:
+                        egg_type = 42 if item[0]== 7 else 43
+                        owned_egg = sql_helper.db_check_owned_item(tid,egg_type)
+                        sql_helper.db_remove_property(owned_egg)
+                        if random.randrange(0,2):   # 50 percent success on revive dinosaur
+                            print(f"{datetime.now()};{tid};Research COMPLETED;{item[0]}")
+                            #sql_helper.tech_done(tid,item[0])
+                            trex_egg = 1 if item[0]== 7 else 0
+                            if trex_egg:
+                                sql_helper.db_get_pet(tid,51) # trex
+                                dino = "🦖"
+                            else:
+                                sql_helper.db_get_pet(tid,50) # bracheosaur
+                                dino = "🦕"
+                            #stop_type = "⭐ Изучено"
+                            sql_helper.tech_reset(tid,item[0])
+                            bot.send_message(tid, f"{dino}")
+                            bot.delete_message(query.message.chat.id, query.message.id) 
+                            return
+                        else:
+                            print(f"TECH FAIL obtaining alive dino")
+                            sql_helper.tech_reset(tid,item[0])
+                            sql_helper.db_exp_up(tid,3)
+                    else:
+                        print(f"{datetime.now()};{tid};Research COMPLETED;{item[0]}")
+                        sql_helper.tech_done(tid,item[0])
+                        #stop_type = "⭐ Изучено"
+                        tech_status = f"{tech_emoji(t[5]) + item[1]}\n⭐ Исследование завершено \nℹ️Теперь вы способны {item[8]}"
                 else:
                     #stop_type = "🔴 Остановлено"
                     state = "🟢 Активно" if datetime.now() < t[2] else "🔴 Остановлено"
-                    tech_status = f"\n⚒️ Вы приступили к исследованию {tech_emoji(t[5])}\n 💪Сил вложено: {spend_stamina} / {required_stamina} \n⏳ Времени запланировано: {time_left}\nСтатус: {state}"
+                    tech_status = f"\n⚒️ Вы приступили к исследованию {tech_emoji(t[5])}\n{item[8]}\n💪Сил вложено: {spend_stamina} / {required_stamina} \n⏳ Времени запланировано: {time_left}\nСтатус: {state}"
 
             
 
@@ -617,7 +700,8 @@ def do_tech(query):
             btn_buy = types.InlineKeyboardButton(f"➖💪", callback_data='tech' + str(cidx) + '_2')
     else:
         lbl = tech_emoji(item[0]) + " " + item[1] + f"💰{item[3]} ⏳ {item[4]}\n 💪 {item[5]} \nТребуется:{item_emoji(item[6])} {tech_status}"
-        btn_buy = types.InlineKeyboardButton(f"❇️", callback_data='tech' + str(cidx) + '_1')
+        btn_ico = "✖️" if resourses_required else "❇️"
+        btn_buy = types.InlineKeyboardButton(f"{btn_ico}", callback_data='tech' + str(cidx) + '_1')
     btn_forward = types.InlineKeyboardButton('▶', callback_data='tech' + str(next_cid) + '_0' )
     markup.add(btn_buy,btn_forward)
     if hasattr(query,'data'):
@@ -816,19 +900,36 @@ def lucky_treasure(query):
             #paleontology_ready = sql_helper.tech_player_list
             bot.send_message(query.from_user.id,'+30💰 Клад!')
             sql_helper.db_add_money(tid,30)
-        elif dig_result[0] == dig_result[2]:
-            print('Treasure MINI FOUND')
-            bot.send_message(query.from_user.id,'+10💰 Клад!')
-            sql_helper.db_add_money(tid,10)
+        elif dig_result[0] == dig_result[2]:            
+            money_or_item = random.randrange(1,7)
+            print(f"- MINI TREASURE >= 3: {money_or_item}")
+            if money_or_item >= 3:
+                bot.send_message(query.from_user.id,'+10💰 Клад!')
+                sql_helper.db_add_money(tid,10)
+            else:
+                if sql_helper.tech_done_check(tid,2) > 0:
+                    trex = random.randrange(0,2)
+                    if trex:
+                        sql_helper.db_get_item(tid,41)  
+                    else:
+                        sql_helper.db_get_item(tid,40)
+                else:
+                    if random.randrange(0,2):
+                        sql_helper.db_get_item(tid,40)
+                bot.send_message(query.from_user.id,'🦴Вы нашли кости древнего существа. Без знаний Палеонтологии можно найти меньше костей и некоторые будут непригодны.')  
+                bot.delete_message(query.message.chat.id, query.message.id) 
+                return           
         elif dig_result[0] == dig_result[3]:
             print('Danger FOUND')
             bot.send_message(query.from_user.id,'🤕 Вы травмировались -4💪')
             sql_helper.db_stamina_down(tid,4)
             sql_helper.db_exp_up(tid,2)
+            # bot.send_message(query.from_user.id,'Ты устал, наберись сил')
+            # bot.delete_message(query.message.chat.id, query.message.id)
         elif dig_result[0] == dig_result[4]:
             print(f"{tid} Fossil found")
             if sql_helper.tech_done_check(tid,2) > 0:
-                mamont_intact = random.randrange(1,10) # whole body. not damaged
+                mamont_intact = random.randrange(1,11) # whole body. not damaged
                 print("MAMONT")
                 if mamont_intact > 5:
                     sql_helper.db_buy_pet(tid,31)

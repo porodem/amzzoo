@@ -555,6 +555,16 @@ def tech_done_check(tid, tech_id):
     con.commit()
     return b
 
+def tech_reset(tid, tech_id):
+    """
+    DNA reset stamina to 0 if unsuccessfull
+    """
+    print('SQL tech reset')
+    q = "UPDATE player_tech SET stamina_spend = 0 WHERE tid = %s and tech_id = %s;"
+    con.execute(q,(tid,tech_id))
+    con.commit()
+    return 
+
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):
@@ -766,6 +776,9 @@ def db_buy_item(tid, item_id, extra = 0.0):
     return result[0]
 
 def db_get_item(tid, item_id):
+    """ player receive item for free
+    returns: property_id
+    """
     print('- - - get item for free SQL INSERT- - -')
     q = '''insert into property(item_id, durability, charged, "owner") values(%s,10,true,%s) RETURNING id;'''
     cur = con.cursor()
