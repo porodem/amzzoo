@@ -802,6 +802,7 @@ def lucky_treasure(query):
             bot.delete_message(query.message.chat.id, query.message.id)
             return
         sql_helper.db_stamina_down(tid,1)
+        time.sleep(0.3)
         
         deep = int(extract_numbers(query.data,1))
         dig_result = sql_helper.db_dig_field(location,dig_cell,deep,tid)        
