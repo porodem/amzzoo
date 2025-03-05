@@ -885,9 +885,11 @@ def lucky_treasure(query):
             bot.send_message(query.from_user.id, "выход")
             bot.delete_message(query.message.chat.id, query.message.id)
             return
-        sql_helper.db_stamina_down(tid,1)
+        stm_left = sql_helper.db_stamina_down(tid,1)
         time.sleep(0.3)
-        
+        if stm_left == 0:
+            print(f"LOW STAMINA")
+            return
         deep = int(extract_numbers(query.data,1))
         dig_result = sql_helper.db_dig_field(location,dig_cell,deep,tid)        
         

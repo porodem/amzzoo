@@ -399,7 +399,7 @@ def db_dig_field(location, cell, deep_cell, tid):
     tid for log only
     returns: update cell, treasure , [2]mini_treasure, 3 danger, 4 fossil cells id
     '''
-    q0 = 'SELECT field[%(cell)s][%(deep_cell)s], treasure, mini_treasure, danger, fossil FROM treasure_field WHERE location = %(location)s;'
+    q0 = 'SELECT field[%(cell)s][%(deep_cell)s], treasure, mini_treasure, danger, fossil FROM treasure_field WHERE location = %(location)s FOR UPDATE;'
 
     q = '''UPDATE treasure_field SET field[%(cell)s][%(deep_cell)s] = 0 WHERE location = %(location)s;'''
     cur = con.cursor()
@@ -623,15 +623,16 @@ def db_change_location(tid, value, coins):
 
 def db_stamina_down(tid, value):
     print(f"SQL stamina down {value}")
-    q = '''UPDATE players set stamina = (CASE WHEN stamina - %(value)s < 0 THEN 0 ELSE stamina - %(value)s END) where telegram_id = %(tid)s;'''
-    q2 = '''SELECT stamina FROM players WHERE telegram_id = %s;'''
+    q0 = '''SELECT stamina FROM players WHERE telegram_id = %s FOR UPDATE;'''
+    q = '''UPDATE players set stamina = (CASE WHEN stamina - %(value)s < 0 THEN 0 ELSE stamina - %(value)s END) where telegram_id = %(tid)s;'''    
     cur = con.cursor()
-    cur.execute(q,{'value':value,'tid':tid})
-    cur.execute(q2,(tid,))
-    b = cur.fetchone()
-    #print('db stamina down result: ' + str(b))
+    cur.execute(q0,(tid,))
+    s = cur.fetchone()[0]
+    cur.execute(q,{'value':value,'tid':tid})    
+    print('db stamina before down : ' + str(s))
     con.commit()
     cur.close()
+    return s
 
 def db_stamina_drain(tid, value):
     """SQL function returns -1 if not enough stamina, number as result after succesful subtraction.
