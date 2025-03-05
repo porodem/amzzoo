@@ -430,6 +430,8 @@ def db_refil_pits():
         cel_fail = random.randrange(1,40) if cel_fail == cel_win else cel_fail
         if mamooth_location == i:
             cell_fossil = random.randrange(1,40)
+        else:
+            cell_fossil = 0
         print(f"win: {cel_win} fail:{cel_fail}")
         loc = i+1
         hint = 0
@@ -444,7 +446,7 @@ def db_refil_pits():
         else:
             hint = 5
         print(hint)
-        q = '''insert into treasure_field(create_date, field, location , hint_row, treasure , danger, mini_treasure, fossil ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,20},{21,22},{23,24},{25,26},{27,28},{29,30},{31,32}, {33,34},{35,36},{37,38},{39,40}}', %s, %s, %s, %s );'''
+        q = '''insert into treasure_field(create_date, field, location , hint_row, treasure , danger, mini_treasure, fossil ) values (current_date, '{{1,2},{3,4},{5,6},{7,8},{9,10},{11,12},{13,14},{15,16},{17,18},{19,20},{21,22},{23,24},{25,26},{27,28},{29,30},{31,32}, {33,34},{35,36},{37,38},{39,40}}', %s, %s, %s, %s,%s,%s );'''
         cur = con.cursor()
         cur.execute(q,(loc,hint,cel_win,cel_fail, cel_mini_win, cell_fossil))
         cur.close()
