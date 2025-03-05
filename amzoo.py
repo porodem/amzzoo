@@ -873,7 +873,7 @@ def lucky_treasure(query):
     location = player[5]
     stamina = player[2]
 
-    
+    # TODO add ability to set mine (bomb) in cell 
 
     msg = '⛏️Раскопки'
 
@@ -1408,9 +1408,10 @@ def catch_pet(message):
     dig_result = m.dice.value
     if chance == 11:
         print(f"Rare catching {tid}")
-        if dig_result in [1,16,22,32,43,48,64]:
+        if dig_result in [1,16,22,32,43,48,64] or (dig_result in [1,2,3,4,16,22,32,43,48,64] and info[10] > 0): # 2nd option for upgraded taming ability  TODO check or rewrite 
+            # TODO add catching bonus
             time.sleep(2)
-            print(f"catching {tid}; upgrade worked")
+            print(f"catching {tid}; upgrade worked; slot {dig_result}")
             sql_helper.db_get_pet(tid, animal_id)
             bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)    
             return
