@@ -114,20 +114,21 @@ def get_hunger():
     # asteroid alarm
     asteroid_chance = random.randrange(1,100)
     print(f"asteroid chance: {asteroid_chance}")
-    if asteroid_chance > 90:
+    if asteroid_chance > 91:
         is_asteroid = True
 
-    target_location = random.randrange(1,8) 
-    target_location = 4 if target_location == 2 else target_location
-    tloc_icon = habitat_emoji(target_location)
-    # TODO get list players with some item
-    astronomers = sql_helper.tech_players_with(1,tech_lvl_req=1)
-    print(f"astronomers: {astronomers}")
-    for a in astronomers:
-        try:
-            bot.send_message(a[0], f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа.")
-        except apihelper.ApiTelegramException:
-            print('ERROR notify dead of hunger ' + str(player[0]) )
+    if is_asteroid:
+        target_location = random.randrange(1,8) 
+        target_location = 4 if target_location == 2 else target_location
+        tloc_icon = habitat_emoji(target_location)
+        # TODO get list players with some item
+        astronomers = sql_helper.tech_players_with(1,tech_lvl_req=1)
+        print(f"astronomers: {astronomers}")
+        for a in astronomers:
+            try:
+                bot.send_message(a[0], f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа.")
+            except apihelper.ApiTelegramException:
+                print('ERROR notify dead of hunger ' + str(player[0]) )
 
     while True:
         print(str(datetime.now()) + f";GET_HUNGER" )
