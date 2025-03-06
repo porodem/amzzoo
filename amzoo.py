@@ -162,9 +162,27 @@ def get_hunger():
         this_month = datetime.now().month
 
         
+        
         if prev_asteroid_month == this_month:
             is_asteroid = False
 
+        
+        if is_asteroid and datetime.now().hour > 8:
+            print('ASTEROID')
+            sql_helper.event_exe('asteroid')
+            
+            victims = sql_helper.db_get_nearby_players(target_location)
+            print("victim list:")
+            sql_helper.db_infect_pets(target_location)
+            for v in victims:
+                tid = v[0]
+                uname = v[1]
+                print(f"{uname} gets asteroid damage")
+                dmg_percent = 25
+                impact_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
+                sql_helper.db_remove_money(tid,impact_damage)
+        else:
+            print('this month asteroid was already')
         
         if is_asteroid and datetime.now().hour > 8:
             print('ASTEROID')
