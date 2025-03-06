@@ -488,8 +488,11 @@ def event_exe(event):
     return
 
 def event_get(event):
+    """
+    returns is_active bool, 1 day, 2 month
+    """
     print('SQL get event')
-    q = '''SELECT is_active, date_part('day',last_executed) FROM events WHERE name = %s'''
+    q = '''SELECT is_active, date_part('day',last_executed), date_part('month',last_executed) FROM events WHERE name = %s'''
     cur = con.cursor()
     cur.execute(q,(event,))
     p = cur.fetchone()
@@ -534,6 +537,18 @@ def tech_player_list(tid):
     cur.close()
     return b
 
+def tech_players_with(tech_id, tech_lvl_req=1):
+    """
+    returns list of players that already khows selected technology [tid, tech_lvl]
+    """
+    q = "select tid, lvl from player_tech pt where tech_id = %s and lvl >= %s"
+    cur = con.cursor()
+    cur.execute(q,(tech_id,tech_lvl_req))
+    b = cur.fetchall()
+    con.commit()
+    cur.close()
+    return b
+
 def tech_player_work(tid, tech_id):
     print(f"SQL {tid} tech {tech_id}")
     #q = "update player_tech set time_start = now(), time_point = now() + (interval '1 hour' * 1), stamina_spend  = stamina_spend + 1 where tid = %s and tech_id = %s returning time_point ;"
@@ -556,6 +571,8 @@ def tech_done_check(tid, tech_id):
     b = con.execute(q,(tid,tech_id)).fetchone()[0]
     con.commit()
     return b
+
+
 
 def tech_reset(tid, tech_id):
     """
@@ -950,15 +967,20 @@ def db_buy_healing(pet_id: int, cost: int, tid: int):
     cur.close()
     return result
 
-def db_infect_pets():
+def db_infect_pets(game_location=0):
     '''
     epidemic
     '''
-    q = '''update pets set health = health - 4 where animal_id <> 0 and id % (random() *10 + 1)::int = 0 returning owner;'''
+    print(f"SQL infect location {game_location}")
+    if game_location:
+        q = '''update pets p set health = 5  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id <> 0 returning owner;'''
+    else:
+        q = '''update pets set health = health - 4 where animal_id <> 0 and id % (random() *10 + 1)::int = 0 returning owner;'''
+    
     infected_pet_list = []
 
     with con.cursor() as cur:
-        cur.execute(q)
+        cur.execute(q,(game_location,)) if game_location else cur.execute(q)
         b = cur.fetchall()
         #print(list(b))
         for record in b:
