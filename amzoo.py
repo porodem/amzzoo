@@ -114,7 +114,7 @@ def get_hunger():
     # asteroid alarm
     asteroid_chance = random.randrange(1,100)
     print(f"asteroid chance: {asteroid_chance}")
-    if asteroid_chance > 91:
+    if asteroid_chance > 91 and 8 < datetime.now().hour < 23:
         is_asteroid = True
 
     if is_asteroid:
@@ -167,7 +167,7 @@ def get_hunger():
             is_asteroid = False
 
         
-        if is_asteroid and datetime.now().hour > 8:
+        if is_asteroid:
             print('ASTEROID')
             sql_helper.event_exe('asteroid')
             
