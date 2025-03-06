@@ -114,7 +114,7 @@ def get_hunger():
     # asteroid alarm
     asteroid_chance = random.randrange(1,100)
     print(f"asteroid chance: {asteroid_chance}")
-    if asteroid_chance > 91 and 8 < datetime.now().hour < 23:
+    if asteroid_chance > 91 and 8 < datetime.now().hour < 19:
         is_asteroid = True
 
     if is_asteroid:
