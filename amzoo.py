@@ -1073,7 +1073,7 @@ def stealing(query):
         return
     #print(info)
     secret = sql_helper.db_get_zoo_password(victim)
-    print(f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}")
+    
 
     # decay key
     items = sql_helper.db_get_owned_items(tid)
@@ -1118,6 +1118,8 @@ def stealing(query):
         return
     sql_helper.db_stamina_down(query.from_user.id, pwr)
     sql_helper.db_exp_up(tid,pwr)
+
+    print(f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}; pwr:{pwr}")
 
     if input_pass == secret:
         print('cage unlocked')
@@ -1774,10 +1776,10 @@ def check_relax(tid):
     this_moment = datetime.now()
     time_diff = this_moment - last_work
     day_left =  this_moment.date().day - last_work.date().day
-    print('time dif:' + str(time_diff))
+    #print('time dif:' + str(time_diff))
     single_stamina_priod = 1
     hours_rest = time_diff.days * 24 + time_diff.seconds // 3600 // single_stamina_priod
-    print('hours: ' + str(hours_rest))
+    #print('hours: ' + str(hours_rest))
     if day_left != 0:
         print('relax day or more')
         profit = sql_helper.db_get_profit_pg(tid, 18) #sql_helper.db_get_profit(tid)  
@@ -1794,11 +1796,11 @@ def check_relax(tid):
     else:
         if hours_rest > 0:
             relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
-            print('stamina added: ' + str(hours_rest))
+            #print('stamina added: ' + str(hours_rest))
             sql_helper.db_stamina_up(tid,relax,stamina_limit)
         else:
             relax = 0
-            print('hours rest ' + str(hours_rest) + 'not enough')
+            #print('hours rest ' + str(hours_rest) + 'not enough')
     print(str(datetime.now()) + f" check_relax;tid {str(tid)} last work: {str(last_work)} t_dif: {time_diff}; hours_rest: {hours_rest}; stm_up: {relax}; day_left: {day_left} ")
     return relax
 
@@ -2237,7 +2239,7 @@ def echo_allimage(message):
 #anything other messages
 @bot.message_handler(func=lambda m:True)
 def echo_all(message):
-    print('---------- ANYTHING -----------')
+    #print('---------- ANYTHING -----------')
     tid = message.from_user.id
     if message.forward_date is not None:
         print(f"-- ANTI CHEAT for {str(message.from_user.id)} - - -- - -- - - - -")

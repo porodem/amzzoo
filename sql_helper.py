@@ -40,7 +40,7 @@ def db_check_location(tid):
     return result
 
 def db_check_owned_pets(tid):
-    print('SQL check owned pets')
+    #print('SQL check owned pets')
     q = '''SELECT count(*) from pets where owner = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
@@ -48,7 +48,7 @@ def db_check_owned_pets(tid):
     if b is None:
         result = 0
     else:
-        print(f"pets: {b[0]}")
+        #print(f"pets: {b[0]}")
         result = b[0]
     con.commit()
     cur.close()
@@ -156,7 +156,7 @@ def db_get_owned_items_group(tid):
 
         :return list: [item_id, ttl_price, quantity] from property and items tables
     """
-    print('SQL items group')
+    #print('SQL items group')
     q = '''select  i.id, sum(price) ttl_price, count(*) as quantity from  property p join items i on i.id = p.item_id where owner = %s group by 1;'''
     item_list = []
 
