@@ -6,6 +6,7 @@ import re
 import sql_helper
 from  zoo_emoji import *
 import random # for flu illnes
+import math
 
 from datetime import datetime, timedelta
 from telebot import types, apihelper
@@ -823,6 +824,9 @@ def do_ability_up(query):
                 elif item[0] == 6:
                     sql_helper.db_points_down(tid,item[0])
                     sql_helper.taming_up(tid,1)
+                elif item[0] == 7:
+                    sql_helper.db_points_down(tid,item[0])
+                    sql_helper.lockpick_up(tid,1)
                 else:
                     print('not ready yet')
                     upgrade_ready = False
@@ -1098,8 +1102,9 @@ def stealing(query):
             #break
     
     pwr = 8 if strong_lock else 2
-    pwr = 4 if pinfo[9] == 1 else pwr
-    lock_info = 'Здесь установлены хорошие🔒 (требуется 8 💪)' if strong_lock else ''
+    #pwr = 4 if pinfo[9] == 1 else pwr
+    pwr = math.ceil(pwr/(pinfo[9]+1))
+    lock_info = f"Здесь установлены хорошие🔒\nВаш навык взлома:{pinfo[9]}\n(требуется {pwr} 💪)" if strong_lock else ''
     
     stamina = sql_helper.db_get_player_info(query.from_user.id)[2]    
     if stamina < pwr:
