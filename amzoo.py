@@ -557,6 +557,11 @@ def stats_up(message):
         markup.add(btn1,btn2,btn_energy,btn_back)
     else:        
         markup.add(btn1,btn2,btn_back)
+    map_item = sql_helper.db_check_owned_item(tid,13)
+    paleo = sql_helper.tech_done_check(tid,2)
+    if map_item and paleo:
+        btn_map = types.KeyboardButton("Карта🗺️")
+        markup.add(btn_map)
     bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup) 
     bot.register_next_step_handler(message, stats_up_selection)
 
@@ -568,12 +573,27 @@ def stats_up_selection(message):
         do_ability_up(message)
     elif re.match('Энергетик.*',message.text):
         #increase_stamina(message)
+        # TODO maby make inline keyboard in previous method and check there
         e = sql_helper.db_check_owned_item(message.from_user.id, 14)
+        if not e:
+            bot.send_message(message.from_user.id, "⚠️Мошенничество! Применены штрафы!")
+            sql_helper.db_stamina_down(message.from_user.id, 10)
+            sql_helper.db_remove_money(message.from_user.id,100)
+            return
         stamina_limit = sql_helper.db_get_player_info(message.from_user.id)[8]
         sql_helper.db_stamina_up(message.from_user.id,stamina_limit, stamina_limit)
         sql_helper.db_remove_property(e)
         bot.send_message(message.from_user.id, "💪 Силы восстановлены!")
         echo_all(message)
+    elif re.match('Карта.*',message.text):
+        m = sql_helper.db_check_owned_item(message.from_user.id, 13)
+        # TODO check paleontology learned
+        if not m:
+            bot.send_message(message.from_user.id, "У вас нет карты!")
+            return
+        sql_helper.db_remove_property(m)
+        no_mamont_location = sql_helper.map_no_mamont()
+        bot.send_message(message.from_user.id, f"Судя по данных, останков мамонта точно нет в {habitat_emoji(no_mamont_location)}\nВозможно используя данные другой карты 🗺️ можно уточнить местоположение.")
     else:
         echo_all(message)
 
@@ -650,6 +670,9 @@ def do_tech(query):
                         else:
                             tech_status = "\n⚠️Нужно больше (3) костей 🦖"
                             resourses_required = True
+                elif tech_id == 2:
+                    item_map = sql_helper.db_check_owned_item(tid, 13)
+                    sql_helper.db_remove_property(item_map)
                 else:
                     print('TECH SOMETHING ELSE - - - ')
                      
@@ -2056,7 +2079,7 @@ def show_top(query):
                 pet_group = ''
                 show_limit = 0
                 for pet in player[2]:
-                    if show_limit == 3:
+                    if show_limit == 4:
                         break
                     show_limit += 1
                     pet_group += pet_emoji(pet)

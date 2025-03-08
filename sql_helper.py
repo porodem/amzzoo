@@ -380,6 +380,15 @@ def db_get_cheapest_pet(tid):
     cur.close()
     return pet
 
+def map_no_mamont():
+    '''
+    get random location id where fossil of mamonth not exists
+    '''
+    q = "select location from treasure_field tf where fossil = 0 order by random()  limit 1"
+    b = con.execute(q).fetchone()[0]
+    con.commit()
+    return b
+
 def db_get_field(location):
     '''
     Returns array of arrays of numbers that is cells to dig
