@@ -103,6 +103,7 @@ def get_hunger():
     previous_fire_day = None    
     prev_refil_pits_day = None
     prev_asteroid_month = None
+    target_location = 0
     #prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
     today = datetime.now().day
     print(f"EVENT STATES: {prev_refil_pits_day} and today: {today}")
@@ -169,6 +170,7 @@ def get_hunger():
         
         if is_asteroid:
             print('ASTEROID')
+            # TODO notification all in specific location
             sql_helper.event_exe('asteroid')
             
             victims = sql_helper.db_get_nearby_players(target_location)
@@ -181,6 +183,7 @@ def get_hunger():
                 dmg_percent = 25
                 impact_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
                 sql_helper.db_remove_money(tid,impact_damage)
+                bot.send_message(tid,"☄️ Тревога! Неожидано с неба упал астероид! Ваши животные и имущество пострадали! Если бы вы обнаружили астероид заранее, возможно вы бы знали куда он упадет.")
         else:
             print('this month asteroid was already')
         
