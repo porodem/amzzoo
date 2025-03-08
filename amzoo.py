@@ -104,6 +104,7 @@ def get_hunger():
     previous_fire_day = None    
     prev_refil_pits_day = None
     prev_asteroid_month = None
+    is_asteroid = False
     target_location = 0
     #prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
     today = datetime.now().day
@@ -113,11 +114,17 @@ def get_hunger():
             print('TEST OK')
             is_refiling_pits = False
 
+    prev_asteroid_month = int(sql_helper.event_get('asteroid')[2])
+    this_month = datetime.now().month
+
     # asteroid alarm
     asteroid_chance = random.randrange(1,100)
     print(f"asteroid chance: {asteroid_chance}")
     if asteroid_chance > 91 and 8 < datetime.now().hour < 19:
         is_asteroid = True
+
+    if prev_asteroid_month == this_month:
+            is_asteroid = False
 
     if is_asteroid:
         target_location = random.randrange(1,8) 
@@ -135,6 +142,7 @@ def get_hunger():
     while True:
         print(str(datetime.now()) + f";GET_HUNGER" )
         time.sleep(hunger_interval * 60 * 60)
+        #time.sleep(hunger_interval * 4)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -158,16 +166,9 @@ def get_hunger():
         prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
         previous_epidemic_day = int(sql_helper.event_get('epidemic')[1])
         previous_fire_day = int(sql_helper.event_get('fire')[1])
-        prev_asteroid_month = int(sql_helper.event_get('asteroid')[2])
 
-        today = datetime.now().day
-        this_month = datetime.now().month
-
+        today = datetime.now().day  
         
-        
-        if prev_asteroid_month == this_month:
-            is_asteroid = False
-
         
         if is_asteroid:
             print('ASTEROID')
@@ -184,26 +185,29 @@ def get_hunger():
                 dmg_percent = 25
                 impact_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
                 sql_helper.db_remove_money(tid,impact_damage)
-                bot.send_message(tid,"☄️ Тревога! Неожидано с неба упал астероид! Ваши животные и имущество пострадали! Если бы вы обнаружили астероид заранее, возможно вы бы знали куда он упадет.")
+                try:
+                    bot.send_message(tid,"☄️ Тревога! Неожидано с неба упал астероид! Ваши животные и имущество пострадали! Если бы вы обнаружили астероид заранее, возможно вы бы знали куда он упадет.")
+                except apihelper.ApiTelegramException:
+                    print('ERROR notify ill of hunger ' + str(player[0]) )
         else:
             print('this month asteroid was already')
         
-        if is_asteroid and datetime.now().hour > 8:
-            print('ASTEROID')
-            sql_helper.event_exe('asteroid')
+        # if is_asteroid and datetime.now().hour > 8:
+        #     print('ASTEROID')
+        #     sql_helper.event_exe('asteroid')
             
-            victims = sql_helper.db_get_nearby_players(target_location)
-            print("victim list:")
-            sql_helper.db_infect_pets(target_location)
-            for v in victims:
-                tid = v[0]
-                uname = v[1]
-                print(f"{uname} gets asteroid damage")
-                dmg_percent = 25
-                impact_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
-                sql_helper.db_remove_money(tid,impact_damage)
-        else:
-            print('this month asteroid was already')
+        #     victims = sql_helper.db_get_nearby_players(target_location)
+        #     print("victim list:")
+        #     sql_helper.db_infect_pets(target_location)
+        #     for v in victims:
+        #         tid = v[0]
+        #         uname = v[1]
+        #         print(f"{uname} gets asteroid damage")
+        #         dmg_percent = 25
+        #         impact_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
+        #         sql_helper.db_remove_money(tid,impact_damage)
+        # else:
+        #     print('this month asteroid was already')
 
         
         is_epidemic = today % 9 == 0 # every 9 18 21 day of month
@@ -1104,7 +1108,7 @@ def stealing(query):
     pwr = 8 if strong_lock else 2
     #pwr = 4 if pinfo[9] == 1 else pwr
     pwr = math.ceil(pwr/(pinfo[9]+1))
-    lock_info = f"Здесь установлены хорошие🔒\nВаш навык взлома:{pinfo[9]}\n(требуется {pwr} 💪)" if strong_lock else ''
+    lock_info = f"Здесь установлены хорошие🔒\nВаш навык взлома:{pinfo[9]}\n(1 попытка= {pwr} 💪)" if strong_lock else ''
     
     stamina = sql_helper.db_get_player_info(query.from_user.id)[2]    
     if stamina < pwr:
@@ -1124,7 +1128,7 @@ def stealing(query):
         pet_stays = random.randrange(1,100)
         sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove whan stealing (lockpicking improved)
         bot.send_message(tid, "🔐")
-        escape_percent = 15
+        escape_percent = 16
         
         if pet_stays < escape_percent:
                 print('Successful harm: pet escaped!')
