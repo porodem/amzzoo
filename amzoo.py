@@ -133,6 +133,7 @@ def get_hunger():
         # TODO get list players with some item
         astronomers = sql_helper.tech_players_with(1,tech_lvl_req=1)
         print(f"astronomers: {astronomers}")
+        #TODO maby notify all players but no location or add info to stats
         for a in astronomers:
             try:
                 bot.send_message(a[0], f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа.")
