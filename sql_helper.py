@@ -384,7 +384,7 @@ def map_no_mamont():
     '''
     get random location id where fossil of mamonth not exists
     '''
-    q = "select location from treasure_field tf where fossil = 0 order by random()  limit 1"
+    q = "select location from treasure_field tf where location <> 2 and fossil = 0 order by random()  limit 1"
     b = con.execute(q).fetchone()[0]
     con.commit()
     return b
