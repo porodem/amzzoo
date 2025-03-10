@@ -54,7 +54,8 @@ def show_help(message):
     print('000000')
     print(message.text)
     if message.text == '/show_help':
-        bot.send_message(message.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        #bot.send_message(message.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        game_guide(message)
     elif message.text == '/patch_notes':
         print('-------- NOTE SHOW')
         bot.send_message(message.from_user.id, ''.join(note_text), parse_mode='markdown' )
@@ -75,8 +76,6 @@ def send_feedback(message):
             bot.send_message(master_tid, message.text)
         else:
             bot.send_message(message.from_user.id, 'Слишком короткое сообщение')
-    
-
 
 @bot.message_handler(commands=['announce'])
 def admin_announce(message):
@@ -347,6 +346,54 @@ def check_invite(message):
         echo_all(message)
         #bot.register_next_step_handler(message, check_invite)
 
+@bot.callback_query_handler(lambda query: 'guide' in query.data)
+def game_guide(query):
+    topics = ['🐣Начало','💰Деньги','🌟Опыт','🏆Рейтинг','😈Преступления','⚠️События','💻Исследования','❔Помощь']
+    tid = query.from_user.id
+    btns = []
+    if hasattr(query,'data'):
+        print('guide has data')
+        selection = int(extract_numbers(query.data))
+        print(f"data:{selection}")
+        if selection == 100:
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
+        elif selection == 0:
+            with open("docs\start.txt", 'r', encoding='utf-8') as f:
+                help_text = f.readlines()
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        elif selection == 1:
+            with open("docs\money.txt", 'r', encoding='utf-8') as f:
+                help_text = f.readlines()
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        elif selection == 2:
+            with open("docs\exp.txt", 'r', encoding='utf-8') as f:
+                help_text = f.readlines()
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        elif selection == 3:
+            with open("docs\rating.txt", 'r', encoding='utf-8') as f:
+                help_text = f.readlines()
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        else:
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, 'Скоро появится' )
+        
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    counter = 0
+    for topic in topics:
+        btn = types.InlineKeyboardButton(topic,callback_data=f"guide_{counter}")
+        counter +=1
+        btns.append(btn)
+    btn_exit = types.InlineKeyboardButton('✖️Закрыть',callback_data=f"guide_100")
+    markup.add(*btns,btn_exit)
+    bot.send_message(tid, 'ℹ️ Справка:',reply_markup=markup)
+    #bot.delete_message(query.message.chat.id, query.message.id)
+
+
 # ----------   SHOW PETS 
 
 @bot.callback_query_handler(lambda query: 'pet' in query.data )
@@ -539,7 +586,7 @@ def to_zoo_management(message):
     elif re.match('Пригласить.*',message.text):
         bot.send_message(message.from_user.id, "Пригласи друга в игру и попроси его ввести код *" + str(message.from_user.id) + "* и ты получишь 🥫х2 энергетика (+10 💪)!", parse_mode='markdown')
     
-    elif re.match('.*Возможности.*',message.text):
+    elif re.match('^🌟Возможности.*',message.text):
         stats_up(message)
     else:
         echo_all(message)
@@ -937,13 +984,13 @@ def to_lucky_way(message):
         sql_helper.db_remove_money(message.from_user.id, penalty)
         bot.send_message(message.from_user.id, f"⚠ Мошенничество! -{penalty}💰")
         return
-    if re.match('.*Деньги.*',message.text):   
+    if re.match('^💰Деньги.*',message.text):   
         print('- - - money selected - - - ')        
         do_work(message)
-    elif re.match('.*животное.*', message.text):
+    elif re.match('^🦓Поймать.*', message.text):
         print('- - - animal lucky selected - - - ')
         pet_shop(message, catch_mode=True)
-    elif re.match('.*😈Преступник.*', message.text):
+    elif re.match('^😈Преступник.*', message.text):
         print('- - - animal lucky selected - - - ')
         location =  sql_helper.db_check_location(message.from_user.id)
         if location == 5:
@@ -956,7 +1003,7 @@ def to_lucky_way(message):
             echo_all(message)
             return
         search_victims(message)
-    elif re.match('.*Клад.*', message.text):
+    elif re.match('^⛏️Клад.*', message.text):
         print('- - - digging treasure lucky selected - - - ')
         bot.send_message(message.from_user.id, "Это поле доступно для всех игроков. Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! \nГлубина каждой клетки 2. Попытка 💪1. \n⬛️ - Можно копать глубже. \n◾️ - не копали. 🚫 - Копать некуда.")
         lucky_treasure(message)
