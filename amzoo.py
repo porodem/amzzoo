@@ -359,22 +359,37 @@ def game_guide(query):
             bot.delete_message(query.message.chat.id, query.message.id)
             return
         elif selection == 0:
-            with open("docs\start.txt", 'r', encoding='utf-8') as f:
+            with open("docs/start.txt", 'r', encoding='utf-8') as f:
                 help_text = f.readlines()
             bot.delete_message(query.message.chat.id, query.message.id)
             bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
         elif selection == 1:
-            with open("docs\money.txt", 'r', encoding='utf-8') as f:
+            with open("docs/money.txt", 'r', encoding='utf-8') as f:
                 help_text = f.readlines()
             bot.delete_message(query.message.chat.id, query.message.id)
             bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
         elif selection == 2:
-            with open("docs\exp.txt", 'r', encoding='utf-8') as f:
+            with open("docs/exp.txt", 'r', encoding='utf-8') as f:
                 help_text = f.readlines()
             bot.delete_message(query.message.chat.id, query.message.id)
             bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
         elif selection == 3:
-            with open("docs\rating.txt", 'r', encoding='utf-8') as f:
+            with open("docs/rating.txt", 'r', encoding='utf-8') as f:
+                help_text = f.readlines()
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        elif selection == 4:
+            with open("docs/crime.txt", 'r', encoding='utf-8') as f:
+                help_text = f.readlines()
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        elif selection == 5:
+            with open("docs/events.txt", 'r', encoding='utf-8') as f:
+                help_text = f.readlines()
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        elif selection == 6:
+            with open("docs/tech.txt", 'r', encoding='utf-8') as f:
                 help_text = f.readlines()
             bot.delete_message(query.message.chat.id, query.message.id)
             bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
