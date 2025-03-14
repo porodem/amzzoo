@@ -683,7 +683,7 @@ def do_tech(query):
     resourses_required = False
     
     if hasattr(query,'data'):
-        print(query.data)
+        #print(query.data)
         cidx = int(extract_numbers(query.data))
         print(f" - {tid} technology research item {cidx} - - - - ")
         action = int(extract_numbers(query.data,1))
@@ -696,14 +696,14 @@ def do_tech(query):
             required_coins = item[3]
             
             if sql_helper.db_check_owned_item(tid,required_item) and (required_coins <= pinfo[0]):
-                print(f"{tid} OWNS {required_item}; {item}")
                 # DNA check bones countity
                 tech_id = item[0]
                 bracheo_bones = 0
                 trex_bones = 0
+                print(f"TECH try start;{datetime.now()};{tid};owns:{required_item};tech_id:{tech_id}")
 
                 if tech_id in  [4,5]:
-                    print('- DNA branch - - -')
+                    print(' DNA branch - - -')
                     for i in player_items:
                         if i[0] == 40:
                             bracheo_bones = i[2]
@@ -739,8 +739,8 @@ def do_tech(query):
                 else:
                     print('TECH SOMETHING ELSE - - - ')
                      
-                sql_helper.tech_player_start(tid,item[0])  
-                sql_helper.db_remove_money(tid,required_coins)              
+                    sql_helper.tech_player_start(tid,item[0])  
+                    sql_helper.db_remove_money(tid,required_coins)              
             else:
                 print(f"{tid} has NO required {required_item}")
                 resourses_required = True
@@ -857,7 +857,13 @@ def do_tech(query):
     else:
         lbl = tech_emoji(item[0]) + " " + item[1] + f"💰{item[3]} ⏳ {item[4]}\n 💪 {item[5]} \nТребуется:{item_emoji(item[6])} {tech_status}"
         btn_ico = "✖️" if resourses_required else "❇️"
-        btn_buy = types.InlineKeyboardButton(f"{btn_ico}", callback_data='tech' + str(cidx) + '_1')
+        if resourses_required:
+            btn_ico = "✖️"
+            act = '_3'
+        else:
+            btn_ico = "❇️"
+            act = '_1'
+        btn_buy = types.InlineKeyboardButton(f"{btn_ico}", callback_data='tech' + str(cidx) + act)
     btn_forward = types.InlineKeyboardButton('▶', callback_data='tech' + str(next_cid) + '_0' )
     markup.add(btn_buy,btn_forward)
     if hasattr(query,'data'):

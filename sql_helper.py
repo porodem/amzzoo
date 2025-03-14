@@ -177,6 +177,7 @@ def db_check_owned_item(tid, id):
     :return property id or 0 if have not item
     """
     #q = "SELECT count(*) FROM property WHERE owner = %s AND item_id = %s"
+    print(f"SQL check owned item {id}")
     q = "SELECT id FROM property WHERE owner = %s AND item_id = %s LIMIT 1;"
     cur = con.cursor()
     cur.execute(q,(tid,id))
