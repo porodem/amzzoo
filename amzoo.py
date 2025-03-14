@@ -118,8 +118,8 @@ def get_hunger():
 
     # asteroid alarm
     asteroid_chance = random.randrange(1,100)
-    print(f"asteroid chance: {asteroid_chance}")
-    if asteroid_chance > 91 and 8 < datetime.now().hour < 19:
+    print(f"asteroid chance: {asteroid_chance};{datetime.now()}")
+    if asteroid_chance > 89 and 8 < datetime.now().hour < 19:
         is_asteroid = True
 
     if prev_asteroid_month == this_month:
@@ -773,9 +773,9 @@ def do_tech(query):
     item = available_items[cidx]
 
     in_progress = sql_helper.tech_player_list(tid) #  id, 1 time_start, 2 time_point, 3 stamina_spend, 4 tid, 5 tech_id, 6 lvl (now lvl means complete bcz only 1 lvl exists)
-    print(in_progress)
+    #print(in_progress)
     for t in in_progress:
-        print(f"{t}")
+        #print(f"{t}")
         if t[5]== item[0]: # If players have start learn tech and its = selected tech
             already = True
             if t[6] > 0:
