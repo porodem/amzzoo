@@ -694,6 +694,7 @@ def do_tech(query):
             
             required_item = item[6]
             required_coins = item[3]
+            bio_ready = sql_helper.tech_done_check(tid,3)
             
             if sql_helper.db_check_owned_item(tid,required_item) and (required_coins <= pinfo[0]):
                 # DNA check bones countity
@@ -703,7 +704,12 @@ def do_tech(query):
                 print(f"TECH try start;{datetime.now()};{tid};owns:{required_item};tech_id:{tech_id}")
 
                 if tech_id in  [4,5]:
-                    print(' DNA branch - - -')
+                    print(' DNA branch start- - -')
+                    if not bio_ready:
+                        bot.send_message(tid,"Необходимы знания биологии🦠")
+                        bot.delete_message(query.message.chat.id, query.message.id)  
+                        return
+                        
                     for i in player_items:
                         if i[0] == 40:
                             bracheo_bones = i[2]
@@ -719,7 +725,7 @@ def do_tech(query):
                             bone = sql_helper.db_check_owned_item(tid, 40)
                             sql_helper.db_remove_property(bone)
                         else:
-                            tech_status = "\n⚠️Нужно больше (3) костей 🦕"
+                            tech_status = f"\n⚠️Нужно больше костей 🦕 ({bracheo_bones}/3)🦴"
                             resourses_required = True
                     elif tech_id == 5:
                         print(f"trex bones {trex_bones}")
@@ -731,11 +737,17 @@ def do_tech(query):
                             bone = sql_helper.db_check_owned_item(tid, 41)
                             sql_helper.db_remove_property(bone)
                         else:
-                            tech_status = "\n⚠️Нужно больше (3) костей 🦖"
+                            tech_status = f"\n⚠️Нужно больше костей 🦖({trex_bones}/3)🦴"
                             resourses_required = True
-                elif tech_id == 2:
+                elif tech_id == 2: # Paleontology
                     item_map = sql_helper.db_check_owned_item(tid, 13)
                     sql_helper.db_remove_property(item_map)
+                elif tech_id in [6,7]:
+                    egg_type = 43 if item[0]== 7 else 42
+                    owned_egg = sql_helper.db_check_owned_item(tid,egg_type)
+                    sql_helper.db_remove_property(owned_egg)
+                    sql_helper.tech_player_start(tid,item[0]) 
+                    sql_helper.db_remove_money(tid,required_coins)
                 else:
                     print('TECH SOMETHING ELSE - - - ')
                      
@@ -748,14 +760,14 @@ def do_tech(query):
                 bot.send_message(tid, f"❌ Требуется {item_emoji(required_item)} и {required_coins}💰")
                 bot.delete_message(query.message.chat.id, query.message.id)  
                 return
-        elif action == 2: # give stamina for research technology
+        elif action == 2: # Devote stamina for research technology
             stamina = pinfo[2]
             if stamina == 0:
                 bot.send_message(tid, f"❌ Нужна сила 💪 чтобы заниматься исследованиями")
                 bot.delete_message(query.message.chat.id, query.message.id)  
                 return
             else:
-                print(f"tech {item[0]} tid {tid}")
+                print(f"tech {item[0]} tid {tid} devote stamina")
                 sql_helper.db_stamina_down(tid,1)
                 # TODO 23.02.25 consume stamina on tech work
                 # control limit of added stamina
@@ -810,9 +822,7 @@ def do_tech(query):
                             sql_helper.db_exp_up(tid,5)
                     # ALIVE DINO
                     elif item[0] in [6,7]:
-                        egg_type = 42 if item[0]== 7 else 43
-                        owned_egg = sql_helper.db_check_owned_item(tid,egg_type)
-                        sql_helper.db_remove_property(owned_egg)
+                        
                         if random.randrange(0,2):   # 50 percent success on revive dinosaur
                             print(f"{datetime.now()};{tid};Research COMPLETED;{item[0]}")
                             #sql_helper.tech_done(tid,item[0])
@@ -824,14 +834,17 @@ def do_tech(query):
                                 sql_helper.db_get_pet(tid,50) # bracheosaur
                                 dino = "🦕"
                             #stop_type = "⭐ Изучено"
-                            sql_helper.tech_reset(tid,item[0])
+                            sql_helper.tech_reset_hard(tid,item[0])
                             bot.send_message(tid, f"{dino}")
                             bot.delete_message(query.message.chat.id, query.message.id) 
                             return
                         else:
                             print(f"TECH FAIL obtaining alive dino")
-                            sql_helper.tech_reset(tid,item[0])
+                            sql_helper.tech_reset_hard(tid,item[0])
                             sql_helper.db_exp_up(tid,3)
+                            bot.send_message(tid, f"❌ Неудачная инкубация динозавра")
+                            bot.delete_message(query.message.chat.id, query.message.id) 
+                            return
                     else:
                         print(f"{datetime.now()};{tid};Research COMPLETED;{item[0]}")
                         sql_helper.tech_done(tid,item[0])
@@ -855,7 +868,7 @@ def do_tech(query):
         else:
             btn_buy = types.InlineKeyboardButton(f"➖💪", callback_data='tech' + str(cidx) + '_2')
     else:
-        lbl = tech_emoji(item[0]) + " " + item[1] + f"💰{item[3]} ⏳ {item[4]}\n 💪 {item[5]} \nТребуется:{item_emoji(item[6])} {tech_status}"
+        lbl = tech_emoji(item[0]) + " " + item[1] + f"\n{item[8]}\n💰{item[3]} ⏳ {item[4]} 💪 {item[5]} \nТребуется:{item_emoji(item[6])} {tech_status}"
         btn_ico = "✖️" if resourses_required else "❇️"
         if resourses_required:
             btn_ico = "✖️"

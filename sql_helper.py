@@ -594,6 +594,16 @@ def tech_reset(tid, tech_id):
     con.commit()
     return 
 
+def tech_reset_hard(tid, tech_id):
+    """
+    DNA drop all progress on tech
+    """
+    print(f"SQL tech reset_hard: {tid};tech:{tech_id}")
+    q = "DELETE FROM player_tech WHERE tid = %s and tech_id = %s;"
+    con.execute(q,(tid,tech_id))
+    con.commit()
+    return 
+
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):
@@ -825,7 +835,7 @@ def db_get_item(tid, item_id):
     return result
 
 def db_remove_property(pid):
-    print('- - - SQL remove property  - - -')
+    print(f"SQL remove property:{pid}")
     q = '''DELETE FROM property where id = %s'''
     cur = con.cursor()
     cur.execute(q,(pid,))
