@@ -144,8 +144,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(hunger_interval * 4)
+        time.sleep(hunger_interval * 60 * 60)
+        #time.sleep(hunger_interval * 4)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -1080,19 +1080,19 @@ def lucky_treasure(query):
         if not dig_result[0]:
             print('it is a botton')
             msg = f"❌ В этом месте уже слишком глубоко, вряд ли стоит копать здесь дальше. 💪{stamina}"
-        elif dig_result[0] == dig_result[1]:
-            print('Treasure FOUND')
-            # TODO add few random treasures
-            #paleontology_ready = sql_helper.tech_player_list
-            bot.send_message(query.from_user.id,'+30💰 Клад!')
-            sql_helper.db_add_money(tid,30)
-        elif dig_result[0] == dig_result[2]:            
+        elif dig_result[0] == dig_result[1] or dig_result[0] == dig_result[2]:            
             money_or_item = random.randrange(1,7)
-            print(f"- MINI TREASURE >= 3: {money_or_item}")
+            #treasure_value = 20 if money_or_item >= 3 else 10
+            print(f"DIG_TREASURE_OR_BONES: {money_or_item}")
             if money_or_item >= 3:
-                bot.send_message(query.from_user.id,'+10💰 Клад!')
-                sql_helper.db_add_money(tid,10)
+                if dig_result[0] == dig_result[1]:
+                    bot.send_message(query.from_user.id,'+20💰 Клад!')
+                    sql_helper.db_add_money(tid,20)
+                else:
+                    bot.send_message(query.from_user.id,'+10💰 Клад!')
+                    sql_helper.db_add_money(tid,10)          
             else:
+                print(f"DIG_BONE;{tid}")
                 if sql_helper.tech_done_check(tid,2) > 0:
                     trex = random.randrange(0,2)
                     if trex:
