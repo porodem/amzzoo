@@ -99,50 +99,53 @@ def admin_announce(message):
 hunger_interval = 4
 
 def get_hunger():
-    previous_epidemic_day = None
-    previous_fire_day = None    
-    prev_refil_pits_day = None
-    prev_asteroid_month = None
-    is_asteroid = False
-    target_location = 0
-    #prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
-    today = datetime.now().day
-    print(f"EVENT STATES: {prev_refil_pits_day} and today: {today}")
 
-    if prev_refil_pits_day == today:
-            print('TEST OK')
-            is_refiling_pits = False
-
-    prev_asteroid_month = int(sql_helper.event_get('asteroid')[2])
-    this_month = datetime.now().month
-
-    # asteroid alarm
-    asteroid_chance = random.randrange(1,100)
-    print(f"asteroid chance: {asteroid_chance};{datetime.now()}")
-    if asteroid_chance > 89 and 8 < datetime.now().hour < 19:
-        is_asteroid = True
-
-    if prev_asteroid_month == this_month:
-            is_asteroid = False
-
-    if is_asteroid:
-        target_location = random.randrange(1,8) 
-        target_location = 4 if target_location == 2 else target_location
-        tloc_icon = habitat_emoji(target_location)
-        # TODO get list players with some item
-        astronomers = sql_helper.tech_players_with(1,tech_lvl_req=1)
-        print(f"astronomers: {astronomers}")
-        #TODO maby notify all players but no location or add info to stats
-        for a in astronomers:
-            try:
-                bot.send_message(a[0], f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа.")
-            except apihelper.ApiTelegramException:
-                print('ERROR notify dead of hunger ' + str(player[0]) )
 
     while True:
         print(str(datetime.now()) + f";GET_HUNGER" )
-        time.sleep(hunger_interval * 60 * 60)
-        #time.sleep(hunger_interval * 4)
+
+        previous_epidemic_day = None
+        previous_fire_day = None    
+        prev_refil_pits_day = None
+        prev_asteroid_month = None
+        is_asteroid = False
+        target_location = 0
+        #prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
+        today = datetime.now().day
+        print(f"EVENT STATES: {prev_refil_pits_day} and today: {today}")
+
+        if prev_refil_pits_day == today:
+                print('TEST OK')
+                is_refiling_pits = False
+
+        prev_asteroid_month = int(sql_helper.event_get('asteroid')[2])
+        this_month = datetime.now().month
+
+        # asteroid alarm
+        asteroid_chance = random.randrange(1,100)
+        print(f"asteroid_chance: {asteroid_chance};{datetime.now()}")
+        if asteroid_chance > 85 and 8 < datetime.now().hour < 19:
+            is_asteroid = True
+
+        if prev_asteroid_month == this_month:
+                is_asteroid = False
+
+        if is_asteroid:
+            target_location = random.randrange(1,8) 
+            target_location = 4 if target_location == 2 else target_location
+            tloc_icon = habitat_emoji(target_location)
+            # TODO get list players with some item
+            astronomers = sql_helper.tech_players_with(1,tech_lvl_req=1)
+            print(f"astronomers: {astronomers}")
+            #TODO maby notify all players but no location or add info to stats
+            for a in astronomers:
+                try:
+                    bot.send_message(a[0], f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа.")
+                except apihelper.ApiTelegramException:
+                    print('ERROR notify dead of hunger ' + str(player[0]) )
+
+        #time.sleep(hunger_interval * 60 * 60)
+        time.sleep(hunger_interval * 4)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -171,7 +174,7 @@ def get_hunger():
         
         
         if is_asteroid:
-            print('ASTEROID')
+            print('ASTEROID_EXECUTION')
             # TODO notification all in specific location
             sql_helper.event_exe('asteroid')
             
@@ -238,7 +241,10 @@ def get_hunger():
             players = []
             for p in infected_pets:
                 print('player: ' + str(p[0]))
-                bot.send_message(p[0],'🦠 Эпидемия! Проверьте питомцев!')
+                try:
+                    bot.send_message(p[0],'🦠 Эпидемия! Проверьте питомцев!')
+                except apihelper.ApiTelegramException:
+                        print('EXEPTION tid error')
                 players.append(p[0])
             print(list(infected_pets))
 
