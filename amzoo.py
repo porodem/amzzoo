@@ -586,7 +586,7 @@ def zoo_management(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("Питомцы",)
     btn2 = types.KeyboardButton("Безопасность",)
-    btn3 = types.KeyboardButton("Исследования",)
+    btn3 = types.KeyboardButton("ℹ️Информация",)
     btn4 = types.KeyboardButton("Пригласить 🙋‍♂️",)
     btn5 = types.KeyboardButton("🌟Возможности",)
     btn_back = types.KeyboardButton("🔙 Назад")
@@ -603,7 +603,8 @@ def to_zoo_management(message):
         print('- - - security selected - - - ')
         bot.send_message(message.from_user.id, "Введите только одну цифру! (0-9). Это будет пароль на открытие клетки. При взломе друой игрок попытается её угадать. Если угадает самый дешевый петомец может убежать")
         bot.register_next_step_handler(message, set_cage_password)
-    
+    elif re.match('ℹ️.*',message.text):
+        print('info_dummy')
     elif re.match('Пригласить.*',message.text):
         bot.send_message(message.from_user.id, "Пригласи друга в игру и попроси его ввести код *" + str(message.from_user.id) + "* и ты получишь 🥫х2 энергетика (+10 💪)!", parse_mode='markdown')
     
@@ -2331,8 +2332,10 @@ def get_statistics(tid):
     exp = pinfo[6]
     loc = habitat_emoji(pinfo[5]) 
     lvl_points = f"\n❇️Очки талантов: {pinfo[7]}" if pinfo[7] != 0 else ""; 
-    player_stats = 'Уровень 🧸:' + str(lvl) + '\nЛокация: ' + loc + '\nСила 💪: ' + str(stamina) + f" / {stamina_max} ⏳{time_rest} " +  '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + lvl_points
-    player_stats = player_stats + f"\nВещи: {item_overview}"
+    lvl_taming = f"\n🔑Навык взлома: {pinfo[9]}" if pinfo[9] != 0 else ""
+    lvl_lockpicking = f"\n🕸️Навык ловли: {pinfo[10]}" if pinfo[10] != 0 else ""
+    player_stats = loc +' Уровень: ' + str(lvl) + '\nСила 💪: ' + str(stamina) + f" / {stamina_max} ⏳{time_rest} " +  '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + lvl_points
+    player_stats = player_stats + f"{lvl_taming}{lvl_lockpicking}\nВещи: {item_overview}"
     # next line must be commented before run game in production
     # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
 
