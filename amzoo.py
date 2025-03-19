@@ -134,10 +134,8 @@ def get_hunger():
             target_location = random.randrange(1,8) 
             target_location = 4 if target_location == 2 else target_location
             tloc_icon = habitat_emoji(target_location)
-            # TODO get list players with some item
             astronomers = sql_helper.tech_players_with(1,tech_lvl_req=1)
             print(f"astronomers: {astronomers}")
-            #TODO maby notify all players but no location or add info to stats
             for a in astronomers:
                 try:
                     bot.send_message(a[0], f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа.")
@@ -175,7 +173,6 @@ def get_hunger():
         
         if is_asteroid:
             print('ASTEROID_EXECUTION')
-            # TODO notification all in specific location
             sql_helper.event_exe('asteroid')
             
             victims = sql_helper.db_get_nearby_players(target_location)
@@ -479,7 +476,6 @@ def show_pets(query):
                 echo_all()
             sql_helper.db_remove_money(query.from_user.id,total_feed_price)
             sql_helper.db_feed_all(query.from_user.id)
-            #sql_helper.db_change_hunger(pet_info[0], True, 10) # TODO modify for all
                 
     else:
         cidx = 0
@@ -657,7 +653,9 @@ def stats_up_selection(message):
         echo_all(message)
     elif re.match('Карта.*',message.text):
         m = sql_helper.db_check_owned_item(message.from_user.id, 13)
-        # TODO check paleontology learned
+        paleo = sql_helper.tech_done_check(message.from_user.id,2)
+        if not paleo:
+            bot.send_message(message.from_user.id, "Требуется навык палеонтологии!")
         if not m:
             bot.send_message(message.from_user.id, "У вас нет карты!")
             return
@@ -776,15 +774,7 @@ def do_tech(query):
             else:
                 print(f"tech {item[0]} tid {tid} devote stamina")
                 sql_helper.db_stamina_down(tid,1)
-                # TODO 23.02.25 consume stamina on tech work
-                # control limit of added stamina
-                # get profit on complete
                 sql_helper.tech_player_work(tid, item[0])
-                # this_moment = datetime.now()
-                # time_rest = str(research_untill - this_moment)
-                # time_rest = time_rest.split('.')[0]
-
-
 
     else:
         cidx = 0
@@ -1059,6 +1049,7 @@ def lucky_treasure(query):
     stamina = player[2]
 
     # TODO add ability to set mine (bomb) in cell 
+    # TODO add tool required ⛏️
 
     msg = '⛏️Раскопки'
 
