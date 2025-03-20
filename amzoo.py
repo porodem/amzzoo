@@ -308,8 +308,7 @@ def begin_game(message):
 
         print(message.from_user.__dict__)
         username = message.from_user.first_name if message.from_user.username is None else message.from_user.username
-
-        sql_helper.db_new_player(message.from_user.id,username,'x')
+        sql_helper.db_new_player(message.from_user.id,username,'Новый Пцыц ' + str(datetime.now().minute) )
 
         # show help for new player
         bot.send_message(message.from_user.id, '''Привет!
