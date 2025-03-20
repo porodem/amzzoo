@@ -1738,10 +1738,16 @@ def gen_inline_sell_buttons(data_list):
     return btn_pack
 
 def set_nickname(message):
-    print(" - rename player -")
-    new_nickname = message.text[:20]
+    print(f"{message.from_user.id} rename")
+    raw_nickname = message.text[:20]
+    regex_filter = re.compile(r'\w{3,20}',re.I)
+    filter_result = regex_filter.search(raw_nickname)
+    new_nickname = 'Сонный Пцыц' if not hasattr(filter_result,'group') else filter_result.group()
     sql_helper.db_rename_player(message.from_user.id, new_nickname)
-    bot.send_message(message.from_user.id, "Теперь в топе вы будете отображаться с этим именем")
+    if new_nickname == 'Сонный Пцыц':
+        bot.send_message(message.from_user.id, "Вы использовали некорректное имя. Ваше новое имя: " + new_nickname)
+    else:
+        bot.send_message(message.from_user.id, "Теперь в топе вы будете отображаться с этим именем")
     print(new_nickname)
 
 #  - - - - - - - - - - - - E A R N I N G  M O N E Y  - - - - - - - - - - - - - - - - - -
