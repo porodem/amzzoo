@@ -1407,7 +1407,7 @@ def bazar_shop_new(message):
         if int(extract_numbers(message.data,1)):
             
             item = available_items[cidx]
-            print(f"{datetime.now()}, {tid} buying item {item[0]} in loc: {location}")          
+                  
             if item[0] == 10:
                 total_pasports = sql_helper.db_count_item_type(tid,10)
                 total_pasports = 0 if total_pasports is None else total_pasports
@@ -1415,6 +1415,7 @@ def bazar_shop_new(message):
             else:
                 extra_price = 1
             buying_ok = sql_helper.db_buy_item(tid,item[0], extra_price)
+            print(f"{datetime.now()}, {tid} buying item {item[0]} in loc: {location};extra_price:{extra_price};buy_ok:{buying_ok}")    
             if buying_ok:
                 bot.answer_callback_query(message.id, f"📦 Вы купили {item[1]}!")            
                 if item[0] == 10:
