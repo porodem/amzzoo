@@ -177,7 +177,8 @@ def get_hunger():
             
             victims = sql_helper.db_get_nearby_players(target_location)
             print("victim list:")
-            sql_helper.db_infect_pets(target_location)
+            # TODO hit pets more lethal 
+            sql_helper.db_infect_pets(target_location) 
             for v in victims:
                 tid = v[0]
                 uname = v[1]
@@ -1112,7 +1113,6 @@ def lucky_treasure(query):
                 if mamont_intact > 5:
                     sql_helper.db_buy_pet(tid,31)
                     bot.send_message(query.from_user.id, "🦣 Мамонт! Вы нашли целого мамонта! Он не живой, но выглядит как настоящий!")
-                    # TODO prevent escape and health drop
                 else:
                     bot.send_message(query.from_user.id, "🦴 Вы нашли останки древнего животного. Похоже это мамонт. К сожалению он плохо сохранился.")
             else:
@@ -1237,11 +1237,16 @@ def stealing(query):
         
         if pet_stays < escape_percent:
                 print('Successful harm: pet escaped!')
-                sql_helper.db_remove_pet(chapest_pet[0])
+                if chapest_pet[2] == 31: # moomoth
+                    sql_helper.db_change_health(chapest_pet[0],val=5)
+                    act = 'был повреждён вором!'
+                else:
+                    sql_helper.db_remove_pet(chapest_pet[0])
+                    act = 'убежал!'
                 for tidx in [query.from_user.id, victim]:
-                    bot.send_message(tidx, f" {pet_emoji(chapest_pet[2])} убежал.")
+                    bot.send_message(tidx, f" {pet_emoji(chapest_pet[2])} {act}")
         else:
-            bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но {pet_emoji(chapest_pet[2])} не убежал из клетки. Шанс {escape_percent}%")
+            bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но {pet_emoji(chapest_pet[2])} не {act} Шанс {escape_percent}%")
 
             if zoo_alarm:
                 print('ZOO_ALARM')

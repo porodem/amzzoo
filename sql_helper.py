@@ -993,9 +993,9 @@ def db_infect_pets(game_location=0):
     '''
     print(f"SQL infect location {game_location}")
     if game_location:
-        q = '''update pets p set health = 5  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id <> 0 returning owner;'''
+        q = '''update pets p set health = 5  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) returning owner;'''
     else:
-        q = '''update pets set health = health - 4 where animal_id <> 0 and id % (random() *10 + 1)::int = 0 returning owner;'''
+        q = '''update pets set health = health - 4 where animal_id not in (0,31) and id % (random() *10 + 1)::int = 0 returning owner;'''
     
     infected_pet_list = []
 
