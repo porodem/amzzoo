@@ -1245,7 +1245,7 @@ def stealing(query):
                 for tidx in [query.from_user.id, victim]:
                     bot.send_message(tidx, f" {pet_emoji(chapest_pet[2])} {act}")
         else:
-            bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но {pet_emoji(chapest_pet[2])} не {act} Шанс {escape_percent}%")
+            bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но с {pet_emoji(chapest_pet[2])} не произошло ничего плохого. Шанс {escape_percent}%")
 
             if zoo_alarm:
                 print('ZOO_ALARM')
