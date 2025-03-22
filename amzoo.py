@@ -104,6 +104,8 @@ def get_hunger():
     while True:
         print(str(datetime.now()) + f";GET_HUNGER" )
 
+        sql_helper.auction_final()
+
         previous_epidemic_day = None
         previous_fire_day = None    
         prev_refil_pits_day = None
@@ -666,14 +668,33 @@ def stats_up_selection(message):
         echo_all(message)
 
 
-def set_cage_password(message):
-    password = message.text
-    if re.match('^\d$',password):
-        sql_helper.db_change_zoo_pass(message.from_user.id, password)
-        bot.send_message(message.from_user.id, "🔒 Защита 1 уровня включена")
-    else:
-        bot.send_message(message.from_user.id, "❌ только одну цифру!")
-        bot.register_next_step_handler(message, set_cage_password)
+def set_cage_password(message, stype = 0, item = None):
+    print('input_numbers')
+    
+    tid = message.from_user.id
+    if not stype:
+        password = message.text
+        if re.match('^\d$',password):
+            sql_helper.db_change_zoo_pass(message.from_user.id, password)
+            bot.send_message(message.from_user.id, "🔒 Защита 1 уровня включена")
+        else:
+            bot.send_message(message.from_user.id, "❌ только одну цифру!")
+            bot.register_next_step_handler(message, set_cage_password)
+    elif stype == 1:
+        auction_price = message.text
+        print(f"auction_check price;{item}")
+        
+        prop_id = item[0]
+        item_type = item[5]
+        if re.match('^\d{1,4}$',auction_price):
+            sql_helper.auction_property_sell(auction_price,tid,prop_id,item_type)
+            sql_helper.change_property_owner(tid,10,prop_id)
+            #sql_helper.db_remove_money(tid,int(auction_price)) # TODO maby player must pay little for auction use
+            bot.send_message(message.from_user.id, "🏦✅ Аукцион запущен")
+        else:
+            bot.send_message(message.from_user.id, "❌ только цифры до 9999!")
+            return
+            #bot.register_next_step_handler(message, set_cage_password, 1, item)
 
 @bot.callback_query_handler(lambda query: 'tech' in query.data)
 def do_tech(query):
@@ -2227,6 +2248,133 @@ def show_top(query):
     # else:
     bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
 
+@bot.callback_query_handler(lambda query: 'auction' in query.data)
+def auction_way(query):
+    tid = query.from_user.id
+    auction_list = sql_helper.get_auction_list()
+
+    if len(auction_list) == 0:
+        bot.send_message(tid, "На аукционе пока нет вещей")
+        auction_sell(query)
+        return
+
+
+    if hasattr(query, 'data'):
+        cidx = int(extract_numbers(query.data))
+        print('data')
+        action = int(extract_numbers(query.data,1)) 
+        if action == 2:
+            item = auction_list[cidx]
+            bet_sum = int(extract_numbers(query.data,2)) 
+            pinfo = sql_helper.db_get_player_info(tid)
+            if pinfo[0] < bet_sum:
+                print(f"auction_bet fail;not enough money{tid};{bet_sum}")
+                bot.send_message(tid, "❌ Нехватает денег!")
+                bot.delete_message(query.message.chat.id, query.message.id)
+                return
+            else:
+                sql_helper.db_remove_money(tid,bet_sum)
+                current_bet = item[3] if item[5] is None else item[5]
+                sql_helper.auction_bet(tid,bet_sum + current_bet,item[0])
+                auction_list = sql_helper.get_auction_list()
+    else:
+        cidx = 0
+
+    next_cid = 0 if cidx == len(auction_list) - 1 else cidx + 1
+    item = auction_list[cidx]
+
+    auc_end_time = str(item[2] - datetime.now() )
+    auc_end_time = auc_end_time.split('.')[0]
+
+    # id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type
+    lbl = f"Лот # {item[0]}\n{item_emoji(item[9])} *{item[10]}*\n{item[11]} \n⏳Завершится: {auc_end_time}\nНачальная цена: *{item[3]}*\nТекущая ставка: *{item[5]}*"
+    
+    markup = types.InlineKeyboardMarkup(row_width=2,)
+    btn_pack = []
+    bet_a = 10
+    bet_aa = 50
+    btn_bet = types.InlineKeyboardButton(f"💰Ставка +{str(bet_a)}", callback_data='auction' + str(cidx) + '_2' + f"_{bet_a}")
+    btn_beta = types.InlineKeyboardButton(f"💰Ставка +{str(bet_aa)}", callback_data='auction' + str(cidx) + '_2' + f"_{bet_aa}")
+    btn_pack.append(btn_bet)
+    btn_pack.append(btn_beta)
+    if len(auction_list) > 1:
+        btn_forward = types.InlineKeyboardButton('▶', callback_data='auction' + str(next_cid) + '_1')
+        btn_pack.append(btn_forward)
+    btn_sell = types.InlineKeyboardButton('🏦Продать', callback_data='aucse' + str(next_cid) + '_3')
+    btn_exit = types.InlineKeyboardButton("❌Выход", callback_data='aucse' + str(cidx) + '_0')
+    markup.add(*btn_pack,btn_sell,btn_exit)
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=lbl,
+            chat_id=query.message.chat.id,
+            parse_mode='markdown', # to make some text bold with *this* in messages
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
+
+@bot.callback_query_handler(lambda query: 'aucse' in query.data)
+def auction_sell(query):
+    print('auction_start')
+    tid = query.from_user.id
+    auction_list = sql_helper.db_get_owned_items(tid)
+
+    if len(auction_list) == 0:
+        bot.send_message(tid, "Нет вещей на продажу")
+        bot.delete_message(query.message.chat.id, query.message.id)
+        return
+
+    if hasattr(query, 'data'):
+        cidx = int(extract_numbers(query.data))
+        action = int(extract_numbers(query.data,1)) 
+        print(f'data ' + str(action))
+        if not action:
+            bot.delete_message(query.message.chat.id, query.message.id)  
+            return
+        if action == 2:
+            item = auction_list[cidx]
+            bot.send_message(tid, "Введите начальную цену продажи:")
+            # TODO get money
+            bot.register_next_step_handler(query.message, set_cage_password, 1, item)
+            bot.delete_message(query.message.chat.id, query.message.id)  
+            return
+            auction_way(query)
+        if action == 222:
+            print('auction_item_reserv')
+            item = auction_list[cidx]
+            prop_id = item[0]
+            item_type = item[5]
+            sql_helper.auction_property_sell(item[2],tid,prop_id,item_type) #TODO auction
+            bot.delete_message(query.message.chat.id, query.message.id)  
+            auction_way(query)
+            return
+        
+    else:
+        cidx = 0
+
+    next_cid = 0 if cidx == len(auction_list) - 1 else cidx + 1
+    item = auction_list[cidx]
+
+    lbl = f"Что хотите продать на аукционе?\n{item_emoji(item[5])} *{item[1]}*\n Начальная цена: {item[2]}💰"
+    action = '_0'
+    
+    markup = types.InlineKeyboardMarkup(row_width=2,)    
+    btn_exit = types.InlineKeyboardButton("❌Выход", callback_data='aucse' + str(cidx) + '_0')
+    btn_forward = types.InlineKeyboardButton('▶', callback_data='aucse' + str(next_cid) + '_1')
+    btn_bet = types.InlineKeyboardButton("💰", callback_data='aucse' + str(cidx) + '_2')
+    markup.add(btn_bet,btn_forward,btn_exit)
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=lbl,
+            chat_id=query.message.chat.id,
+            parse_mode='markdown', # to make some text bold with *this* in messages
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
+
 # - - - - - - -  U T I L S - - - - - - - 
 
 def extract_numbers(str, v=0):
@@ -2311,6 +2459,8 @@ def next_option(message):
         vet(message)
     elif re.match('.*ТОП.*',message.text):
         show_top(message)
+    elif re.match('^🏦 Аукцион.*',message.text):
+        auction_way(message)
 
 def get_statistics(tid):
     pet_cnt = sql_helper.db_check_owned_pets(tid)
@@ -2374,7 +2524,8 @@ def echo_all(message):
     btn4 = types.KeyboardButton("🛒 Магазин")
     btn5 = types.KeyboardButton("✈ Путешествие")
     btn_top = types.KeyboardButton("🏆 ТОП")
-    markup.add(btn1,btn_hospital,btn3,btn4,btn5,btn_top)
+    btn_mail = types.KeyboardButton("🏦 Аукцион")
+    markup.add(btn1,btn_hospital,btn3,btn4,btn5,btn_top, btn_mail)
     bot.send_message(tid, get_statistics(tid),reply_markup=markup)
     #bot.register_next_step_handler(message, next_option)
     next_option(message)

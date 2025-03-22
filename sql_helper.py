@@ -604,6 +604,54 @@ def tech_reset_hard(tid, tech_id):
     con.commit()
     return 
 
+def get_auction_list():
+    """
+    id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type|10 item_name|11 descr
+    """
+    q = "SELECT a.*, i.name, i.description FROM auction a join items i on a.item_type = i.id WHERE end_price = 0;"
+    b = con.execute(q).fetchall()
+    con.commit()
+    return b
+
+def auction_property_sell(s_price, tid, iid, itype):
+    """
+    """
+    q = '''insert into auction(time_end, start_price, tid_seller, item_id, item_type) values(now() + interval '2 days', %s, %s, %s,%s)'''
+    cur = con.cursor()
+    cur.execute(q,(s_price, tid, iid, itype))
+    con.commit()
+    cur.close()
+
+def auction_final():
+    """
+    give item to someone after time is left
+    """
+    print(f"SQL auction_final")
+    b = con.execute('SELECT auction_stop();')
+    con.commit()
+    return b
+
+def auction_bet(tid, value, acid):
+    """
+    
+    """
+    print(f"SQL auction_bet :{tid} bet {value} auction: {acid}")
+    q = "UPDATE auction SET tid_buyer = %s, bet = %s WHERE id = %s"
+    con.execute(q,(tid,value,acid))
+    con.commit()
+    return 
+
+def change_property_owner(old_owner, new_owner, prop_id):
+    """
+    
+    """
+    print(f"SQL new_item_owner:{old_owner} to {new_owner} for prop_id: {prop_id}")
+    q = "UPDATE property SET owner = %s WHERE id = %s"
+    con.execute(q,(new_owner,prop_id))
+    con.commit()
+    return 
+
+
 # ==================================== DML BLOCK
 
 def db_new_player(tid,username,nickname):
