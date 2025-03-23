@@ -96,6 +96,8 @@ def item_emoji(id):
         e = "🥫"
     elif id == 15:
         e = "🔬"
+    elif id == 16:
+        e = "⛏️"
     elif id == 20:
         e = "🔑"
     elif id == 30:

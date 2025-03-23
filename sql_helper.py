@@ -173,20 +173,30 @@ def db_get_owned_items_group(tid):
             
     return item_list
 
-def db_check_owned_item(tid, id):
+def db_check_owned_item(tid, id, parameter=''):
     """
     Check if player owns exact item
+    :param parameter: return ROW(pid, durability).
 
     :return property id or 0 if have not item
     """
     #q = "SELECT count(*) FROM property WHERE owner = %s AND item_id = %s"
     print(f"SQL check owned item {id}")
-    q = "SELECT id FROM property WHERE owner = %s AND item_id = %s LIMIT 1;"
-    cur = con.cursor()
-    cur.execute(q,(tid,id))
-    b = cur.fetchone()
-    pid = 0 if b is None else b[0]
-    return pid
+    if not parameter:
+        q = "SELECT id FROM property WHERE owner = %s AND item_id = %s LIMIT 1;"
+        cur = con.cursor()
+        cur.execute(q,(tid,id))
+        b = cur.fetchone()
+        pid = 0 if b is None else b[0]
+        return pid
+    # TODO rewrite this fucn for for compact (use only 2nd variand it needs to change all func execution in amzoo.py)
+    elif parameter == 'durability':
+        q = "SELECT id, durability FROM property WHERE owner = %s AND item_id = %s LIMIT 1;"
+        cur = con.cursor()
+        cur.execute(q,(tid,id))
+        b = cur.fetchone()
+        return b
+    
 
 def db_count_item_type(tid, id):
     """

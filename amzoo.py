@@ -148,8 +148,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(hunger_interval * 4)
+        time.sleep(hunger_interval * 60 * 60)
+        #time.sleep(hunger_interval * 4)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -1061,6 +1061,11 @@ def to_lucky_way(message):
         search_victims(message)
     elif re.match('^⛏️Клад.*', message.text):
         print('- - - digging treasure lucky selected - - - ')
+        pick_tool = sql_helper.db_check_owned_item(message.from_user.id,16)
+        if not pick_tool:
+            bot.send_message(message.from_user.id, "❌ Нужена кирка ⛏️")
+            echo_all(message)
+            return
         bot.send_message(message.from_user.id, "Это поле доступно для всех игроков. Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! \nГлубина каждой клетки 2. Попытка 💪1. \n⬛️ - Можно копать глубже. \n◾️ - не копали. 🚫 - Копать некуда.")
         lucky_treasure(message)
     else:
@@ -1082,14 +1087,18 @@ def lucky_treasure(query):
         print(f"{datetime.now()};{tid};{query.data}")
         
         dig_cell = int(extract_numbers(query.data))
+
         if dig_cell == 100:
             bot.send_message(query.from_user.id, "выход")
             bot.delete_message(query.message.chat.id, query.message.id)
             return
+        
         stm_left = sql_helper.db_stamina_down(tid,1)
-        time.sleep(0.3)
+        time.sleep(0.2)
         if stm_left == 0:
             print(f"LOW STAMINA")
+            bot.send_message(query.from_user.id, "😪Закончились силы")
+            bot.delete_message(query.message.chat.id, query.message.id)
             return
         deep = int(extract_numbers(query.data,1))
         dig_result = sql_helper.db_dig_field(location,dig_cell,deep,tid)        
@@ -1124,9 +1133,16 @@ def lucky_treasure(query):
                 return           
         elif dig_result[0] == dig_result[3]:
             print('Danger FOUND')
-            bot.send_message(query.from_user.id,'🤕 Вы травмировались -4💪')
+            bot.send_message(query.from_user.id,'🤕 Вы травмировались -4💪 И повредили ⛏️')
             sql_helper.db_stamina_down(tid,4)
             sql_helper.db_exp_up(tid,2)
+            pick_tool= sql_helper.db_check_owned_item(tid,16,'durability')
+            if pick_tool[1] < 1:
+                bot.send_message(tid,"⚠️Кирка сломана!")
+                bot.delete_message(query.message.chat.id, query.message.id) 
+                sql_helper.db_remove_property(pick_tool[0])
+                return
+            sql_helper.db_decay_property(pick_tool,4)
             # bot.send_message(query.from_user.id,'Ты устал, наберись сил')
             # bot.delete_message(query.message.chat.id, query.message.id)
         elif dig_result[0] == dig_result[4]:
@@ -1144,9 +1160,23 @@ def lucky_treasure(query):
                 #bot.answer_callback_query(query.id, "", show_alert=True)
                 sql_helper.db_exp_up(tid,2)
         else:
-            msg = f"⛏️ 💪{stamina - 1}"
+            
             sql_helper.db_exp_up(tid,1)
             bot.answer_callback_query(query.id, "🌟+1", show_alert=False)
+        brok = random.randrange(1,11)
+        if brok < 4:
+            print(f"pick_brok;{tid}")
+            pick_tool= sql_helper.db_check_owned_item(tid,16,'durability')
+            if pick_tool[1] < 1:
+                bot.send_message(tid,"⚠️Кирка сломана!")
+                bot.delete_message(query.message.chat.id, query.message.id) 
+                sql_helper.db_remove_property(pick_tool[0])            
+                return
+            sql_helper.db_decay_property(pick_tool[0],1)
+        else:
+            print(f"pick damage {brok}")
+
+        msg = f"⛏️⛓️‍💥{pick_tool[1]} 💪{stamina - 1}"
             
 
     cells = sql_helper.db_get_field(location)
@@ -1158,11 +1188,12 @@ def lucky_treasure(query):
             # 
             deep = 2
             cell_emoji = '⬛️' if i[1] != 0 else '🚫'
-            btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
+            btn = types.InlineKeyboardButton(f"{cell_emoji}{i}",callback_data=f"dig_{counter}_{deep}")
         else:
             deep = 1
             cell_emoji = '◾️' if i[1] != 0 else '🚫'
             btn = types.InlineKeyboardButton(f"{cell_emoji}{i}",callback_data=f"dig_{counter}_{deep}")
+            #btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
         counter +=1
         pin_pad_buttons.append(btn)
     btn_exit = types.InlineKeyboardButton(f"🔙",callback_data=f"dig_100")
