@@ -490,10 +490,15 @@ def taming_up(tid,value):
     cur.close()
     return
 
-def event_exe(event):
+def event_exe(event, renew=False):
     print(' SQL update event')
     #q = "UPDATE events SET last_executed =%s, is_active = %s WHERE name = %s"
-    q = "UPDATE events SET last_executed = current_date WHERE name = %s"
+    if renew:
+        print('- - - SQL renew_event')
+        q = "UPDATE events SET last_executed = current_date - interval '1 month' WHERE name = %s"
+    else:
+        print('- - - SQL - exec now -')
+        q = "UPDATE events SET last_executed = current_date WHERE name = %s"
     cur = con.cursor()
     cur.execute(q,(event,))
     con.commit()
@@ -1044,7 +1049,7 @@ def db_infect_pets(game_location=0):
     '''
     print(f"SQL infect location {game_location}")
     if game_location:
-        q = '''update pets p set health = 5  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) returning owner;'''
+        q = '''update pets p set health = health -4  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) returning owner;'''
     else:
         q = '''update pets set health = health - 4 where animal_id not in (0,31) and id % (random() *10 + 1)::int = 0 returning owner;'''
     

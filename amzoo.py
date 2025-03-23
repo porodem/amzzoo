@@ -132,6 +132,10 @@ def get_hunger():
         if prev_asteroid_month == this_month:
                 is_asteroid = False
 
+        # TODO add rare item Stone of summoning asteroid
+        # sql_helper.event_exe('asteroid', renew=True) # 
+                
+
         if is_asteroid:
             target_location = random.randrange(1,8) 
             target_location = 4 if target_location == 2 else target_location
@@ -144,8 +148,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        time.sleep(hunger_interval * 60 * 60)
-        #time.sleep(hunger_interval * 4)
+        #time.sleep(hunger_interval * 60 * 60)
+        time.sleep(hunger_interval * 4)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -191,7 +195,7 @@ def get_hunger():
                 try:
                     bot.send_message(tid,"☄️ Тревога! Неожидано с неба упал астероид! Ваши животные и имущество пострадали! Если бы вы обнаружили астероид заранее, возможно вы бы знали куда он упадет.")
                 except apihelper.ApiTelegramException:
-                    print('ERROR notify ill of hunger ' + str(player[0]) )
+                    print('ERROR notify ill of hunger ' + str(tid) )
         else:
             print('this month asteroid was already')
         
@@ -2345,7 +2349,7 @@ def auction_sell(query):
             item = auction_list[cidx]
             prop_id = item[0]
             item_type = item[5]
-            sql_helper.auction_property_sell(item[2],tid,prop_id,item_type) #TODO auction
+            sql_helper.auction_property_sell(item[2],tid,prop_id,item_type) 
             bot.delete_message(query.message.chat.id, query.message.id)  
             auction_way(query)
             return
