@@ -129,14 +129,17 @@ def db_get_owned_pets(tid):
                
      return pet_list
 
-def db_get_owned_items(tid):
+def db_get_owned_items(tid, filter=None):
     """
         :param tid: telegram id of current player.
 
         :return list: [property_id, item_name, price, (3) charged, location, item_id, 6 durability] from property and items tables
     """
     print('SQL get all players items')
-    q = '''select  p.id, i."name", price, charged, location, i.id, durability from  property p join items i on i.id = p.item_id  where owner = %s;'''
+    if filter == 'auction':
+        q = '''select  p.id, i."name", price, charged, location, i.id, durability from  property p join items i on i.id = p.item_id  where owner = %s and location is null;'''
+    else:
+        q = '''select  p.id, i."name", price, charged, location, i.id, durability from  property p join items i on i.id = p.item_id  where owner = %s;'''
     item_list = []
 
     with con.cursor() as cur:

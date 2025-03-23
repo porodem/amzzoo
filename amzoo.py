@@ -2318,7 +2318,7 @@ def auction_way(query):
 def auction_sell(query):
     print('auction_start')
     tid = query.from_user.id
-    auction_list = sql_helper.db_get_owned_items(tid)
+    auction_list = sql_helper.db_get_owned_items(tid, filter='auction')
 
     if len(auction_list) == 0:
         bot.send_message(tid, "Нет вещей на продажу")
@@ -2356,7 +2356,7 @@ def auction_sell(query):
     next_cid = 0 if cidx == len(auction_list) - 1 else cidx + 1
     item = auction_list[cidx]
 
-    lbl = f"Что хотите продать на аукционе?\n{item_emoji(item[5])} *{item[1]}*\n Начальная цена: {item[2]}💰"
+    lbl = f"Что хотите продать на аукционе?\n{item_emoji(item[5])} *{item[1]}* #{item[0]}\n Рекомендуемая цена: {item[2]}💰"
     action = '_0'
     
     markup = types.InlineKeyboardMarkup(row_width=2,)    
