@@ -1142,7 +1142,7 @@ def lucky_treasure(query):
                 bot.delete_message(query.message.chat.id, query.message.id) 
                 sql_helper.db_remove_property(pick_tool[0])
                 return
-            sql_helper.db_decay_property(pick_tool,4)
+            sql_helper.db_decay_property(pick_tool[0],4)
             # bot.send_message(query.from_user.id,'Ты устал, наберись сил')
             # bot.delete_message(query.message.chat.id, query.message.id)
         elif dig_result[0] == dig_result[4]:
@@ -1164,6 +1164,7 @@ def lucky_treasure(query):
             sql_helper.db_exp_up(tid,1)
             bot.answer_callback_query(query.id, "🌟+1", show_alert=False)
         brok = random.randrange(1,11)
+        pick_tool= sql_helper.db_check_owned_item(tid,16,'durability')
         if brok < 4:
             print(f"pick_brok;{tid}")
             pick_tool= sql_helper.db_check_owned_item(tid,16,'durability')
@@ -1307,6 +1308,9 @@ def stealing(query):
                 print('ZOO_ALARM')
                 bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
     else:
+        # TODO make it as improvement or lvl up abiliti of theif
+        if tid in (6783999424,795547420,775803031):
+            bot.send_message(tid,f"{input_pass}")
         search_victims(query)
         #bot.send_message(query.from_user.id, "🔒 Неудалось")
         #bot.delete_message(query.message.chat.id, query.message.id)
