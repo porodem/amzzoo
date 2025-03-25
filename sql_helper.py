@@ -39,6 +39,17 @@ def db_check_location(tid):
 
     return result
 
+def location_info(loc_id):
+    """
+        :param id: location id 3 forest 4 water 5 home 1 africa 6 USA 7 aust.
+
+        :return list: [id, name, travel_price] from habitat table
+    """
+    q = "SELECT * FROM habitat where id = %s;"
+    b = con.execute(q,(loc_id,)).fetchone()
+    con.commit()
+    return b
+
 def db_check_owned_pets(tid):
     #print('SQL check owned pets')
     q = '''SELECT count(*) from pets where owner = %s'''
