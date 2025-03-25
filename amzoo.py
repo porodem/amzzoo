@@ -2052,7 +2052,8 @@ def travel(message):
             # new location image
             # any picture have unique id, that we receive when send this pic for the first time to telegram. See picture grabber code block in the end.
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
-            sql_helper.db_exp_up(tid,1)
+            if not minibus:
+                sql_helper.db_exp_up(tid,1)
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Африка.*',message.text):
@@ -2064,7 +2065,8 @@ def travel(message):
             bot.send_message(message.from_user.id, "✈ Вы улетели в Африку 🏜!")
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOEmcuA05mlhg-HQfSqDbYL8ixtHZTAAIv6DEbItVxSfetuCF-nurtAQADAgADcwADNgQ')
-            sql_helper.db_exp_up(tid,1)
+            if not minibus:
+                sql_helper.db_exp_up(tid,1)
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Море.*',message.text):
