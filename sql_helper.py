@@ -919,6 +919,19 @@ def db_remove_property(pid):
     con.commit()
     return
 
+def db_remove_properties(itm, val=1):
+    """
+    :param item: item_id 
+    Delets multiple properties of exact item type
+    """
+    print('SQL remove properties')
+    q = '''DELETE FROM property where id IN (SELECT id FROM property WHERE item_id = %s LIMIT %s)'''
+    cur = con.cursor()
+    cur.execute(q,(itm,val))
+    con.commit()
+    return
+
+
 def db_decay_property(pid,value=1):
     '''
     damage on item during usage

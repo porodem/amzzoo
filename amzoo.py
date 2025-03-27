@@ -725,12 +725,14 @@ def do_tech(query):
             required_item = item[6]
             required_coins = item[3]
             bio_ready = sql_helper.tech_done_check(tid,3)
+            #paleo_ready = sql_helper.tech_done_check(tid,3)
             
             if sql_helper.db_check_owned_item(tid,required_item) and (required_coins <= pinfo[0]):
                 # DNA check bones countity
                 tech_id = item[0]
                 bracheo_bones = 0
                 trex_bones = 0
+                uran_pieces = 0
                 print(f"TECH try start;{datetime.now()};{tid};owns:{required_item};tech_id:{tech_id}")
 
                 if tech_id in  [4,5]:
@@ -771,6 +773,7 @@ def do_tech(query):
                             resourses_required = True
                 elif tech_id == 2: # Paleontology
                     item_map = sql_helper.db_check_owned_item(tid, 13)
+                    sql_helper.tech_player_start(tid,item[0])
                     sql_helper.db_remove_property(item_map)
                 elif tech_id in [6,7]:
                     egg_type = 43 if item[0]== 7 else 42
@@ -778,6 +781,23 @@ def do_tech(query):
                     sql_helper.db_remove_property(owned_egg)
                     sql_helper.tech_player_start(tid,item[0]) 
                     sql_helper.db_remove_money(tid,required_coins)
+                elif tech_id == 8:
+                    for i in player_items:
+                        if i[0] == 45:
+                            uran_pieces =i[2]
+                    if uran_pieces >= 5:
+                        #owned_uran = sql_helper.db_check_owned_item(tid,45)                        
+                        sql_helper.tech_player_start(tid,item[0]) 
+                        sql_helper.db_remove_properties(45,6)
+                        sql_helper.db_remove_money(tid,required_coins)
+                    else:
+                        tech_status = f"\n⚠️Нужно больше урана 🪨 ({uran_pieces}/6)🦴"
+                        resourses_required = True
+                elif tech_id == 9:
+                    owned_radio_uran = sql_helper.db_check_owned_item(tid,46)
+                    sql_helper.db_remove_property(owned_radio_uran)
+                    sql_helper.tech_player_start(tid,item[0])
+                    sql_helper.db_remove_money(tid,required_coins) 
                 else:
                     print('TECH SOMETHING ELSE - - - ')
                      
@@ -867,6 +887,20 @@ def do_tech(query):
                             bot.send_message(tid, f"❌ Неудачная инкубация динозавра")
                             bot.delete_message(query.message.chat.id, query.message.id) 
                             return
+                    elif item[0] == 8:
+                        print('TECH URAN235 receive')
+                        sql_helper.db_get_item(tid,46)
+                        sql_helper.tech_reset_hard(tid,item[0])
+                        bot.send_message(tid, f"☢️Вы получили редкое вещество!")
+                        bot.delete_message(query.message.chat.id, query.message.id) 
+                        return
+                    elif item[0] == 9:
+                        print('PORTAL_DONE')
+                        sql_helper.db_get_pet(tid,60)
+                        sql_helper.tech_reset_hard(tid,item[0])
+                        bot.send_message(tid, f"🦄")
+                        bot.delete_message(query.message.chat.id, query.message.id) 
+                        return
                     else:
                         print(f"{datetime.now()};{tid};Research COMPLETED;{item[0]}")
                         sql_helper.tech_done(tid,item[0])
@@ -1158,9 +1192,16 @@ def lucky_treasure(query):
             else:
                 bot.send_message(query.from_user.id, "🦴 Вы нашли останки древнего животного. Похоже это был 🦣 мамонт. К сожалению вы повредили его при раскопках и не знаете Как выкопать. Возможно изучив Палеонтологию вы смогли бы это сделать правильно.")
                 #bot.answer_callback_query(query.id, "", show_alert=True)
+                # TODO many notify others about someone found bones
                 sql_helper.db_exp_up(tid,2)
         else:
-            
+            if sql_helper.tech_done_check(tid,2) > 0:
+                uran_chance = 10
+            else:
+                uran_chance = 5
+            if random.randrange(1,101) <= uran_chance:
+                sql_helper.db_get_item(tid,45)
+                bot.send_message(tid,"Найден уран 🪨")
             sql_helper.db_exp_up(tid,1)
             bot.answer_callback_query(query.id, "🌟+1", show_alert=False)
         brok = random.randrange(1,11)
