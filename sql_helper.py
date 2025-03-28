@@ -635,28 +635,32 @@ def tech_reset_hard(tid, tech_id):
 
 def get_auction_list():
     """
-    id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type|10 item_name|11 descr
+    id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type|10 fast_buy_price |11 item_name|12 descr
     """
     q = "SELECT a.*, i.name, i.description FROM auction a join items i on a.item_type = i.id WHERE end_price = 0;"
     b = con.execute(q).fetchall()
     con.commit()
     return b
 
-def auction_property_sell(s_price, tid, iid, itype):
+def auction_property_sell(s_price, buy_price, tid, iid, itype):
     """
     """
-    q = '''insert into auction(time_end, start_price, tid_seller, item_id, item_type) values(now() + interval '2 days', %s, %s, %s,%s)'''
+    q = '''insert into auction(time_end, start_price, buy_price, tid_seller, item_id, item_type) values(now() + interval '2 days', %s, %s, %s, %s, %s)'''
     cur = con.cursor()
-    cur.execute(q,(s_price, tid, iid, itype))
+    cur.execute(q,(s_price, buy_price, tid, iid, itype))
     con.commit()
     cur.close()
 
-def auction_final():
+def auction_final(auc_id=0,new_owner=0,final_price=0):
     """
     give item to someone after time is left
     """
     print(f"SQL auction_final")
-    b = con.execute('SELECT auction_stop();')
+    if not auc_id:
+        b = con.execute('SELECT auction_stop();')
+    else:
+        print('SQL fast_final_auc')
+        b = con.execute('SELECT auction_stop(%s,%s,%s);',(auc_id,new_owner,final_price))
     con.commit()
     return b
 

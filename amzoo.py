@@ -684,21 +684,28 @@ def set_cage_password(message, stype = 0, item = None):
         else:
             bot.send_message(message.from_user.id, "❌ только одну цифру!")
             bot.register_next_step_handler(message, set_cage_password)
-    elif stype == 1:
-        auction_price = message.text
-        print(f"auction_check price;{item}")
-        
-        prop_id = item[0]
-        item_type = item[5]
-        if re.match('^\d{1,4}$',auction_price):
-            sql_helper.auction_property_sell(auction_price,tid,prop_id,item_type)
-            sql_helper.change_property_owner(tid,10,prop_id)
-            #sql_helper.db_remove_money(tid,int(auction_price)) # TODO maby player must pay little for auction use
-            bot.send_message(message.from_user.id, "🏦✅ Аукцион запущен")
+    elif stype in  (1,2):
+        if re.match('^\d{1,4}$',message.text):
+            if stype == 1:
+                # save start price in by rewriting one of item parameters
+                item[6] = message.text
+                bot.send_message(message.from_user.id, "💸 Укажите цену мгновенного выкупа:")
+                bot.register_next_step_handler(message, set_cage_password,2,item)
+            #auction_price = message.text
+            print(f"auction_check price;{item};fast_price:{message.text}")
+            if stype == 2:
+                auction_price = item[6]
+                fast_buy_price = message.text
+                prop_id = item[0]
+                item_type = item[5]
+                sql_helper.auction_property_sell(auction_price,fast_buy_price,tid,prop_id,item_type)
+                sql_helper.change_property_owner(tid,10,prop_id)
+                #sql_helper.db_remove_money(tid,int(auction_price)) # TODO maby player must pay little for auction use
+                bot.send_message(message.from_user.id, "🏦✅ Аукцион запущен")
         else:
             bot.send_message(message.from_user.id, "❌ только цифры до 9999!")
             return
-            #bot.register_next_step_handler(message, set_cage_password, 1, item)
+                #bot.register_next_step_handler(message, set_cage_password, 1, item)
 
 @bot.callback_query_handler(lambda query: 'tech' in query.data)
 def do_tech(query):
@@ -2362,6 +2369,14 @@ def auction_way(query):
                 current_bet = item[3] if item[5] is None else item[5]
                 sql_helper.auction_bet(tid,bet_sum + current_bet,item[0])
                 auction_list = sql_helper.get_auction_list()
+        if action == 3:
+            item = auction_list[cidx]
+            fast_price = int(extract_numbers(query.data,2)) 
+            sql_helper.db_remove_money(tid,fast_price)
+            current_bet = item[3] if item[5] is None else item[5]
+            sql_helper.auction_final(item[0],tid,fast_price)
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
     else:
         cidx = 0
 
@@ -2371,8 +2386,10 @@ def auction_way(query):
     auc_end_time = str(item[2] - datetime.now() )
     auc_end_time = auc_end_time.split('.')[0]
 
+    fast_buy_price = item[10]
+
     # id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type
-    lbl = f"Лот # {item[0]}\n{item_emoji(item[9])} *{item[10]}*\n{item[11]} \n⏳Завершится: {auc_end_time}\nНачальная цена: *{item[3]}*\nТекущая ставка: *{item[5]}*"
+    lbl = f"Лот # {item[0]}\n{item_emoji(item[9])} *{item[11]}*\n{item[12]} \n⏳Завершится: {auc_end_time}\nНачальная цена: *{item[3]}*\nТекущая ставка: *{item[5]}*\nЦена выкупа: *{fast_buy_price}*"
     
     markup = types.InlineKeyboardMarkup(row_width=2,)
     btn_pack = []
@@ -2382,6 +2399,9 @@ def auction_way(query):
     btn_beta = types.InlineKeyboardButton(f"💰Ставка +{str(bet_aa)}", callback_data='auction' + str(cidx) + '_2' + f"_{bet_aa}")
     btn_pack.append(btn_bet)
     btn_pack.append(btn_beta)
+    if fast_buy_price and fast_buy_price <= sql_helper.db_get_player_info(tid)[0]:
+        btn_fast_buy = types.InlineKeyboardButton(f"💸Выкупить за +{str(fast_buy_price)}", callback_data='auction' + str(cidx) + '_3' +  f"_{fast_buy_price}")
+        btn_pack.append(btn_fast_buy)
     if len(auction_list) > 1:
         btn_forward = types.InlineKeyboardButton('▶', callback_data='auction' + str(next_cid) + '_1')
         btn_pack.append(btn_forward)
@@ -2419,8 +2439,9 @@ def auction_sell(query):
             return
         if action == 2:
             item = auction_list[cidx]
-            bot.send_message(tid, "Введите начальную цену продажи:")
+            bot.send_message(tid, "🪙Введите начальную цену продажи:")
             # TODO get money
+            item = list(item) # cast tuple to array to modify it next
             bot.register_next_step_handler(query.message, set_cage_password, 1, item)
             bot.delete_message(query.message.chat.id, query.message.id)  
             return
