@@ -2126,6 +2126,8 @@ def travel(message):
             # new location image
             bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
             sql_helper.db_exp_up(tid,1)
+            if not minibus:
+                sql_helper.db_exp_up(tid,1)
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Америка.*',message.text):
