@@ -698,8 +698,13 @@ def set_cage_password(message, stype = 0, item = None):
                 fast_buy_price = message.text
                 prop_id = item[0]
                 item_type = item[5]
-                sql_helper.auction_property_sell(auction_price,fast_buy_price,tid,prop_id,item_type)
-                sql_helper.change_property_owner(tid,10,prop_id)
+                is_animal = True if item[4] == 'animal_auc_mark' else False
+                if is_animal:
+                    sql_helper.auction_property_sell(auction_price,fast_buy_price,tid,prop_id,item_type,animal=True)
+                    sql_helper.change_property_owner(tid,10,prop_id,animal=True)
+                else:
+                    sql_helper.auction_property_sell(auction_price,fast_buy_price,tid,prop_id,item_type)
+                    sql_helper.change_property_owner(tid,10,prop_id)
                 #sql_helper.db_remove_money(tid,int(auction_price)) # TODO maby player must pay little for auction use
                 bot.send_message(message.from_user.id, "🏦✅ Аукцион запущен")
         else:
@@ -2376,6 +2381,7 @@ def auction_way(query):
             fast_price = int(extract_numbers(query.data,2)) 
             sql_helper.db_remove_money(tid,fast_price)
             current_bet = item[3] if item[5] is None else item[5]
+            #is_it_animal = True if item[11] is None else False
             sql_helper.auction_final(item[0],tid,fast_price)
             bot.delete_message(query.message.chat.id, query.message.id)
             return
@@ -2385,13 +2391,18 @@ def auction_way(query):
     next_cid = 0 if cidx == len(auction_list) - 1 else cidx + 1
     item = auction_list[cidx]
 
+    print(f"AUC ITEM: {item}")
+
     auc_end_time = str(item[2] - datetime.now() )
     auc_end_time = auc_end_time.split('.')[0]
 
     fast_buy_price = item[10]
 
-    # id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type
-    lbl = f"Лот # {item[0]}\n{item_emoji(item[9])} *{item[11]}*\n{item[12]} \n⏳Завершится: {auc_end_time}\nНачальная цена: *{item[3]}*\nТекущая ставка: *{item[5]}*\nЦена выкупа: *{fast_buy_price}*"
+    emj = item_emoji(item[9]) if item[11] is None else pet_emoji(item[12])
+    item_info = f" *{item[13]}*\n{item[14]}" if  item[11] is None else ''
+
+    # id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type|10 fast_buy_price |11 pet_id | 12 animal_id | 13 item_name|14 descr
+    lbl = f"Лот # {item[0]}\n{emj} {item_info}\n⏳Завершится: {auc_end_time}\nНачальная цена: *{item[3]}*\nТекущая ставка: *{item[5]}*\nЦена выкупа: *{fast_buy_price}*"
     
     markup = types.InlineKeyboardMarkup(row_width=2,)
     btn_pack = []
@@ -2408,6 +2419,7 @@ def auction_way(query):
         btn_forward = types.InlineKeyboardButton('▶', callback_data='auction' + str(next_cid) + '_1')
         btn_pack.append(btn_forward)
     btn_sell = types.InlineKeyboardButton('🏦Продать', callback_data='aucse' + str(next_cid) + '_3')
+    bnt_sell_pet = types.InlineKeyboardButton('🏦🦢Продать', callback_data='aucse' + str(next_cid) + '_5')
     btn_exit = types.InlineKeyboardButton("❌Выход", callback_data='aucse' + str(cidx) + '_0')
     markup.add(*btn_pack,btn_sell,btn_exit)
     if hasattr(query,'data'):
@@ -2426,9 +2438,15 @@ def auction_sell(query):
     print('auction_start')
     tid = query.from_user.id
     auction_list = sql_helper.db_get_owned_items(tid, filter='auction')
+    auc_pet_list = sql_helper.db_get_owned_pets(tid, filter='auction') # 4th index replaced with animal_auc_mark
+    # animal_auc_mark
+    # both of previous lists it is arrays of tuples. Let's combine them
+    auction_list.extend(auc_pet_list)
+
+    print(f"TEST FULL auc list: {auction_list}")
 
     if len(auction_list) == 0:
-        bot.send_message(tid, "Нет вещей на продажу")
+        bot.send_message(tid, "Вам нечего выставить на аукцион. Нужны редкие вещи или редкие животные.")
         bot.delete_message(query.message.chat.id, query.message.id)
         return
 
@@ -2464,7 +2482,11 @@ def auction_sell(query):
     next_cid = 0 if cidx == len(auction_list) - 1 else cidx + 1
     item = auction_list[cidx]
 
-    lbl = f"Что хотите продать на аукционе?\n{item_emoji(item[5])} *{item[1]}* #{item[0]}\n Рекомендуемая цена: {item[2]}💰"
+    print(f" TEST items auc: {item}")
+
+    emj = item_emoji(item[5]) if not item[4] == 'animal_auc_mark' else pet_emoji(item[5])
+
+    lbl = f"Что хотите продать на аукционе?\n{emj} *{item[1]}* #{item[0]}\n Рекомендуемая цена: {item[2]}💰"
     action = '_0'
     
     markup = types.InlineKeyboardMarkup(row_width=2,)    

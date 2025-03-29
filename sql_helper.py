@@ -120,25 +120,29 @@ def db_pet_info(id):
     result = b
     return b
 
-def db_get_owned_pets(tid):
-     """
+def db_get_owned_pets(tid, filter=0):
+    """
         :param tid: telegram id of current player.
 
-        :return list: [id, animal_id, price, health, 4 hunger, 5 max_health, shit] from pets table
+        :return list: [id, animal_id, price, health, 4 hunger, 5 max_health,6 shit] from pets table
+        :return list: auction [id, species, price, health, 4 animal_auc_mark, 5 animal_id,6 animal text] from pets table
     """
-     print('SQL get all players pets --')
-     q = '''select pets.id, animal_id, price, health, hunger, max_health, shit from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
-     pet_list = []
+    print('SQL get all players pets --')
+    if filter == 'auction':
+        q = '''select pets.id, species, price, health, 'animal_auc_mark', animal_id, 'Животное' from pets join animal_list a on a.id = pets.animal_id where owner = %s and (habitat = 100 or catch_chance < 15);'''
+    else:
+        q = '''select pets.id, animal_id, price, health, hunger, max_health, shit from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
+    pet_list = []
 
-     with con.cursor() as cur:
-          cur.execute(q,(tid,))
-          b = cur.fetchall()
-          #print(list(b))
-          for record in b:
-               pet_list.append(record)
-          con.commit()
-               
-     return pet_list
+    with con.cursor() as cur:
+        cur.execute(q,(tid,))
+        b = cur.fetchall()
+        #print(list(b))
+        for record in b:
+            pet_list.append(record)
+        con.commit()
+            
+    return pet_list
 
 def db_get_owned_items(tid, filter=None):
     """
@@ -635,17 +639,20 @@ def tech_reset_hard(tid, tech_id):
 
 def get_auction_list():
     """
-    id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type|10 fast_buy_price |11 item_name|12 descr
+    id|time_start |2 time_end| 3start_price|4 end_price| 5 bet|6 tid_seller|7 tid_buyer|8 item_id|9 item_type|10 fast_buy_price |11 pet_id | 12 animal_id | 13 item_name|14 descr
     """
-    q = "SELECT a.*, i.name, i.description FROM auction a join items i on a.item_type = i.id WHERE end_price = 0;"
+    q = "SELECT a.*, i.name, i.description FROM auction a left join items i on a.item_type = i.id WHERE end_price = 0;"
     b = con.execute(q).fetchall()
     con.commit()
     return b
 
-def auction_property_sell(s_price, buy_price, tid, iid, itype):
+def auction_property_sell(s_price, buy_price, tid, iid, itype, animal=False):
     """
     """
-    q = '''insert into auction(time_end, start_price, buy_price, tid_seller, item_id, item_type) values(now() + interval '2 days', %s, %s, %s, %s, %s)'''
+    if animal:
+        q = '''insert into auction(time_end, start_price, buy_price, tid_seller, pet_id, animal_id) values(now() + interval '2 days', %s, %s, %s, %s, %s)'''
+    else:
+        q = '''insert into auction(time_end, start_price, buy_price, tid_seller, item_id, item_type) values(now() + interval '2 days', %s, %s, %s, %s, %s)'''
     cur = con.cursor()
     cur.execute(q,(s_price, buy_price, tid, iid, itype))
     con.commit()
@@ -674,12 +681,15 @@ def auction_bet(tid, value, acid):
     con.commit()
     return 
 
-def change_property_owner(old_owner, new_owner, prop_id):
+def change_property_owner(old_owner, new_owner, prop_id, animal=False):
     """
     
     """
     print(f"SQL new_item_owner:{old_owner} to {new_owner} for prop_id: {prop_id}")
-    q = "UPDATE property SET owner = %s WHERE id = %s"
+    if animal:
+        q = "UPDATE pets SET owner = %s WHERE id = %s"
+    else:
+        q = "UPDATE property SET owner = %s WHERE id = %s"
     con.execute(q,(new_owner,prop_id))
     con.commit()
     return 
