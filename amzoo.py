@@ -1208,7 +1208,7 @@ def lucky_treasure(query):
                 sql_helper.db_exp_up(tid,2)
         else:
             if sql_helper.tech_done_check(tid,2) > 0:
-                uran_chance = 10
+                uran_chance = 9
             else:
                 uran_chance = 5
             if random.randrange(1,101) <= uran_chance:
@@ -2325,6 +2325,31 @@ def show_top(query):
             bot.send_message(tid, info, parse_mode='markdown')
             bot.delete_message(query.message.chat.id, query.message.id)
             return
+        # TODO review code to combine and more compact
+        elif cidx == 3:
+            leaders = sql_helper.db_get_top_players('profit')
+            total_players = leaders[0][3]
+            info = f"🏆 Лучшие игроки 📈 Доход\n  10 из {total_players} \n----------------------------------\n"
+            i = 1
+            
+            print("total players: " + str(total_players))
+            for player in leaders:
+                pname = 'без имени' if player[0] is None else player[0]
+                exp = f"💰{player[3]}"
+                pet_group = ''
+                show_limit = 0
+                # for pet in player[2]:
+                #     if show_limit == 3:
+                #         break
+                #     show_limit += 1
+                #     pet_group += pet_emoji(pet)
+                # animal = player[2]
+                info += f"{i}. {exp} Зарабатывает *{pname}* \n"
+                i += 1
+            #print(info)
+            bot.send_message(tid, info, parse_mode='markdown')
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
     else:
         cidx = 0
 
@@ -2335,7 +2360,8 @@ def show_top(query):
     lbl = 'рейтинг'
     btn_top_pets = types.InlineKeyboardButton(f"🐇 Животные", callback_data='tops_1')
     btn_exit = types.InlineKeyboardButton('🌟 Опыт', callback_data='tops_2' )
-    markup.add(btn_top_pets,btn_exit)
+    btn_profit = types.InlineKeyboardButton('📈 Доход', callback_data='tops_3' )
+    markup.add(btn_top_pets,btn_exit,btn_profit)
     # if hasattr(query,'data'):
     #     bot.edit_message_text(
     #         text=lbl,
@@ -2617,7 +2643,7 @@ def get_statistics(tid):
     lvl_points = f"\n❇️Очки талантов: {pinfo[7]}" if pinfo[7] != 0 else ""; 
     lvl_taming = f"\n🔑Навык взлома: {pinfo[9]}" if pinfo[9] != 0 else ""
     lvl_lockpicking = f"\n🕸️Навык ловли: {pinfo[10]}" if pinfo[10] != 0 else ""
-    player_stats = f"*{nick}*\n" + loc +' Уровень: ' + str(lvl) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + '\nСила 💪: ' + str(stamina) + f" / {stamina_max} ⏳{time_rest} " +  '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + lvl_points
+    player_stats = f"*{nick}*\n" + loc +' Уровень: ' + str(lvl) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + '\nСила 💪: ' + str(stamina) + f" / {stamina_max} ⏳{time_rest} " +  '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + ' 📈 ' + str(pinfo[12]) + lvl_points
     player_stats = player_stats + f"{lvl_taming}{lvl_lockpicking}\nВещи: {item_overview}"
     # next line must be commented before run game in production
     # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'

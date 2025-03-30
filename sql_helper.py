@@ -87,10 +87,10 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     '''
-    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming, 11 nick_name
+    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming, 11 nick_name, 12 last_profit
     '''
     print(f"SQL get player info {tid}")
-    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming, nick_name from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming, nick_name, last_profit from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -345,6 +345,16 @@ def db_get_top_players(top_order):
                 JOIN animal_list al on al.id = pets.animal_id
                 where p.last_work > current_date - interval '14 days'
                 group by username, nick_name, telegram_id order by 6 desc NULLS LAST LIMIT 10;'''
+    elif top_order == 'profit':
+        q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
+        --sum(rating) *  (1.0 + count(distinct animal_id)/10::numeric) best_pets,
+        --array_agg(distinct animal_id order by animal_id desc) ,
+        --(select array_agg(animal_id order by rating desc) from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id) best_animal,
+            count(*) over () ttl , telegram_id, p.last_profit
+                from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
+                --JOIN animal_list al on al.id = pets.animal_id
+                where p.last_work > current_date - interval '14 days'
+                group by username, nick_name, telegram_id order by 4 desc NULLS LAST LIMIT 10;'''
     leaders = []
     with con.cursor() as cur:
           cur.execute(q)
