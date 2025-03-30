@@ -938,9 +938,11 @@ def db_get_item(tid, item_id):
 
 def db_remove_property(pid):
     print(f"SQL remove property:{pid}")
+    qq = '''DELETE FROM auction where item_id = %s'''
     q = '''DELETE FROM property where id = %s'''
     cur = con.cursor()
     cur.execute(q,(pid,))
+    cur.execute(qq,(pid,))
     con.commit()
     return
 
@@ -951,7 +953,9 @@ def db_remove_properties(itm, val=1):
     """
     print('SQL remove properties')
     q = '''DELETE FROM property where id IN (SELECT id FROM property WHERE item_id = %s LIMIT %s)'''
+    qq = '''DELECT FROM auction WHERE item_id IN (SELECT id FROM property WHERE item_id = %s LIMIT %s)'''
     cur = con.cursor()
+    cur.execute(qq,(itm,val))
     cur.execute(q,(itm,val))
     con.commit()
     return
