@@ -2391,7 +2391,7 @@ def auction_way(query):
     next_cid = 0 if cidx == len(auction_list) - 1 else cidx + 1
     item = auction_list[cidx]
 
-    print(f"AUC ITEM: {item}")
+    #print(f"AUC ITEM: {item}")
 
     auc_end_time = str(item[2] - datetime.now() )
     auc_end_time = auc_end_time.split('.')[0]
@@ -2606,6 +2606,7 @@ def get_statistics(tid):
     this_moment = datetime.now()
     time_rest = str(this_moment - pinfo[3])
     time_rest = time_rest.split('.')[0]
+    nick = pinfo[11]
     lvl = pinfo[1]
     coins = pinfo[0]
     stamina = pinfo[2]   
@@ -2616,7 +2617,7 @@ def get_statistics(tid):
     lvl_points = f"\n❇️Очки талантов: {pinfo[7]}" if pinfo[7] != 0 else ""; 
     lvl_taming = f"\n🔑Навык взлома: {pinfo[9]}" if pinfo[9] != 0 else ""
     lvl_lockpicking = f"\n🕸️Навык ловли: {pinfo[10]}" if pinfo[10] != 0 else ""
-    player_stats = loc +' Уровень: ' + str(lvl) + '\nСила 💪: ' + str(stamina) + f" / {stamina_max} ⏳{time_rest} " +  '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + lvl_points
+    player_stats = f"*{nick}*\n" + loc +' Уровень: ' + str(lvl) + f"\nОпыт 🌟: {str(exp)} / {str(next_lvlexp)}" + '\nСила 💪: ' + str(stamina) + f" / {stamina_max} ⏳{time_rest} " +  '\nПитомцы 😺: ' + str(pet_cnt) + ' / ' + str(pet_space) + '\nДеньги 💰: ' + str(coins) + lvl_points
     player_stats = player_stats + f"{lvl_taming}{lvl_lockpicking}\nВещи: {item_overview}"
     # next line must be commented before run game in production
     # player_stats = player_stats + '\n⚠ Сервер в режиме обслуживания, все действия сделанные вами в этот период не будут сохранены!'
@@ -2656,7 +2657,7 @@ def echo_all(message):
     btn_top = types.KeyboardButton("🏆 ТОП")
     btn_mail = types.KeyboardButton("🏦 Аукцион")
     markup.add(btn1,btn_hospital,btn3,btn4,btn5,btn_top, btn_mail)
-    bot.send_message(tid, get_statistics(tid),reply_markup=markup)
+    bot.send_message(tid, get_statistics(tid),reply_markup=markup,parse_mode='markdown')
     #bot.register_next_step_handler(message, next_option)
     next_option(message)
 

@@ -87,10 +87,10 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     '''
-    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming
+    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming, 11 nick_name
     '''
     print(f"SQL get player info {tid}")
-    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming, nick_name from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -649,6 +649,7 @@ def get_auction_list():
 def auction_property_sell(s_price, buy_price, tid, iid, itype, animal=False):
     """
     """
+    print(f"SQL auc_sel;s_price:{s_price};buy_price:{buy_price};{tid};iid:{iid};{animal}")
     if animal:
         q = '''insert into auction(time_end, start_price, buy_price, tid_seller, pet_id, animal_id) values(now() + interval '2 days', %s, %s, %s, %s, %s)'''
     else:
@@ -662,7 +663,7 @@ def auction_final(auc_id=0,new_owner=0,final_price=0):
     """
     give item to someone after time is left
     """
-    print(f"SQL auction_final")
+    print(f"SQL auction_final;{auc_id};{new_owner};{final_price}")
     if not auc_id:
         b = con.execute('SELECT auction_stop();')
     else:
