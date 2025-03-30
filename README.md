@@ -13,8 +13,6 @@
 
 ### Features to develop
 3. Buildings
-4. :white_check_mark: Items (?) 
-5. sleep() problem - it stops activity all over program (other user seems to have to wait)
 6. add button for pet animal that sends to player animation of pet
 7. dispose of dead pets (maby just sell in pet shop?)
 8. :white_check_mark: earn money for having animals (more rare more profit from customers)
@@ -22,10 +20,11 @@
 10. access to sell pet when no space
 11. announce about player got in TOP
 12. Show total zoo profit in TOP
-13. Send package to other player (?)
+13. :white_check_mark: Send package to other player - DONE by auction
 14. Make problems for other player - put bacteria in zoo to get his pets ill. Broke cage
 15. add items for protect zoo from other players
 16. add Favorite pet selection
+17. animal atack each other probability (add new parameter of animals or PETS? damage, defence, etc)
 17. Premium: long name, cheap rename, hide animals in top, increace chance
 
 ### TODO List
