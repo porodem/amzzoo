@@ -2326,7 +2326,7 @@ def show_top(query):
         # TODO review code to combine and more compact
         elif cidx == 3:
             leaders = sql_helper.db_get_top_players('profit')
-            total_players = leaders[0][3]
+            total_players = leaders[0][1]
             info = f"🏆 Лучшие игроки 📈 Доход\n  10 из {total_players} \n----------------------------------\n"
             i = 1
             
