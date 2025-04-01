@@ -941,8 +941,8 @@ def db_remove_property(pid):
     qq = '''DELETE FROM auction where item_id = %s'''
     q = '''DELETE FROM property where id = %s'''
     cur = con.cursor()
-    cur.execute(q,(pid,))
     cur.execute(qq,(pid,))
+    cur.execute(q,(pid,))    
     con.commit()
     return
 

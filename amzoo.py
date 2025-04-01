@@ -803,7 +803,7 @@ def do_tech(query):
                         sql_helper.db_remove_properties(45,6)
                         sql_helper.db_remove_money(tid,required_coins)
                     else:
-                        tech_status = f"\n⚠️Нужно больше урана 🪨 ({uran_pieces}/6)🦴"
+                        tech_status = f"\n⚠️Нужно больше урана 🪨 ({uran_pieces}/6)"
                         resourses_required = True
                 elif tech_id == 9:
                     owned_radio_uran = sql_helper.db_check_owned_item(tid,46)
@@ -819,7 +819,7 @@ def do_tech(query):
                 print(f"{tid} has NO required {required_item}")
                 resourses_required = True
                 #bot.answer_callback_query(query.id, f"❌ У вас нет {item_emoji(required_item)}") 
-                bot.send_message(tid, f"❌ Требуется {item_emoji(required_item)} и {required_coins}💰")
+                bot.send_message(tid, f"❌ Требуется {item_emoji(required_item)} и {required_coins}💰\n{tech_status}")
                 bot.delete_message(query.message.chat.id, query.message.id)  
                 return
         elif action == 2: # Devote stamina for research technology
