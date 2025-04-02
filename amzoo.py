@@ -1279,6 +1279,8 @@ def stealing(query):
     
     victim = extract_numbers(query.data,0)
     input_pass = int(extract_numbers(query.data,1))
+    
+
     if input_pass == 100:
         bot.send_message(tid, "выход")
         bot.delete_message(query.message.chat.id, query.message.id)
@@ -1286,6 +1288,7 @@ def stealing(query):
     #print(info)
     secret = sql_helper.db_get_zoo_password(victim)
     
+    action = int(extract_numbers(query.data,2))
 
     # decay key
     items = sql_helper.db_get_owned_items(tid)
@@ -1331,35 +1334,52 @@ def stealing(query):
     sql_helper.db_stamina_down(query.from_user.id, pwr)
     sql_helper.db_exp_up(tid,pwr)
 
-    print(f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}; pwr:{pwr}")
+    print(f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}; pwr:{pwr}; act: {action}")
 
     if input_pass == secret:
-        print('cage unlocked')
-        chapest_pet = sql_helper.db_get_cheapest_pet(victim)
-        print(list(chapest_pet))
-        #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
-        bot.delete_message(query.message.chat.id, query.message.id)
-        pet_stays = random.randrange(1,100)
-        sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove whan stealing (lockpicking improved)
-        bot.send_message(tid, "🔐")
-        escape_percent = 16
-        
-        if pet_stays < escape_percent:
-                print('Successful harm: pet escaped!')
-                if chapest_pet[2] == 31: # moomoth
-                    sql_helper.db_change_health(chapest_pet[0],val=5)
-                    act = 'был повреждён вором!'
-                else:
-                    sql_helper.db_remove_pet(chapest_pet[0])
-                    act = 'убежал!'
-                for tidx in [query.from_user.id, victim]:
-                    bot.send_message(tidx, f" {pet_emoji(chapest_pet[2])} {act}")
-        else:
-            bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но с {pet_emoji(chapest_pet[2])} не произошло ничего плохого. Шанс {escape_percent}%")
+        if action == 1:
+            print('cage unlocked')
+            chapest_pet = sql_helper.db_get_cheapest_pet(victim)
+            print(list(chapest_pet))
+            #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
+            bot.delete_message(query.message.chat.id, query.message.id)
+            pet_stays = random.randrange(1,100)
+            sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove whan stealing (lockpicking improved)
+            bot.send_message(tid, "🔐")
+            escape_percent = 17
+            
+            if pet_stays < escape_percent:
+                    print('Successful harm: pet escaped!')
+                    if chapest_pet[2] == 31: # moomoth
+                        sql_helper.db_change_health(chapest_pet[0],val=5)
+                        act = 'был повреждён вором!'
+                    else:
+                        sql_helper.db_remove_pet(chapest_pet[0])
+                        act = 'убежал!'
+                    for tidx in [query.from_user.id, victim]:
+                        bot.send_message(tidx, f" {pet_emoji(chapest_pet[2])} {act}")
+            else:
+                bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но с {pet_emoji(chapest_pet[2])} не произошло ничего плохого. Шанс {escape_percent}%")
 
-            if zoo_alarm:
-                print('ZOO_ALARM')
-                bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
+                if zoo_alarm:
+                    print('ZOO_ALARM')
+                    bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
+        elif action == 2:
+            print('item_stealing')
+            random_property = sql_helper.get_random_cheap_property(victim)
+            if not random_property:
+                bot.send_message(query.from_user.id, f"Нет вещей которые можно было бы утащить")
+            steal_percent = 22
+            steal_ok = random.randrange(1,101)
+            if steal_percent < steal_ok:
+                sql_helper.db_remove_property(random_property[0])
+                bot.send_message(query.from_user.id, f"Вы испортили имущество конкурента: {random_property[1]}")
+                bot.send_message(victim,f"🚨 Кажется ваши вещи испортили ({random_property[1]})!")
+            else:
+                bot.send_message(query.from_user.id, f"Успех! Замок взломан, но повредить {random_property[1]} не получилось. Шанс {steal_percent}%")
+                if zoo_alarm:
+                    print('ZOO_ALARM')
+                    bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
     else:
         # TODO make it as improvement or lvl up abiliti of theif
         if tid in (6783999424,795547420,775803031):
@@ -1388,6 +1408,7 @@ def search_victims(query):
     
     if hasattr(query,'data'):
         print(query.data)
+        stamina = sql_helper.db_get_player_info(tid)[2]
 
         items = sql_helper.db_get_owned_items(tid)
         tools = 0
@@ -1400,55 +1421,82 @@ def search_victims(query):
             bot.delete_message(query.message.chat.id, query.message.id)
             #echo_all()
             return
-        
-        stamina = sql_helper.db_get_player_info(tid)[2]
-        #sql_helper.db_stamina_down(query.from_user.id,1)
-        ask = 'Зоопарк жертвы:'
-        victim = int(extract_numbers(query.data,0))
-        #print('victim: ' + str(victim))
-        v_zoo = sql_helper.db_get_owned_pets(victim)
-        v_emoji_pack = ''
-        #TODO good lock consume more stamina
-        for pet in v_zoo:
-            v_emoji_pack += pet_emoji(pet[1])
-        ask = "Обитатели: " + v_emoji_pack + f"\nВаша 💪{stamina}"
-        pin_pad_buttons = []
-        markup = types.InlineKeyboardMarkup(row_width=3,)
-        for i in range(9,-1,-1):
-            btn = types.InlineKeyboardButton(f"{i}",callback_data=f"stealing{victim}_{i}")
-            pin_pad_buttons.append(btn)
-        btn_exit = types.InlineKeyboardButton(f"✖",callback_data=f"stealing{victim}_100")
-        pin_pad_buttons.append(btn_exit)
-        markup.add(*pin_pad_buttons)
-        #markup = quick_markup({'1': {'callback_data': 'victim'},'2': {'callback_data': 'victim'},'3': {'callback_data': 'victim'}}, row_width=3)
 
-        print(list(v_zoo))
+        action = int(extract_numbers(query.data))
+
+        if action == 3:        
+            
+            #sql_helper.db_stamina_down(query.from_user.id,1)
+            ask = 'Зоопарк жертвы:'
+            victim = int(extract_numbers(query.data,1))
+            next_action = int(extract_numbers(query.data,2))
+            
+            a_text = 'Вещи' if next_action == 2 else 'животные'
+            #print('victim: ' + str(victim))
+            v_emoji_pack = ''
+            if next_action == 1:
+                v_zoo = sql_helper.db_get_owned_pets(victim)
+                for pet in v_zoo:
+                    v_emoji_pack += pet_emoji(pet[1])
+            elif next_action == 2:
+                v_zoo = sql_helper.db_get_owned_items_group(victim)
+                for itm in v_zoo:
+                    v_emoji_pack += item_emoji(itm[0])
+            
+            #TODO good lock consume more stamina
+            
+            ask = f"{a_text}: " + v_emoji_pack + f"\nВаша 💪{stamina} "
+            pin_pad_buttons = []
+            markup = types.InlineKeyboardMarkup(row_width=3,)
+            for i in range(9,-1,-1):
+                btn = types.InlineKeyboardButton(f"{i}",callback_data=f"stealing{victim}_{i}_{next_action}")
+                pin_pad_buttons.append(btn)
+            btn_exit = types.InlineKeyboardButton(f"✖",callback_data=f"stealing{victim}_100")
+            pin_pad_buttons.append(btn_exit)
+            markup.add(*pin_pad_buttons)
+            #markup = quick_markup({'1': {'callback_data': 'victim'},'2': {'callback_data': 'victim'},'3': {'callback_data': 'victim'}}, row_width=3)
+
+            print(list(v_zoo))
+        elif action in (1,2):
+            print('------ have no data')
+            markup = types.InlineKeyboardMarkup(row_width=1,)
+
+            stamina = sql_helper.db_get_player_info(tid)[2]
+            sql_helper.db_exp_up(tid,1)            
+
+            next_action = int(extract_numbers(query.data))
+
+            ask = '-1💪 Ближайшие зоопарки:'
+            location =  sql_helper.db_check_location(tid)
+            victims = sql_helper.db_get_nearby_players(location)
+            i = 1
+            #print("total players: " + str(total_players))
+            if len(victims) < 2:
+                ask = 'Похоже рядом нет других игроков -1💪'
+            
+            for player in victims:
+                if player[0] == tid:
+                    continue
+                pname = player[1] if player[2] =='x' else player[2]
+                
+                btn_title = f"#{i} {pname}\n"
+                btn = types.InlineKeyboardButton(btn_title,callback_data='victim' + '_3_' + str(player[0]) + '_' + str(next_action) )
+                i += 1
+                btn_pack.append(btn)
+            markup.add(*btn_pack)
+
     else:
-        print('------ have no data')
-        markup = types.InlineKeyboardMarkup(row_width=1,)
+        print(f"select crime_type")
 
         stamina = sql_helper.db_get_player_info(tid)[2]
         sql_helper.db_stamina_down(tid,1)
-        sql_helper.db_exp_up(tid,1)
-
-        ask = '-1💪 Ближайшие зоопарки:'
-        location =  sql_helper.db_check_location(tid)
-        victims = sql_helper.db_get_nearby_players(location)
-        i = 1
-        #print("total players: " + str(total_players))
-        if len(victims) < 2:
-            ask = 'Похоже рядом нет других игроков -1💪'
         
-        for player in victims:
-            if player[0] == tid:
-                continue
-            pname = player[1] if player[2] =='x' else player[2]
-            
-            btn_title = f"#{i} {pname}\n"
-            btn = types.InlineKeyboardButton(btn_title,callback_data='victim' + str(player[0]))
-            i += 1
-            btn_pack.append(btn)
-        markup.add(*btn_pack)
+
+        markup = types.InlineKeyboardMarkup(row_width=1,)
+        btn_animal_steal = types.InlineKeyboardButton("🦓 Открыть клетку", callback_data='victim' + '1')
+        btn_item_steal = types.InlineKeyboardButton("🧯 Сломать вещь", callback_data='victim' + '2')
+        markup.add(btn_animal_steal, btn_item_steal)
+        ask = 'Как навредить? 😈'
     if hasattr(query,'data'):
         #print('HAS query data:')
         #print(query.data)

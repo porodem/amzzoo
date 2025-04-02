@@ -188,6 +188,16 @@ def db_get_owned_items_group(tid):
             
     return item_list
 
+def get_random_cheap_property(tid):
+    """
+    get id of random cheap property
+    """
+    q = "select p.id, name from items i join property p ON p.item_id = i.id and i.id in (11,13,16,20,45) where owner = %s order by random() LIMIT 1;"
+    b = con.execute(q,(tid,)).fetchone()
+    pid = 0 if b is None else b
+    con.commit()
+    return pid
+
 def db_check_owned_item(tid, id, parameter=''):
     """
     Check if player owns exact item
