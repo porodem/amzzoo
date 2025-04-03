@@ -2159,7 +2159,7 @@ def travel(message):
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Африка.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-        travel_pay = sql_helper.location_info(3)[2] if not minibus else int(sql_helper.location_info(3)[2] / 2)
+        travel_pay = sql_helper.location_info(1)[2] if not minibus else int(sql_helper.location_info(1)[2] / 2)
         if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,1,travel_pay)
@@ -2170,7 +2170,7 @@ def travel(message):
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Море.*',message.text):
-        travel_pay = sql_helper.location_info(3)[2] if not minibus else int(sql_helper.location_info(3)[2] / 2)
+        travel_pay = sql_helper.location_info(4)[2] if not minibus else int(sql_helper.location_info(4)[2] / 2)
         if minibus or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,4,travel_pay)
@@ -2183,6 +2183,7 @@ def travel(message):
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Америка.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        travel_pay = sql_helper.location_info(6)[2]
         if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,6,travel_pay)
@@ -2194,6 +2195,7 @@ def travel(message):
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Авст.*',message.text):
         #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+        travel_pay = sql_helper.location_info(7)[2]
         if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,7,travel_pay)
@@ -2204,7 +2206,8 @@ def travel(message):
         else:
             bot.send_message(message.from_user.id, "❌ Нужны деньги и сила!")
     if re.match('.*Дом.*',message.text):
-        travel_pay = sql_helper.location_info(3)[2] if not minibus else int(sql_helper.location_info(3)[2] / 2)
+        # TODO think about outgoing location for calculate price
+        travel_pay = sql_helper.location_info(1)[2] if not minibus else int(sql_helper.location_info(1)[2] / 2)
         if minibus or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
             # TODO variable for ticket price
             sql_helper.db_change_location(tid,5,travel_pay)
