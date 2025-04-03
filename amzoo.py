@@ -357,7 +357,7 @@ def check_invite(message):
 
 @bot.callback_query_handler(lambda query: 'guide' in query.data)
 def game_guide(query):
-    topics = ['🐣Начало','💰Деньги','🌟Опыт','🏆Рейтинг','😈Преступления','⚠️События','💻Исследования','❔Помощь']
+    topics = ['🐣Начало','💰Деньги','🌟Опыт','🏆Рейтинг','😈Преступления','⚠️События','💻Исследования','🗺️ Карта']
     tid = query.from_user.id
     btns = []
     if hasattr(query,'data'):
@@ -402,6 +402,9 @@ def game_guide(query):
                 help_text = f.readlines()
             bot.delete_message(query.message.chat.id, query.message.id)
             bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
+        elif selection == 7:
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_photo(tid,'AgACAgIAAxkBAAECu_5n7pGhSUNtRzg3Wxr3TPwk1D4g5AAC8O4xG0EVeUsRA_gpoLavAQEAAwIAA3MAAzYE')
         else:
             bot.delete_message(query.message.chat.id, query.message.id)
             bot.send_message(query.from_user.id, 'Скоро появится' )
@@ -2079,9 +2082,9 @@ def check_relax(tid):
     print(str(datetime.now()) + f" check_relax;tid {str(tid)} last work: {str(last_work)} t_dif: {time_diff}; hours_rest: {hours_rest}; stm_up: {relax}; day_left: {day_left} ")
     return relax
 
-# TODO protect from travel enywhere by text message
-
-@bot.message_handler(regexp=".*Путешествие.*")
+#  protect from travel enywhere by text message DONE
+# TODO depricated delete later
+@bot.message_handler(regexp=".*Пуутешествие.*")
 def shop_select(message):
     print('---------- SELECT TRAVEL -----------')
     tid = message.from_user.id
@@ -2137,8 +2140,174 @@ def shop_select(message):
     bot.send_message(tid, 'Куда отправимся? 💪-1:', reply_markup=markup)  
     bot.register_next_step_handler(message, travel)
 
+@bot.callback_query_handler(lambda query: 'travel' in query.data)
+def travel_new(query):
+    print('TRAVEL_NEW')
+    tid = query.from_user.id
+    
+    pinfo = sql_helper.db_get_player_info(tid)
+    coins = pinfo[0]
+    this_location = pinfo[5]
+    routes_arr = sql_helper.location_info(this_location)[3]
+    print(f"routes: {routes_arr}")
 
 
+    if hasattr(query, 'data'):
+        destination = int(extract_numbers(query.data))
+        minibus = sql_helper.db_check_owned_item(tid,31)
+        if not destination:
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
+        elif destination == 5:
+            
+            # TODO think about outgoing location for calculate price
+            travel_pay = sql_helper.location_info(1)[2] if not minibus else int(sql_helper.location_info(1)[2] / 2)
+            if minibus or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+                # TODO variable for ticket price
+                sql_helper.db_change_location(tid,5,travel_pay)
+                bot.send_message(tid, "✈ Вы улетели домой 🏠!")
+                # new location image
+                bot.send_photo(tid,'AgACAgIAAxkBAAIODGcuAhzmF5UMoXJRY21Muwi2veWRAAIq6DEbItVxSb9bfLiZxO8FAQADAgADcwADNgQ')
+                # check for delivering new items (cage - for increase owned pets limit)
+                owned_items = sql_helper.db_get_owned_items(tid)
+                print(f"- List of owned items for {tid}")
+                print(list(owned_items))
+                #cage_counter = 0
+                for i in owned_items:
+                    if i[5] in [1,2,3] and i[3] == False:
+                        sql_helper.db_change_pet_space(tid,1)
+                        sql_helper.db_update_property(i[0],switch=True)
+                        bot.send_message(tid, "Место для питомцев увеличено!")
+                    # if i[1] == 'Клетка' and i[3] == False:
+                    #     sql_helper.db_change_pet_space(tid,1)
+                    #     sql_helper.db_update_property(i[0],switch=True)    
+                    #     bot.send_message(tid, "Место для питомцев увеличено!")
+                    # elif i[1] == 'Железная Клетка' and i[3] == False:
+                    #     sql_helper.db_change_pet_space(tid,1)
+                    #     bot.send_message(tid, "Место для питомцев увеличено!")
+                    #             #cage_counter += 1
+                    #             #sql_helper.db_remove_property(i[0])                    
+                    #     sql_helper.db_update_property(i[0],switch=True)            
+                # if cage_counter == 1:
+                #     sql_helper.db_change_pet_space(tid,1)
+                #     bot.send_message(tid, "Место для питомцев увеличено!")
+                # elif cage_counter > 1:
+                #     bot.send_message(tid, "У вас уже есть такая клетка для животных!")    
+                # 
+                print('home return done')        
+            else:
+                bot.send_message(tid, "❌ Нужны деньги и сила!")
+
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
+        
+        elif destination == 3:
+            #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+            travel_pay = sql_helper.location_info(3)[2] if not minibus else int(sql_helper.location_info(3)[2] / 2)
+            if minibus or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+                sql_helper.db_change_location(tid,3,travel_pay)
+                bot.send_message(tid, "✈ Вы отправились в лес 🌲!")
+                # new location image
+                # any picture have unique id, that we receive when send this pic for the first time to telegram. See picture grabber code block in the end.
+                bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
+                if not minibus:
+                    sql_helper.db_exp_up(tid,1)
+                bot.delete_message(query.message.chat.id, query.message.id)
+                return
+            else:
+                bot.send_message(tid, "❌ Нужны деньги и сила!")
+        
+        elif destination == 4:
+            travel_pay = sql_helper.location_info(4)[2] if not minibus else int(sql_helper.location_info(4)[2] / 2)
+            if minibus or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+                # TODO variable for ticket price
+                sql_helper.db_change_location(tid,4,travel_pay)
+                bot.send_message(tid, "✈ Вы отправились на море 🌊!")
+                # new location image
+                bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+                if not minibus:
+                    sql_helper.db_exp_up(tid,1)
+                bot.delete_message(query.message.chat.id, query.message.id)
+                return
+            else:
+                bot.send_message(tid, "❌ Нужны деньги и сила!")
+
+        elif destination == 6:
+            #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
+            travel_pay = sql_helper.location_info(6)[2]
+            if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
+                # TODO variable for ticket price
+                sql_helper.db_change_location(tid,6,travel_pay)
+                bot.send_message(tid, "✈ Вы улетели в Америку 🌎!")
+                sql_helper.db_exp_up(tid,1)
+                # new location image
+                #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+                bot.delete_message(query.message.chat.id, query.message.id)
+                return
+            else:
+                bot.send_message(tid, "❌ Нужны деньги и сила!")
+
+        elif destination == 1:
+            travel_pay = sql_helper.location_info(1)[2] if not minibus else int(sql_helper.location_info(1)[2] / 2)
+            if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
+                # TODO variable for ticket price
+                sql_helper.db_change_location(tid,1,travel_pay)
+                bot.send_message(tid, "✈ Вы улетели в Африку 🏜!")
+                # new location image
+                bot.send_photo(tid,'AgACAgIAAxkBAAIOEmcuA05mlhg-HQfSqDbYL8ixtHZTAAIv6DEbItVxSfetuCF-nurtAQADAgADcwADNgQ')
+                sql_helper.db_exp_up(tid,1)
+                bot.delete_message(query.message.chat.id, query.message.id)
+                return
+            else:
+                bot.send_message(tid, "❌ Нужны деньги и сила!")
+            
+        elif destination == 7:
+            travel_pay = sql_helper.location_info(7)[2]
+            if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
+                # TODO variable for ticket price
+                sql_helper.db_change_location(tid,7,travel_pay)
+                bot.send_message(tid, "✈ Вы улетели в Австралию 🇦🇺!")
+                sql_helper.db_exp_up(tid,1)
+                # new location image
+                #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+                bot.delete_message(query.message.chat.id, query.message.id)
+                return
+            else:
+                bot.send_message(tid, "❌ Нужны деньги и сила!")
+
+        bot.delete_message(query.message.chat.id, query.message.id)
+        return
+
+
+    #next_cid = 0 if cidx == len(auction_list) - 1 else cidx + 1
+    #item = auction_list[cidx]
+    btn_pack = []
+    for w in routes_arr:
+        # TODO travel price generates multi connection - need to rewrite SQL query to collect all prices with for routes_arr if it possible
+        travel_price = sql_helper.location_info(w)[2]
+        btn = types.InlineKeyboardButton(f"{habitat_emoji(w)} 💰{travel_price}", callback_data='travel_' + str(w))
+        btn_pack.append(btn)
+
+
+    lbl = f"Куда отправимся? \nДоступные маршруты:"
+    travel_route = ''
+   
+    markup = types.InlineKeyboardMarkup()
+    btn_exit = types.InlineKeyboardButton('✖️', callback_data='travel_0')
+    btn_pack.append(btn_exit)
+    markup.add(*btn_pack)
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=lbl,
+            chat_id=query.message.chat.id,
+            parse_mode='markdown', # to make some text bold with *this* in messages
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
+
+# TODO depricated - delete it 
 def travel(message):
     print(' - - - TRY TRAVEL - - - ')
     tid = message.from_user.id
@@ -2659,7 +2828,8 @@ def next_option(message):
     elif re.match('.*Магазин.*',message.text):
         bot.register_next_step_handler(message, shop_select)
     elif re.match('.*Путешествие.*',message.text):
-        bot.register_next_step_handler(message, travel)
+        #bot.register_next_step_handler(message, travel)
+        travel_new(message)
     elif re.match('.*больница.*',message.text):
         vet(message)
     elif re.match('.*ТОП.*',message.text):

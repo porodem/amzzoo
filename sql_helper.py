@@ -43,7 +43,7 @@ def location_info(loc_id):
     """
         :param id: location id 3 forest 4 water 5 home 1 africa 6 USA 7 aust.
 
-        :return list: [id, name, travel_price] from habitat table
+        :return list: [id, name, travel_price, 3 routes_ARRAY] from habitat table
     """
     q = "SELECT * FROM habitat where id = %s;"
     b = con.execute(q,(loc_id,)).fetchone()
