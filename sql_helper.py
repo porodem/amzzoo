@@ -975,7 +975,7 @@ def db_remove_properties(itm, val=1):
     """
     print('SQL remove properties')
     q = '''DELETE FROM property where id IN (SELECT id FROM property WHERE item_id = %s LIMIT %s)'''
-    qq = '''DELECT FROM auction WHERE item_id IN (SELECT id FROM property WHERE item_id = %s LIMIT %s)'''
+    qq = '''DELETE FROM auction WHERE item_id IN (SELECT id FROM property WHERE item_id = %s LIMIT %s)'''
     cur = con.cursor()
     cur.execute(qq,(itm,val))
     cur.execute(q,(itm,val))
