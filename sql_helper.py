@@ -425,7 +425,8 @@ def db_get_cheapest_pet(tid):
     q = '''select p.id, al.price, p.animal_id from pets p join animal_list al on al.id = p.animal_id where "owner" = %s order by price limit 1;'''
     cur = con.cursor()
     cur.execute(q,(tid,))
-    pet = cur.fetchone()
+    b = cur.fetchone()
+    pet = 0 if b is None else b
     cur.close()
     return pet
 

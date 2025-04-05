@@ -148,8 +148,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(hunger_interval * 4)
+        time.sleep(hunger_interval * 60 * 60)
+        #time.sleep(hunger_interval * 4)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -1345,6 +1345,8 @@ def stealing(query):
         if action == 1:
             print('cage unlocked')
             chapest_pet = sql_helper.db_get_cheapest_pet(victim)
+            if not chapest_pet:
+                bot.send_message(tid, "Его зоопарк пуст и необитаем.")
             print(list(chapest_pet))
             #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
             bot.delete_message(query.message.chat.id, query.message.id)
