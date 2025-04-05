@@ -917,6 +917,17 @@ def db_remove_pet(pid):
     con.commit()
     return
 
+def remove_old_dead_pets():
+    """
+    """
+    print('old_skeletons cleaning')
+    q = '''delete from pets where id in (
+            select pp.id from players p join pets pp on pp."owner" = p.telegram_id where pp.animal_id = 0 and last_work < now() - interval '14 days');'''
+    b = con.execute(q)
+    con.commit()
+    return 
+    
+
 def db_buy_item(tid, item_id, extra = 0.0):
     print(' - -  write to DB buy item - -')
     q = '''SELECT buy_item(%s,%s,%s);'''

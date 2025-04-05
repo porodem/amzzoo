@@ -148,8 +148,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        time.sleep(hunger_interval * 60 * 60)
-        #time.sleep(hunger_interval * 4)
+        #time.sleep(hunger_interval * 60 * 60)
+        time.sleep(hunger_interval * 4)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
@@ -229,6 +229,8 @@ def get_hunger():
         is_refiling_pits = today % 5 == 0
         if prev_refil_pits_day == today:
             is_refiling_pits = False
+            # delete skeleton pets for players absent for more than 1 month
+            sql_helper.remove_old_dead_pets()
 
         if is_refiling_pits:
             print("REFILING HOLES")
