@@ -1389,7 +1389,7 @@ def stealing(query):
                     bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
     else:
         # TODO make it as improvement or lvl up abiliti of theif
-        if tid in (6783999424,795547420,775803031):
+        if tid in (6783999424,795547420):
             bot.send_message(tid,f"{input_pass}")
         search_victims(query)
         #bot.send_message(query.from_user.id, "🔒 Неудалось")
@@ -1408,13 +1408,14 @@ def stealing(query):
 
 @bot.callback_query_handler(lambda query: 'victim' in query.data)
 def search_victims(query):
+    print(' - search_victims')
 
     tid = query.from_user.id
     markup = None
     btn_pack = []
     
     if hasattr(query,'data'):
-        print(query.data)
+        print(f"- query data: {query.data}")
         stamina = sql_helper.db_get_player_info(tid)[2]
 
         items = sql_helper.db_get_owned_items(tid)
@@ -1431,11 +1432,14 @@ def search_victims(query):
 
         action = int(extract_numbers(query.data))
 
-        if action == 3:        
+        if action == 3 or 'stealing' in query.data :        
             
             #sql_helper.db_stamina_down(query.from_user.id,1)
             ask = 'Зоопарк жертвы:'
-            victim = int(extract_numbers(query.data,1))
+            if action == 3: 
+                victim = int(extract_numbers(query.data,1))
+            else:
+                victim = int(extract_numbers(query.data,0))
             next_action = int(extract_numbers(query.data,2))
             
             a_text = 'Вещи' if next_action == 2 else 'животные'
@@ -1505,8 +1509,8 @@ def search_victims(query):
         markup.add(btn_animal_steal, btn_item_steal)
         ask = 'Как навредить? 😈'
     if hasattr(query,'data'):
-        #print('HAS query data:')
-        #print(query.data)
+        print('HAS query data:')
+        print(query.data)
         if re.match('steal.*',query.data ):
             ask = '🔒 Неудалось' + f"\nВаша 💪{stamina}"
             bot.answer_callback_query(query.id, f"🔒 неудачно")
