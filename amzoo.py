@@ -1347,7 +1347,7 @@ def stealing(query):
             chapest_pet = sql_helper.db_get_cheapest_pet(victim)
             if not chapest_pet:
                 bot.send_message(tid, "Его зоопарк пуст и необитаем.")
-            print(list(chapest_pet))
+            print(f"may escape now: {list(chapest_pet)}")
             #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
             bot.delete_message(query.message.chat.id, query.message.id)
             pet_stays = random.randrange(1,100)
