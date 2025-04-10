@@ -997,7 +997,7 @@ def db_decay_property(pid,value=1):
 
 
 def db_delete_property(item_id):
-    print('- - - SQL remove property  - - -')
+    print(f"SQL remove property {item_id}")
     q = '''delete from property p where id = (select id from property p where item_id = %s limit 1);'''
     cur = con.cursor()
     cur.execute(q,(item_id,))

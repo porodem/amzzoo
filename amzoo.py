@@ -467,7 +467,7 @@ def show_pets(query):
                 sql_helper.db_change_health(pet_info[0],False,1)
             bot.send_message(query.from_user.id, pet_emoji(animal_id))
         elif int(extract_numbers(query.data,1)) == 2:
-            print('cure option')
+            print('antibiotic using')
             
             antibio = sql_helper.db_check_owned_item(query.from_user.id,5)
             #sql_helper.db_change_health(pet_info[0],cure=True,val=15)
@@ -475,7 +475,7 @@ def show_pets(query):
                 sql_helper.db_cure_pet(pet_info[0], tech_upgrade=True)
             else:
                 sql_helper.db_cure_pet(pet_info[0], tech_upgrade=False)
-            sql_helper.db_delete_property(antibio)
+            sql_helper.db_remove_property(antibio)
             bot.send_message(query.from_user.id, "вылечен")
         elif int(extract_numbers(query.data,1)) == 3:
             print('feed all option')
@@ -2113,7 +2113,7 @@ def travel_new(query):
             
             # TODO think about outgoing location for calculate price
             travel_pay = sql_helper.location_info(1)[2] if not minibus else int(sql_helper.location_info(1)[2] / 2)
-            if minibus or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+            if minibus and this_location in (3,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,5,travel_pay)
                 bot.send_message(tid, "✈ Вы улетели домой 🏠!")
@@ -2155,7 +2155,7 @@ def travel_new(query):
         elif destination == 3:
             #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
             travel_pay = sql_helper.location_info(3)[2] if not minibus else int(sql_helper.location_info(3)[2] / 2)
-            if minibus or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+            if minibus and this_location in (5,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
                 sql_helper.db_change_location(tid,3,travel_pay)
                 bot.send_message(tid, "✈ Вы отправились в лес 🌲!")
                 # new location image
@@ -2170,7 +2170,7 @@ def travel_new(query):
         
         elif destination == 4:
             travel_pay = sql_helper.location_info(4)[2] if not minibus else int(sql_helper.location_info(4)[2] / 2)
-            if minibus or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+            if minibus and this_location in (3,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,4,travel_pay)
                 bot.send_message(tid, "✈ Вы отправились на море 🌊!")
@@ -2436,6 +2436,7 @@ def show_top(query):
     # else:
     bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
 
+# TODO it is annoyng to scroll many items of same type 
 @bot.callback_query_handler(lambda query: 'auction' in query.data)
 def auction_way(query):
     tid = query.from_user.id
