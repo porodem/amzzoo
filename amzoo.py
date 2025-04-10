@@ -1453,6 +1453,17 @@ def search_victims(query):
                 v_zoo = sql_helper.db_get_owned_items_group(victim)
                 for itm in v_zoo:
                     v_emoji_pack += item_emoji(itm[0])
+            elif next_action == 10:
+                # TODO tomato
+                print('tomato')
+                thrower = sql_helper.db_get_player_info(tid)[11]
+                try:
+                    bot.send_message(victim,f"{thrower} бросил в вас тухлый помидор 🍅")
+                except apihelper.ApiTelegramException:
+                    print('tomato exception')
+                bot.delete_message(query.message.chat.id, query.message.id)
+                sql_helper.db_remove_money(tid,10)
+                return
             
             #TODO good lock consume more stamina
             
@@ -1468,7 +1479,7 @@ def search_victims(query):
             #markup = quick_markup({'1': {'callback_data': 'victim'},'2': {'callback_data': 'victim'},'3': {'callback_data': 'victim'}}, row_width=3)
 
             print(list(v_zoo))
-        elif action in (1,2):
+        elif action in (1,2,10):
             print('------ have no data')
             markup = types.InlineKeyboardMarkup(row_width=1,)
 
@@ -1506,7 +1517,8 @@ def search_victims(query):
         markup = types.InlineKeyboardMarkup(row_width=1,)
         btn_animal_steal = types.InlineKeyboardButton("🦓 Открыть клетку", callback_data='victim' + '1')
         btn_item_steal = types.InlineKeyboardButton("🧯 Сломать вещь", callback_data='victim' + '2')
-        markup.add(btn_animal_steal, btn_item_steal)
+        btn_tomato = types.InlineKeyboardButton("🍅 Бросить помидор -10💰", callback_data='victim' + '10')
+        markup.add(btn_animal_steal, btn_item_steal, btn_tomato)
         ask = 'Как навредить? 😈'
     if hasattr(query,'data'):
         print('HAS query data:')
