@@ -1104,7 +1104,8 @@ def to_lucky_way(message):
             bot.send_message(message.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
             echo_all(message)
             return
-        stamina = sql_helper.db_get_player_info(message.from_user.id)[2]    
+        stamina = sql_helper.db_get_player_info(message.from_user.id)[2]
+        # TODO maby low required stamina to get into evil. but check than insice propriate checking exists for all actions    
         if stamina < 2:
             bot.send_message(message.from_user.id, "Ты устал 😪")
             echo_all(message)
@@ -1376,17 +1377,22 @@ def stealing(query):
             random_property = sql_helper.get_random_cheap_property(victim)
             if not random_property:
                 bot.send_message(query.from_user.id, f"Нет вещей которые можно было бы утащить")
-            steal_percent = 22
+            steal_percent = 20
             steal_ok = random.randrange(1,101)
-            if steal_percent < steal_ok:
+            if steal_percent > steal_ok:
                 sql_helper.db_remove_property(random_property[0])
                 bot.send_message(query.from_user.id, f"Вы испортили имущество конкурента: {random_property[1]}")
-                bot.send_message(victim,f"🚨 Кажется ваши вещи испортили ({random_property[1]})!")
+                try:
+                    bot.send_message(victim,f"🚨 Кажется ваши вещи испортили ({random_property[1]})!")
+                except apihelper.ApiTelegramException:
+                    print('send exception')
+                print('HARM')
             else:
                 bot.send_message(query.from_user.id, f"Успех! Замок взломан, но повредить {random_property[1]} не получилось. Шанс {steal_percent}%")
                 if zoo_alarm:
                     print('ZOO_ALARM')
-                    bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
+                    bot.send_message(victim,"🚨 Тревога! Попытка кражи!")
+            print(f"item_steal;{tid};{victim};item:{random_property}")
     else:
         # TODO make it as improvement or lvl up abiliti of theif
         if tid in (6783999424,795547420):
@@ -1459,6 +1465,7 @@ def search_victims(query):
                 thrower = sql_helper.db_get_player_info(tid)[11]
                 try:
                     bot.send_message(victim,f"{thrower} бросил в вас тухлый помидор 🍅")
+                    # TODO maby send message for thrower also
                 except apihelper.ApiTelegramException:
                     print('tomato exception')
                 bot.delete_message(query.message.chat.id, query.message.id)
