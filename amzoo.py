@@ -346,6 +346,7 @@ def check_invite(message):
         if ex is None:
             bot.send_message(message.from_user.id, "❌ код не сработал!")
         else:
+            sql_helper.invite_link(message.from_user.id, invite_tid)
             sql_helper.db_get_item(invite_tid,14)
             sql_helper.db_get_item(invite_tid,14)
             sql_helper.db_add_money(message.from_user.id,5)
@@ -1818,7 +1819,9 @@ def catch_pet(message):
 def buy_pet(message):
 
     owned = sql_helper.db_check_owned_pets(message.from_user.id)
-    pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
+    pinfo = sql_helper.db_get_player_info(message.from_user.id)
+    pet_space = pinfo[4]
+    inviter = pinfo[13]
     # TODO add pet space addition by buying some item (maby just a box) and return to home
 
     if owned == pet_space: 
@@ -1835,6 +1838,10 @@ def buy_pet(message):
             animal_id = int(extract_numbers(message.text))
             ok = sql_helper.db_buy_pet(message.from_user.id, animal_id)
             if ok:
+                if inviter and animal_id > 3:
+                    sql_helper.db_get_item(inviter,14)
+                    bot.send_message(inviter,"🥫 Энергетик в подарок! В честь покупки петомца вашим другом!")
+                    print(f"invite_bonus animal aquired {animal_id}. {inviter} gets prize")
                 bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
                 bot.send_message(message.from_user.id, pet_emoji(animal_id))
                 #echo_all(message)

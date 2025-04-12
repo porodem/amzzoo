@@ -87,10 +87,10 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     '''
-    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming, 11 nick_name, 12 last_profit
+    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming, 11 nick_name, 12 last_profit, 13 inviter
     '''
     print(f"  SQL get player info {tid}")
-    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming, nick_name, last_profit from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming, nick_name, last_profit, inviter from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -726,6 +726,16 @@ def db_new_player(tid,username,nickname):
     cur.execute(q,(tid,username,nickname))
     con.commit()
     cur.close()
+
+def invite_link(tid, inviter_tid):
+    """
+    save tid of inviter to give him bonus later
+    """
+    print(f"invite_link {tid} {inviter_tid}")
+    q = "UPDATE players SET inviter = %s WHERE telegram_id = %s;"
+    b = con.execute(q,(inviter_tid,tid))#.fetchone()[0]
+    con.commit()
+    return b
 
 def db_rename_player(tid,nickname):
     print(' SQL rename player')
