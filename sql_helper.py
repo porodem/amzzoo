@@ -89,7 +89,7 @@ def db_get_player_info(tid):
     '''
     coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming, 11 nick_name, 12 last_profit
     '''
-    print(f"SQL get player info {tid}")
+    print(f"  SQL get player info {tid}")
     q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming, nick_name, last_profit from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
@@ -206,7 +206,7 @@ def db_check_owned_item(tid, id, parameter=''):
     :return property id or 0 if have not item
     """
     #q = "SELECT count(*) FROM property WHERE owner = %s AND item_id = %s"
-    print(f"SQL check owned item {id}")
+    print(f"  SQL check owned item {id}")
     if not parameter:
         q = "SELECT id FROM property WHERE owner = %s AND item_id = %s LIMIT 1;"
         cur = con.cursor()
@@ -756,7 +756,7 @@ def db_add_money(tid, value):
     cur.close()
 
 def db_remove_money(tid, value):
-    print('SQL remove money')
+    print(f"  SQL remove money {value} from {tid}")
     q = '''UPDATE players set coins = (CASE WHEN coins - %(value)s < 0 THEN 0 ELSE coins - %(value)s END) where telegram_id = %(tid)s;'''
     cur = con.cursor()
     cur.execute(q,{'value':value,'tid':tid})
@@ -764,7 +764,7 @@ def db_remove_money(tid, value):
     cur.close()
 
 def db_change_location(tid, value, coins):
-    print('SQL db_change_location')
+    print('  SQL db_change_location')
     q = '''UPDATE players set game_location = %s, coins = coins - %s where telegram_id = %s;'''
     cur = con.cursor()
     cur.execute(q,(value,coins,tid))
@@ -787,12 +787,12 @@ def db_stamina_down(tid, value):
 def db_stamina_drain(tid, value):
     """SQL function returns -1 if not enough stamina, number as result after succesful subtraction.
     """
-    print('SQL stamina drain')
+    print('  SQL stamina drain')
     q = '''SELECT get_tired(%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(tid,value))
     stamina = cur.fetchone()[0]
-    print('-SQL stamina drain:' + str(stamina))
+    print('  SQL stamina after drain:' + str(stamina))
     con.commit()
     cur.close()
     return(stamina)

@@ -1391,7 +1391,7 @@ def stealing(query):
                 bot.send_message(query.from_user.id, f"Успех! Замок взломан, но повредить {random_property[1]} не получилось. Шанс {steal_percent}%")
                 if zoo_alarm:
                     print('ZOO_ALARM')
-                    bot.send_message(victim,"🚨 Тревога! Попытка кражи!")
+                    bot.send_message(victim,"🚨 Тревога! Попытка взлома!")
             print(f"item_steal;{tid};{victim};item:{random_property}")
     else:
         # TODO make it as improvement or lvl up abiliti of theif
@@ -2112,35 +2112,42 @@ def check_relax(tid):
 
 @bot.callback_query_handler(lambda query: 'travel' in query.data)
 def travel_new(query):
-    print('TRAVEL_NEW')
     tid = query.from_user.id
+    print(f"TRAVEL {tid}")
     
     pinfo = sql_helper.db_get_player_info(tid)
     coins = pinfo[0]
     this_location = pinfo[5]
     routes_arr = sql_helper.location_info(this_location)[3]
-    print(f"routes: {routes_arr}")
-
+    travel_pay = 0 # for log only
+    loc_info = 'x' # for log only
 
     if hasattr(query, 'data'):
         destination = int(extract_numbers(query.data))
         minibus = sql_helper.db_check_owned_item(tid,31)
+        loc_info = sql_helper.location_info(destination)
+        
         if not destination:
             bot.delete_message(query.message.chat.id, query.message.id)
             return
+        
         elif destination == 5:
             
             # TODO think about outgoing location for calculate price
-            travel_pay = sql_helper.location_info(1)[2] if not minibus else int(sql_helper.location_info(1)[2] / 2)
-            if minibus and this_location in (3,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+            
+            travel_pay = loc_info[2] if not minibus else int(loc_info[2] / 2)            
+            if (minibus and this_location in (3,4)) or (coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1) :
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,5,travel_pay)
-                bot.send_message(tid, "✈ Вы улетели домой 🏠!")
+                bot.send_message(tid, f"✈ Вы улетели домой 🏠! Расходы на дорогу 💰{travel_pay}")
                 # new location image
-                bot.send_photo(tid,'AgACAgIAAxkBAAIODGcuAhzmF5UMoXJRY21Muwi2veWRAAIq6DEbItVxSb9bfLiZxO8FAQADAgADcwADNgQ')
+                try:
+                    bot.send_photo(tid,'AgACAgIAAxkBAAIODGcuAhzmF5UMoXJRY21Muwi2veWRAAIq6DEbItVxSb9bfLiZxO8FAQADAgADcwADNgQ')
+                except apihelper.ApiTelegramException:
+                    print('Exception_img')
                 # check for delivering new items (cage - for increase owned pets limit)
                 owned_items = sql_helper.db_get_owned_items(tid)
-                print(f"- List of owned items for {tid}")
+                #print(f"- List of owned items for {tid}")
                 print(list(owned_items))
                 #cage_counter = 0
                 for i in owned_items:
@@ -2168,33 +2175,39 @@ def travel_new(query):
             else:
                 bot.send_message(tid, "❌ Нужны деньги и сила!")
 
-            bot.delete_message(query.message.chat.id, query.message.id)
-            return
+            #bot.delete_message(query.message.chat.id, query.message.id)
+            #return
         
         elif destination == 3:
             #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
-            travel_pay = sql_helper.location_info(3)[2] if not minibus else int(sql_helper.location_info(3)[2] / 2)
+            travel_pay = loc_info[2] if not minibus else int(loc_info[2] / 2)   
             if minibus and this_location in (5,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
                 sql_helper.db_change_location(tid,3,travel_pay)
-                bot.send_message(tid, "✈ Вы отправились в лес 🌲!")
+                bot.send_message(tid, f"✈ Вы отправились в лес 🌲! Расходы на дорогу 💰{travel_pay}")
                 # new location image
                 # any picture have unique id, that we receive when send this pic for the first time to telegram. See picture grabber code block in the end.
-                bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
+                try:
+                    bot.send_photo(tid,'AgACAgIAAxkBAAIOEWcuAuVbHngSU2Woim8h7RyV_RHYAAIt6DEbItVxSW-G6fuv_7JNAQADAgADcwADNgQ')
+                except apihelper.ApiTelegramException:
+                    print('Exception_img')
                 if not minibus:
                     sql_helper.db_exp_up(tid,1)
-                bot.delete_message(query.message.chat.id, query.message.id)
-                return
+                #bot.delete_message(query.message.chat.id, query.message.id)
+                #return
             else:
                 bot.send_message(tid, "❌ Нужны деньги и сила!")
         
         elif destination == 4:
-            travel_pay = sql_helper.location_info(4)[2] if not minibus else int(sql_helper.location_info(4)[2] / 2)
+            travel_pay = loc_info[2] if not minibus else int(loc_info[2] / 2)   
             if minibus and this_location in (3,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,4,travel_pay)
-                bot.send_message(tid, "✈ Вы отправились на море 🌊!")
+                bot.send_message(tid, f"✈ Вы отправились на море 🌊! Расходы на дорогу 💰{travel_pay}")
                 # new location image
-                bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+                try:
+                    bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+                except apihelper.ApiTelegramException:
+                    print('Exception_img')
                 if not minibus:
                     sql_helper.db_exp_up(tid,1)
                 bot.delete_message(query.message.chat.id, query.message.id)
@@ -2208,7 +2221,7 @@ def travel_new(query):
             if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,6,travel_pay)
-                bot.send_message(tid, "✈ Вы улетели в Америку 🌎!")
+                bot.send_message(tid, f"✈ Вы улетели в Америку 🌎! Расходы на дорогу 💰{travel_pay}")
                 sql_helper.db_exp_up(tid,1)
                 # new location image
                 #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
@@ -2218,13 +2231,16 @@ def travel_new(query):
                 bot.send_message(tid, "❌ Нужны деньги и сила!")
 
         elif destination == 1:
-            travel_pay = sql_helper.location_info(1)[2] if not minibus else int(sql_helper.location_info(1)[2] / 2)
+            travel_pay = loc_info[2] if not minibus else int(loc_info[2] / 2)   
             if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,1,travel_pay)
-                bot.send_message(tid, "✈ Вы улетели в Африку 🏜!")
+                bot.send_message(tid, f"✈ Вы улетели в Африку 🏜! Расходы на дорогу 💰{travel_pay}")
                 # new location image
-                bot.send_photo(tid,'AgACAgIAAxkBAAIOEmcuA05mlhg-HQfSqDbYL8ixtHZTAAIv6DEbItVxSfetuCF-nurtAQADAgADcwADNgQ')
+                try:
+                    bot.send_photo(tid,'AgACAgIAAxkBAAIOEmcuA05mlhg-HQfSqDbYL8ixtHZTAAIv6DEbItVxSfetuCF-nurtAQADAgADcwADNgQ')
+                except apihelper.ApiTelegramException:
+                    print('Exception_img')
                 sql_helper.db_exp_up(tid,1)
                 bot.delete_message(query.message.chat.id, query.message.id)
                 return
@@ -2236,7 +2252,7 @@ def travel_new(query):
             if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,7,travel_pay)
-                bot.send_message(tid, "✈ Вы улетели в Австралию 🇦🇺!")
+                bot.send_message(tid, f"✈ Вы улетели в Австралию 🇦🇺! Расходы на дорогу 💰{travel_pay}")
                 sql_helper.db_exp_up(tid,1)
                 # new location image
                 #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
@@ -2245,6 +2261,7 @@ def travel_new(query):
             else:
                 bot.send_message(tid, "❌ Нужны деньги и сила!")
 
+        print(f"travel_pay:{travel_pay} -> {loc_info[1]}")
         bot.delete_message(query.message.chat.id, query.message.id)
         return
 
