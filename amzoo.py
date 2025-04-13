@@ -1101,10 +1101,10 @@ def to_lucky_way(message):
     elif re.match('^😈Преступник.*', message.text):
         print('- - - animal lucky selected - - - ')
         location =  sql_helper.db_check_location(message.from_user.id)
-        if location == 5:
-            bot.send_message(message.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
-            echo_all(message)
-            return
+        # if location == 5:
+        #     bot.send_message(message.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+        #     echo_all(message)
+        #     return
         stamina = sql_helper.db_get_player_info(message.from_user.id)[2]
         # TODO maby low required stamina to get into evil. but check than insice propriate checking exists for all actions    
         if stamina < 2:
@@ -1423,21 +1423,23 @@ def search_victims(query):
     
     if hasattr(query,'data'):
         print(f"- query data: {query.data}")
-        stamina = sql_helper.db_get_player_info(tid)[2]
+        pinfo = sql_helper.db_get_player_info(tid)
+        stamina = pinfo[2]
+        location = pinfo[5]
 
         items = sql_helper.db_get_owned_items(tid)
         tools = 0
         for i in items:
             if i[5]== 20:
-                tools = i[0]
+                tools = i[0]        
 
-        if tools == 0:
+        action = int(extract_numbers(query.data))
+
+        if tools == 0 and  action not in (3,10):
             bot.send_message(tid, "Нужна отмычка!")
             bot.delete_message(query.message.chat.id, query.message.id)
             #echo_all()
             return
-
-        action = int(extract_numbers(query.data))
 
         if action == 3 or 'stealing' in query.data :        
             
@@ -1453,10 +1455,18 @@ def search_victims(query):
             #print('victim: ' + str(victim))
             v_emoji_pack = ''
             if next_action == 1:
+                if location == 5:
+                    bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+                    echo_all(query)
+                    return
                 v_zoo = sql_helper.db_get_owned_pets(victim)
                 for pet in v_zoo:
                     v_emoji_pack += pet_emoji(pet[1])
             elif next_action == 2:
+                if location == 5:
+                    bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+                    echo_all(query)
+                    return
                 v_zoo = sql_helper.db_get_owned_items_group(victim)
                 for itm in v_zoo:
                     v_emoji_pack += item_emoji(itm[0])
@@ -1466,6 +1476,7 @@ def search_victims(query):
                 thrower = sql_helper.db_get_player_info(tid)[11]
                 try:
                     bot.send_message(victim,f"{thrower} бросил в вас тухлый помидор 🍅")
+                    bot.send_message(query.from_user.id, f"Вы бросили тухлый помидор 🍅")
                     # TODO maby send message for thrower also
                 except apihelper.ApiTelegramException:
                     print('tomato exception')
