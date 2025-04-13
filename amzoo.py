@@ -806,7 +806,7 @@ def do_tech(query):
                     if uran_pieces >= 5:
                         #owned_uran = sql_helper.db_check_owned_item(tid,45)                        
                         sql_helper.tech_player_start(tid,item[0]) 
-                        sql_helper.db_remove_properties(45,6)
+                        sql_helper.db_remove_properties(tid,45,6)
                         sql_helper.db_remove_money(tid,required_coins)
                     else:
                         tech_status = f"\n⚠️Нужно больше урана 🪨 ({uran_pieces}/6)"

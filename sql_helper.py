@@ -582,7 +582,7 @@ def tech_list():
 #insert into player_tech(time_start, time_point, time_left, tid, tech_id) values (now(), now(), null, tid, id);
 
 def tech_player_start(tid, tech_id):
-    print('SQL new technology start to learn - -')
+    print(f"  SQL tech_player_start {tid} {tech_id}")
     q = '''insert into player_tech(time_start, time_point, stamina_spend, tid, tech_id) values (now(), now(), 0, %s, %s);'''
     cur = con.cursor()
     cur.execute(q,(tid,tech_id))
@@ -969,7 +969,7 @@ def db_get_item(tid, item_id):
     return result
 
 def db_remove_property(pid):
-    print(f"SQL remove property:{pid}")
+    print(f"  SQL remove_property:{pid}")
     qq = '''DELETE FROM auction where item_id = %s'''
     q = '''DELETE FROM property where id = %s'''
     cur = con.cursor()
@@ -978,17 +978,17 @@ def db_remove_property(pid):
     con.commit()
     return
 
-def db_remove_properties(itm, val=1):
+def db_remove_properties(tid, itm, val=1):
     """
     :param item: item_id 
     Delets multiple properties of exact item type
     """
-    print('SQL remove properties')
-    q = '''DELETE FROM property where id IN (SELECT id FROM property WHERE item_id = %s LIMIT %s)'''
-    qq = '''DELETE FROM auction WHERE item_id IN (SELECT id FROM property WHERE item_id = %s LIMIT %s)'''
+    print('  SQL remove_properties')
+    q = '''DELETE FROM property where id IN (SELECT id FROM property WHERE owner = %s AND item_id = %s LIMIT %s)'''
+    qq = '''DELETE FROM auction WHERE end_price > 0 AND item_id IN (SELECT id FROM property WHERE owner = %s AND item_id = %s LIMIT %s)'''
     cur = con.cursor()
-    cur.execute(qq,(itm,val))
-    cur.execute(q,(itm,val))
+    cur.execute(qq,(tid,itm,val))
+    cur.execute(q,(tid,itm,val))
     con.commit()
     return
 
