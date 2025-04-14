@@ -397,7 +397,7 @@ def db_get_nearby_players(location = None):
     :return players in same locaton [0 tid 1 username 2 nick]
     """
     print("SQL get nearby players")
-    q = '''SELECT telegram_id, username, nick_name FROM players where game_location = %s and invite_date is not null;'''
+    q = '''SELECT telegram_id, username, nick_name FROM players where game_location = %s and last_work > current_date - interval '7 days' and invite_date is not null;'''
     all_players = []
     with con.cursor() as cur:
         cur.execute(q,(location,))
