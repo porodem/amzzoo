@@ -970,10 +970,10 @@ def db_get_item(tid, item_id):
 
 def db_remove_property(pid):
     print(f"  SQL remove_property:{pid}")
-    qq = '''DELETE FROM auction where item_id = %s'''
+    #qq = '''DELETE FROM auction where item_id = %s'''
     q = '''DELETE FROM property where id = %s RETURNING item_id'''
     cur = con.cursor()
-    cur.execute(qq,(pid,))
+    #cur.execute(qq,(pid,))
     r = cur.execute(q,(pid,)).fetchone()[0]
     print(f"prop_remove:{pid};type:{r}")  
     con.commit()
