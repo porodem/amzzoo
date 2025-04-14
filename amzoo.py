@@ -653,6 +653,7 @@ def stats_up_selection(message):
         #increase_stamina(message)
         # TODO maby make inline keyboard in previous method and check there
         e = sql_helper.db_check_owned_item(message.from_user.id, 14)
+        print(f"drink_energy {message.from_user.id};pid:{e}")
         if not e:
             bot.send_message(message.from_user.id, "⚠️Мошенничество! Применены штрафы!")
             sql_helper.db_stamina_down(message.from_user.id, 10)
@@ -2526,6 +2527,7 @@ def auction_way(query):
             sql_helper.db_remove_money(tid,fast_price)
             current_bet = item[3] if item[5] is None else item[5]
             #is_it_animal = True if item[11] is None else False
+            print(f"auction_fast: {item[13]}")
             sql_helper.auction_final(item[0],tid,fast_price)
             bot.delete_message(query.message.chat.id, query.message.id)
             return
@@ -2611,7 +2613,7 @@ def auction_sell(query):
             return
             auction_way(query)
         if action == 222:
-            print('auction_item_reserv')
+            print(f"auction_item_reserv {item[1]}")
             item = auction_list[cidx]
             prop_id = item[0]
             item_type = item[5]

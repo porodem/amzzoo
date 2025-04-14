@@ -670,7 +670,7 @@ def get_auction_list():
 def auction_property_sell(s_price, buy_price, tid, iid, itype, animal=False):
     """
     """
-    print(f"SQL auc_sel;s_price:{s_price};buy_price:{buy_price};{tid};iid:{iid};{animal}")
+    print(f"SQL auc_sel;s_price:{s_price};buy_price:{buy_price};{tid};iid:{iid};type:{itype};{animal}")
     if animal:
         q = '''insert into auction(time_end, start_price, buy_price, tid_seller, pet_id, animal_id) values(now() + interval '2 days', %s, %s, %s, %s, %s)'''
     else:
@@ -971,12 +971,13 @@ def db_get_item(tid, item_id):
 def db_remove_property(pid):
     print(f"  SQL remove_property:{pid}")
     qq = '''DELETE FROM auction where item_id = %s'''
-    q = '''DELETE FROM property where id = %s'''
+    q = '''DELETE FROM property where id = %s RETURNING item_id'''
     cur = con.cursor()
     cur.execute(qq,(pid,))
-    cur.execute(q,(pid,))    
+    r = cur.execute(q,(pid,)).fetchone()[0]
+    print(f"prop_remove:{pid};type:{r}")  
     con.commit()
-    return
+    return r
 
 def db_remove_properties(tid, itm, val=1):
     """
