@@ -1834,6 +1834,7 @@ def buy_pet(message):
     pinfo = sql_helper.db_get_player_info(message.from_user.id)
     pet_space = pinfo[4]
     inviter = pinfo[13]
+    known_animals = pinfo[14]
     # TODO add pet space addition by buying some item (maby just a box) and return to home
 
     if owned == pet_space: 
@@ -1849,10 +1850,13 @@ def buy_pet(message):
         if re.match('.*#.*',message.text):
             animal_id = int(extract_numbers(message.text))
             ok = sql_helper.db_buy_pet(message.from_user.id, animal_id)
+            # TODO make pets annoy when same speices more then 2
+            # TODO animals on original location became more happy or healthy, but in others gives more money
             if ok:
-                if inviter and animal_id > 3:
+                if inviter and animal_id > 5 and animal_id not in known_animals:
+                    # TODO ALTER table to get inviter column array - to store multiple invites
                     sql_helper.db_get_item(inviter,14)
-                    bot.send_message(inviter,"🥫 Энергетик в подарок! В честь покупки петомца вашим другом!")
+                    bot.send_message(inviter,"🥫 Энергетик в подарок! В честь покупки нового вида животного вашим другом!")
                     print(f"invite_bonus animal aquired {animal_id}. {inviter} gets prize")
                 bot.send_message(message.from_user.id, "🎉 Петомец куплен!")
                 bot.send_message(message.from_user.id, pet_emoji(animal_id))
@@ -1910,6 +1914,7 @@ def buy_item(message):
 @bot.callback_query_handler(lambda query: 'sel' in query.data )
 def sell_pets(query):
     print('- - - - sell pets function - - - - ')
+    # TODO maby on selling pet add some debuff like all pets became sad and this goes to additional harmful effect
     owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
     #print(list(owned_pets))
     markup = types.InlineKeyboardMarkup(row_width=2)
@@ -2751,6 +2756,7 @@ def get_statistics(tid):
         item_overview = item_overview + f"{item_emoji(i[0])}{q}"
     check_relax(tid)
     pinfo = sql_helper.db_get_player_info(tid)
+    known_animals = pinfo[14] #TODO add no statistics
     this_moment = datetime.now()
     time_rest = str(this_moment - pinfo[3])
     time_rest = time_rest.split('.')[0]

@@ -965,3 +965,31 @@ $$;
 end
 
 drop function tech_devote(int8, int)
+
+
+alter table players add column known_animals int[] default '{0}';
+
+
+create or replace function buy_pet_new(tid int8, animal int8)
+returns int 
+language plpgsql
+as $$
+declare pet_price int;
+player_coins int;
+learned_animals int[];
+begin
+	select coins, known_animals into player_coins, learned_animals from players where telegram_id = tid;
+	select price into pet_price from animal_list where id = animal; 
+	if pet_price > player_coins then 
+		return 0;
+	end if;
+	insert into pets(animal_id, owner) values(animal,tid);
+	update players set coins = (coins - pet_price) where telegram_id = tid;
+	if not learned_animals @> array[animal::int] then
+		RAISE NOTICE 'new animal : % ', animal;
+		update players p set known_animals = known_animals || array[animal] where telegram_id = tid;
+	end if;
+	return 1;
+end;
+$$;
+end

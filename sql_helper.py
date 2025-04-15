@@ -87,10 +87,10 @@ def db_check_owned_coins(tid):
 # maybe use this function for any type of player's info instead of many of singled 
 def db_get_player_info(tid):
     '''
-    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming, 11 nick_name, 12 last_profit, 13 inviter
+    coins, level, stamina, last_work, pet_space, game_location, exp, 7 lvl_points, 8 stamina_max, 9 lockpicking, 10 taming, 11 nick_name, 12 last_profit, 13 inviter, 14 known_animals[]
     '''
     print(f"  SQL get player info {tid}")
-    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming, nick_name, last_profit, inviter from players where telegram_id = %s'''
+    q = '''SELECT coins, level, stamina, last_work, pet_space, game_location, exp, lvl_points, stamina_max, lockpicking, taming, nick_name, last_profit, inviter, known_animals from players where telegram_id = %s'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -887,7 +887,7 @@ def db_stamina_max_up(tid):
 
 def db_buy_pet(tid, animal_id):
     print(' - - write to DB buy pet - -')
-    q = '''SELECT buy_pet(%s,%s);'''
+    q = '''SELECT buy_pet_new(%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(tid,animal_id))
     b = cur.fetchone()[0]
