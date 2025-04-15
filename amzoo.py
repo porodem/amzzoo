@@ -1622,7 +1622,7 @@ def bazar_shop_new(message):
             if buying_ok:
                 bot.answer_callback_query(message.id, f"📦 Вы купили {item[1]}!")            
                 if item[0] == 10:
-                    bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре! (20 символов)")
+                    bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре! (20 символов)\n⚠️ Разрешены только цифры, буквы и знак подчеркивания _.")
                     bot.register_next_step_handler(message.message, set_nickname)
                     # TODO get peni for more than one passport
             else:
@@ -1891,7 +1891,7 @@ def buy_item(message):
             echo_all(message)
         elif ok and item_id == 10:
             # passport 
-            bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре!")
+            bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре! ")
             bot.register_next_step_handler(message, set_nickname)
         else:
             bot.send_message(message.from_user.id, "❌ Не хватает денег!")
@@ -1948,9 +1948,10 @@ def gen_inline_sell_buttons(data_list):
     return btn_pack
 
 def set_nickname(message):
-    print(f"{message.from_user.id} rename")
-    raw_nickname = message.text[:20]
-    regex_filter = re.compile(r'\w{3,20}',re.I)
+    print(f"{message.from_user.id} rename to:{message.text}")
+    raw_nickname = message.text[:21]
+    regex_filter = re.compile(r'\w{2,20}',re.I) 
+    #regex_filter = re.compile(r'\w{1,9}\s*\w{1,9}',re.I)
     filter_result = regex_filter.search(raw_nickname)
     new_nickname = 'Сонный Пцыц' if not hasattr(filter_result,'group') else filter_result.group()
     sql_helper.db_rename_player(message.from_user.id, new_nickname)
