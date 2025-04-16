@@ -1787,6 +1787,11 @@ def catch_pet(message):
         m = bot.send_dice(tid,'🎰')
         sql_helper.db_stamina_down(tid, pwr)
         sql_helper.db_remove_money(tid,catch_price)
+    elif chance == 33:
+        print('chance 33')
+        m = bot.send_dice(tid,'🎲')
+        sql_helper.db_stamina_down(tid, pwr)
+        sql_helper.db_remove_money(tid,catch_price)
     else:
         print('ERROR CHANCE PERCENT PROBLEM - - - - - - - - - - ')
         
@@ -1827,6 +1832,14 @@ def catch_pet(message):
         else:
             print('-- unknown catching animal none --')
             echo_all(message) 
+    elif chance == 33:
+        if dig_result > 4:
+            time.sleep(2)
+            sql_helper.db_get_pet(tid, animal_id)
+            bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)
+            return  
+        bot.send_message(tid, f"Неповезло, животное убежало! Потрачено {pwr}💪 {catch_price}💰",  reply_markup=markup)
+        sql_helper.db_exp_up(tid,pwr) 
 
 def buy_pet(message):
 
@@ -1853,7 +1866,7 @@ def buy_pet(message):
             # TODO make pets annoy when same speices more then 2
             # TODO animals on original location became more happy or healthy, but in others gives more money
             if ok:
-                if inviter and animal_id > 5 and animal_id not in known_animals:
+                if inviter and animal_id > 3 and animal_id not in known_animals:
                     # TODO ALTER table to get inviter column array - to store multiple invites
                     sql_helper.db_get_item(inviter,14)
                     bot.send_message(inviter,"🥫 Энергетик в подарок! В честь покупки нового вида животного вашим другом!")
