@@ -1353,21 +1353,27 @@ def stealing(query):
     print(f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}; pwr:{pwr}; act: {action}")
 
     if input_pass == secret:
+        sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove whan stealing (lockpicking improved)
         if action == 1:
             print('cage unlocked')
             chapest_pet = sql_helper.db_get_cheapest_pet(victim)
             if not chapest_pet:
                 bot.send_message(tid, "Его зоопарк пуст и необитаем.")
-            print(f"may escape now: {list(chapest_pet)}")
+            
             #bot.answer_callback_query(query.message.id, f"Успешно! Вероятность 10% что самый дешевый петомец убежит.") 
             bot.delete_message(query.message.chat.id, query.message.id)
             pet_stays = random.randrange(1,100)
-            sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove whan stealing (lockpicking improved)
+            
             bot.send_message(tid, "🔐")
-            escape_percent = 17
+            escape_percent = 16
+            print(f"may escape now: {list(chapest_pet)};random:{pet_stays}")
             
             if pet_stays < escape_percent:
                     print('Successful harm: pet escaped!')
+                    if strong_lock:
+                        print('renew_zoo_pass')
+                        new_pass = random.randrange(0,9)
+                        sql_helper.db_change_zoo_pass(victim, new_pass)
                     if chapest_pet[2] == 31: # moomoth
                         sql_helper.db_change_health(chapest_pet[0],val=5)
                         act = 'был повреждён вором!'
@@ -1375,7 +1381,10 @@ def stealing(query):
                         sql_helper.db_remove_pet(chapest_pet[0])
                         act = 'убежал!'
                     for tidx in [query.from_user.id, victim]:
-                        bot.send_message(tidx, f" {pet_emoji(chapest_pet[2])} {act}")
+                        try:
+                            bot.send_message(tidx, f" {pet_emoji(chapest_pet[2])} {act}")
+                        except apihelper.ApiTelegramException:
+                            print('send exception')
             else:
                 bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но с {pet_emoji(chapest_pet[2])} не произошло ничего плохого. Шанс {escape_percent}%")
 
@@ -1387,10 +1396,15 @@ def stealing(query):
             random_property = sql_helper.get_random_cheap_property(victim)
             if not random_property:
                 bot.send_message(query.from_user.id, f"Нет вещей которые можно было бы утащить")
-            steal_percent = 20
+            steal_percent = 90
             steal_ok = random.randrange(1,101)
+            bot.delete_message(query.message.chat.id, query.message.id)
             if steal_percent > steal_ok:
                 sql_helper.db_remove_property(random_property[0])
+                if strong_lock:
+                        print('renew_zoo_pass')
+                        new_pass = random.randrange(0,9)
+                        sql_helper.db_change_zoo_pass(victim, new_pass)
                 bot.send_message(query.from_user.id, f"Вы испортили имущество конкурента: {random_property[1]}")
                 try:
                     bot.send_message(victim,f"🚨 Кажется ваши вещи испортили ({random_property[1]})!")
@@ -2229,7 +2243,7 @@ def travel_new(query):
             travel_pay = loc_info[2] if not minibus else int(loc_info[2] / 2)   
             if minibus and this_location in (5,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
                 sql_helper.db_change_location(tid,3,travel_pay)
-                bot.send_message(tid, f"✈ Вы отправились в лес 🌲! Расходы на дорогу 💰{travel_pay}")
+                bot.send_message(tid, f"✈ Вы отправились в лес 🌲! Расходы на дорогу 💰{travel_pay}\nℹ️Купите на рынке 🔒 чтобы защитить зоопарт от других игроков!")
                 # new location image
                 # any picture have unique id, that we receive when send this pic for the first time to telegram. See picture grabber code block in the end.
                 try:
