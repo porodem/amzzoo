@@ -693,16 +693,24 @@ def set_cage_password(message, stype = 0, item = None):
             bot.register_next_step_handler(message, set_cage_password)
     elif stype in  (1,2):
         if re.match('^\d{1,4}$',message.text):
+            minimal_price = int(item[2] / 2)
             if stype == 1:
                 # save start price in by rewriting one of item parameters
                 item[6] = message.text
-                bot.send_message(message.from_user.id, "💸 Укажите цену мгновенного выкупа:")
+                
+                bot.send_message(message.from_user.id, f"💸 Укажите цену мгновенного выкупа: ⚠️({minimal_price} - 9999)")
                 bot.register_next_step_handler(message, set_cage_password,2,item)
             #auction_price = message.text
             print(f"auction_check price;{item};fast_price:{message.text}")
             if stype == 2:
                 auction_price = item[6]
-                fast_buy_price = message.text
+                too_low_price = ''
+                #fast_buy_price = int(message.text) if minimal_price > int(message.text) else minimal_price
+                if minimal_price > int(message.text):
+                    too_low_price = '\n⚠️Вы указали слишком низкую цену выкупа. Цена была повышена до минимально допустимой для этого товара'
+                    fast_buy_price = minimal_price
+                else:
+                    fast_buy_price = message.text
                 prop_id = item[0]
                 item_type = item[5]
                 is_animal = True if item[4] == 'animal_auc_mark' else False
@@ -713,7 +721,7 @@ def set_cage_password(message, stype = 0, item = None):
                     sql_helper.auction_property_sell(auction_price,fast_buy_price,tid,prop_id,item_type)
                     sql_helper.change_property_owner(tid,10,prop_id)
                 #sql_helper.db_remove_money(tid,int(auction_price)) # TODO maby player must pay little for auction use
-                bot.send_message(message.from_user.id, "🏦✅ Аукцион запущен")
+                bot.send_message(message.from_user.id, f"🏦✅ Аукцион запущен!{too_low_price}")
         else:
             bot.send_message(message.from_user.id, "❌ только цифры до 9999!")
             return
