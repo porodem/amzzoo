@@ -1396,7 +1396,7 @@ def stealing(query):
             random_property = sql_helper.get_random_cheap_property(victim)
             if not random_property:
                 bot.send_message(query.from_user.id, f"Нет вещей которые можно было бы утащить")
-            steal_percent = 90
+            steal_percent = 20
             steal_ok = random.randrange(1,101)
             bot.delete_message(query.message.chat.id, query.message.id)
             if steal_percent > steal_ok:
@@ -1443,12 +1443,13 @@ def search_victims(query):
     tid = query.from_user.id
     markup = None
     btn_pack = []
+
+    pinfo = sql_helper.db_get_player_info(tid)
+    stamina = pinfo[2]
+    location = pinfo[5]
     
     if hasattr(query,'data'):
-        print(f"- query data: {query.data}")
-        pinfo = sql_helper.db_get_player_info(tid)
-        stamina = pinfo[2]
-        location = pinfo[5]
+        print(f"- query data: {query.data}")        
 
         items = sql_helper.db_get_owned_items(tid)
         tools = 0
@@ -1557,10 +1558,14 @@ def search_victims(query):
         
 
         markup = types.InlineKeyboardMarkup(row_width=1,)
+        
         btn_animal_steal = types.InlineKeyboardButton("🦓 Открыть клетку", callback_data='victim' + '1')
         btn_item_steal = types.InlineKeyboardButton("🧯 Сломать вещь", callback_data='victim' + '2')
         btn_tomato = types.InlineKeyboardButton("🍅 Бросить помидор -10💰", callback_data='victim' + '10')
-        markup.add(btn_animal_steal, btn_item_steal, btn_tomato)
+        if location == 5:
+            markup.add(btn_tomato)
+        else:
+            markup.add(btn_animal_steal, btn_item_steal, btn_tomato)
         ask = 'Как навредить? 😈'
     if hasattr(query,'data'):
         print('HAS query data:')
