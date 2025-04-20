@@ -109,10 +109,10 @@ def db_pet_info(id):
     """
         :param id: pet id from pets table.
 
-        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating] of pets 
+        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating, shit] of pets 
     """
     print('SQL pet_info')
-    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
+    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating, shit from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
     cur = con.cursor()
     cur.execute(q,(id,))
     con.commit()
@@ -1178,6 +1178,28 @@ def db_change_health(pet_id: int, cure: bool=False, val: int=1):
     con.commit()
     cur.close()
     return
+
+
+def shit(tid, shit_limit, chance):
+    """
+    :param shit_limit: at this amount of shit animal became ill (HP down)
+    :param chance: % 1 - 100 if pet defecates now
+    """
+    print(f"SQL shitting :{tid} ")
+    q = "SELECT defecation(%s, %s, %s)"
+    record = con.execute(q,(tid,shit_limit, chance)).fetchone()
+    con.commit()
+    return record
+
+def clean_shit(pet):
+    print(f"shit_clean {pet}")
+    qa = "SELECT shit FROM pets WHERE id = %s"
+    q = "UPDATE pets set shit = 0 WHERE id = %s RETURNING id"
+    p = con.execute(qa,(pet,)).fetchone()[0]
+    con.execute(q,(pet,))
+    con.commit()
+    return p
+
 
 def db_change_zoo_pass(tid, password):
     '''

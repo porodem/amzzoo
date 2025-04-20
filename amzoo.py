@@ -104,6 +104,8 @@ def get_hunger():
     while True:
         print(str(datetime.now()) + f";GET_HUNGER" )
 
+        
+
         sql_helper.auction_final()
 
         previous_epidemic_day = None
@@ -149,10 +151,11 @@ def get_hunger():
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
         time.sleep(hunger_interval * 60 * 60)
-        #time.sleep(hunger_interval * 4)
+        #time.sleep(hunger_interval * 6)
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
+            sql_helper.shit(player[0],10,35)
             health = player[2]
             if player[1] == 0:
                 try:
@@ -488,6 +491,14 @@ def show_pets(query):
                 echo_all()
             sql_helper.db_remove_money(query.from_user.id,total_feed_price)
             sql_helper.db_feed_all(query.from_user.id)
+        elif int(extract_numbers(query.data,1)) == 4:
+            print('clean shit option')
+            shit_load = sql_helper.clean_shit(pet_info[0])
+            is_hard_cleaning = ''
+            if shit_load > 8:
+                sql_helper.db_stamina_drain(query.from_user.id,1)
+                is_hard_cleaning = f" Это было непросто! -1💪. Уборка более 8 куч 💩 требует сил."
+            bot.send_message(query.from_user.id, f"🫧 Уборка завершена!{is_hard_cleaning}")
                 
     else:
         cidx = 0
@@ -506,7 +517,8 @@ def show_pets(query):
     #total_feed_price = int(total_pets_price / 10) - int(total_pets_price/10 * float(f"0.{total_pets_hunger}"))
     habitat = habitat_emoji(pet_info[6])
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
-    btn_lbl = pet_emoji(pet_info[1]) + f"\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat} \nрейтинг⭐:{pet_info[9]}"     
+    shit_meter = '💩' * pet_info[10] if pet_info[10] else ''
+    btn_lbl = pet_emoji(pet_info[1]) + f"{shit_meter}\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat} \nрейтинг⭐:{pet_info[9]}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn_pack = []
     action = '_0'
@@ -535,6 +547,9 @@ def show_pets(query):
         if have_antibiotic:
             btn_cure = types.InlineKeyboardButton('💉',callback_data="pet" + str(cidx) + '_2')
             btn_pack = btn_pack + [btn_cure]
+    if pet_info[10]:
+        btn_shit = types.InlineKeyboardButton(f"💩{pet_info[10]}",callback_data="pet" + str(cidx) + '_4')
+        btn_pack = btn_pack + [btn_shit]
 
     markup.add(*btn_pack)
     # if len(owned_pets) > 1:

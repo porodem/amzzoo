@@ -147,18 +147,19 @@ def define_mood(pet: list, environment: list=None):
     hunger = pet[2]
     health = pet[3]
     habitat = pet[6]
-    sum_points = hunger + health
+    shit = pet[10]
+    sum_points = hunger + health - shit
     mood = "😐"
     if hunger == 0 or health == 1:
-        mood = "😢"
+        mood = "🥴"
     elif sum_points < 5:
-        mood = "🙁"
+        mood = "😒"
     elif sum_points < 8:
         mood = "😐"
     elif sum_points >  12:
-        mood = "🙂"
+        mood = "😀"
     elif sum_points > 16:
-        mood = "☺"
+        mood = "🥳"
     return mood
 
 def tech_emoji(id):
