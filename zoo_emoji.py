@@ -66,7 +66,9 @@ def pet_emoji(id):
     elif id == 51:
         e = "🦖"
     elif id == 60:
-        e = "🦄"           
+        e = "🦄"
+    elif id == 61:
+        e = "🐇"           
     elif id == 0:
         e = "☠"
     else:
@@ -118,6 +120,8 @@ def item_emoji(id):
         e = "🪨"
     elif id == 46:
         e = "☢️"
+    elif id == 47:
+        e = "💫"
     else:
         e = "✖"
     return e
@@ -139,6 +143,8 @@ def habitat_emoji(id):
         e = "🌎"
     elif id == 7:
         e = "🇦🇺"
+    elif id == 10:
+        e = "🌈"
     else:
         e = "❔"
     return e
@@ -180,7 +186,7 @@ def tech_emoji(id):
     elif id == 8:
         e = "☢️"
     elif id == 9:
-        e = "🦄"
+        e = "💫"
     else:
         e = "❔"
     return e

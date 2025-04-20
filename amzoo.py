@@ -938,9 +938,11 @@ def do_tech(query):
                         return
                     elif item[0] == 9:
                         print('PORTAL_DONE')
-                        sql_helper.db_get_pet(tid,60)
+                        sql_helper.db_get_item(tid,47)
+                        #sql_helper.db_get_pet(tid,60)
                         sql_helper.tech_reset_hard(tid,item[0])
-                        bot.send_message(tid, f"🦄")
+                        #bot.send_message(tid, f"🦄")
+                        bot.send_message(tid, f"Вы получили портал💫 Отправляйтесь в Австралию, там вы найдете путь в секретную локацию!")
                         bot.delete_message(query.message.chat.id, query.message.id) 
                         return
                     else:
@@ -2205,6 +2207,7 @@ def travel_new(query):
     if hasattr(query, 'data'):
         destination = int(extract_numbers(query.data))
         minibus = sql_helper.db_check_owned_item(tid,31)
+        
         loc_info = sql_helper.location_info(destination)
         
         if not destination:
@@ -2340,6 +2343,20 @@ def travel_new(query):
                 return
             else:
                 bot.send_message(tid, "❌ Нужны деньги и сила!")
+        elif destination == 10:
+            travel_pay = sql_helper.location_info(10)[2]
+            if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
+                # TODO variable for ticket price
+                sql_helper.db_change_location(tid,10,travel_pay)
+                #bot.send_message(tid, f"✈ Вы телепортировались в Эквестрию 🌈 💰{travel_pay}")
+                bot.send_message(tid, '🌈')
+                sql_helper.db_exp_up(tid,1)
+                # new location image
+                #bot.send_photo(tid,'AgACAgIAAxkBAAIOM2cvAAH26uIyVk5WcDod9iBPf-5EkgACweoxGyLVeUmoB8aK8XWdvQEAAwIAA3MAAzYE')
+                bot.delete_message(query.message.chat.id, query.message.id)
+                return
+            else:
+                bot.send_message(tid, "❌ Нужны деньги и сила!")
 
         print(f"travel_pay:{travel_pay} -> {loc_info[1]}")
         bot.delete_message(query.message.chat.id, query.message.id)
@@ -2351,6 +2368,12 @@ def travel_new(query):
     btn_pack = []
     for w in routes_arr:
         # TODO travel price generates multi connection - need to rewrite SQL query to collect all prices with for routes_arr if it possible
+        portal = 0
+        if w == 10:
+            # check portal
+            portal = sql_helper.db_check_owned_item(tid,47)
+            if not portal:
+                break
         travel_price = sql_helper.location_info(w)[2]
         btn = types.InlineKeyboardButton(f"{habitat_emoji(w)} 💰{travel_price}", callback_data='travel_' + str(w))
         btn_pack.append(btn)

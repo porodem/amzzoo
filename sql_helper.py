@@ -482,7 +482,7 @@ def db_refil_pits():
     cur.close()
     con.commit()
     mamooth_location = random.randrange(1,7)
-    for i in range(7):
+    for i in range(8):
         cel_win = random.randrange(1,40)
         cel_mini_win = random.randrange(1,40)
         cel_fail = random.randrange(1,40)
