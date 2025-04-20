@@ -151,11 +151,12 @@ def get_hunger():
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
         time.sleep(hunger_interval * 60 * 60)
-        #time.sleep(hunger_interval * 6)
+        #time.sleep(hunger_interval * 7)        
+
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
-            sql_helper.shit(player[0],10,35)
+            
             health = player[2]
             if player[1] == 0:
                 try:
@@ -441,8 +442,8 @@ def show_pets(query):
         #total_pets_hunger += pet[4]
         hunger_x = float(f"0.{pet[4]}") if pet[4] < 10 else 1
         total_feed_price += int(pet[2] / 10) - int(pet[2]/10 * hunger_x)
-        print(f"{str(pet[2])} h {pet[4]} total_feed_price {total_feed_price}")
-    print(f"total pet price: {total_pets_price} and gunger: {total_pets_hunger}")
+        #print(f"price:{str(pet[2])};hunger:{pet[4]};total_feed_price {total_feed_price}")
+    print(f"total pet price: {total_pets_price} and hunger: {total_pets_hunger}")
     print(str(query.from_user.id) + f" has {len(owned_pets)}")
     if len(owned_pets) == 0:
         bot.send_message(query.from_user.id, "У вас нет питомцев")
@@ -453,7 +454,6 @@ def show_pets(query):
         first_pet = owned_pets[cidx]
         pet_info = sql_helper.db_pet_info(first_pet[0])
         animal_id = pet_info[1]
-        print('animal id: ' + str(animal_id))
 
         if int(extract_numbers(query.data,1)) == 1:
             print('feed option')
@@ -502,18 +502,16 @@ def show_pets(query):
                 
     else:
         cidx = 0
-    print('cidx: ' + str(cidx))
+    #print('cidx: ' + str(cidx))
     
     #print('owned_pets: ')
     #print(list(owned_pets))
     next_cid = 0 if cidx == len(owned_pets) - 1 else cidx + 1
     first_pet = owned_pets[cidx]
     pet_info = sql_helper.db_pet_info(first_pet[0])
-    print('pet_info: ')
-    print(list(pet_info))
+    print(f"cidx:{cidx} {list(pet_info)}")
     mood = define_mood(pet_info)
     feed_price = int(pet_info[8] / 10) - int(pet_info[8]/10 * float(f"0.{pet_info[2]}"))
-    print(f"{pet_info[8]} - {pet_info[2]}")
     #total_feed_price = int(total_pets_price / 10) - int(total_pets_price/10 * float(f"0.{total_pets_hunger}"))
     habitat = habitat_emoji(pet_info[6])
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
@@ -539,8 +537,7 @@ def show_pets(query):
         items = sql_helper.db_get_owned_items_group(query.from_user.id)
         have_antibiotic = False
         for i in items:
-            print('items:')
-            print(i[0])
+            #print(f"items: {i[0]}")
             if i[0] == 5:
                 have_antibiotic = True
                 break
@@ -2181,7 +2178,16 @@ def check_relax(tid):
         relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
         sql_helper.db_stamina_up(tid,relax,stamina_limit)
     else:
-        if hours_rest > 0:
+        if hours_rest > 3:
+            shit_info = sql_helper.shit(tid,10,35)
+            print(f"shit_info: {shit_info[0]}")
+            if int(shit_info[0]) > 9:
+                print('shit message')
+                bot.send_message(tid,'💩 В вашем зоопарке воняет говном! 😖')
+            relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
+            #print('stamina added: ' + str(hours_rest))
+            sql_helper.db_stamina_up(tid,relax,stamina_limit)
+        elif hours_rest > 0:
             relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
             #print('stamina added: ' + str(hours_rest))
             sql_helper.db_stamina_up(tid,relax,stamina_limit)
@@ -2211,6 +2217,7 @@ def travel_new(query):
         loc_info = sql_helper.location_info(destination)
         
         if not destination:
+            print('travel cancled')
             bot.delete_message(query.message.chat.id, query.message.id)
             return
         

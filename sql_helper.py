@@ -127,7 +127,7 @@ def db_get_owned_pets(tid, filter=0):
         :return list: [id, animal_id, price, health, 4 hunger, 5 max_health,6 shit] from pets table
         :return list: auction [id, species, price, health, 4 animal_auc_mark, 5 animal_id,6 animal text] from pets table
     """
-    print('SQL get all players pets --')
+    print('  SQL get all players pets')
     if filter == 'auction':
         q = '''select pets.id, species, price, health, 'animal_auc_mark', animal_id, 'Животное' from pets join animal_list a on a.id = pets.animal_id where owner = %s and (habitat = 100 or catch_chance < 15);'''
     else:
@@ -1187,7 +1187,7 @@ def shit(tid, shit_limit, chance):
     """
     print(f"SQL shitting :{tid} ")
     q = "SELECT defecation(%s, %s, %s)"
-    record = con.execute(q,(tid,shit_limit, chance)).fetchone()
+    record = con.execute(q,(tid,shit_limit, chance)).fetchone()[0]
     con.commit()
     return record
 
