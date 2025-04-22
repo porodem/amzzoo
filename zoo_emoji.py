@@ -143,7 +143,7 @@ def habitat_emoji(id):
         e = "🌎"
     elif id == 7:
         e = "🇦🇺"
-    elif id == 10:
+    elif id == 8:
         e = "🌈"
     else:
         e = "❔"

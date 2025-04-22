@@ -2350,11 +2350,11 @@ def travel_new(query):
                 return
             else:
                 bot.send_message(tid, "❌ Нужны деньги и сила!")
-        elif destination == 10:
-            travel_pay = sql_helper.location_info(10)[2]
+        elif destination == 8:
+            travel_pay = sql_helper.location_info(8)[2]
             if coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1:
                 # TODO variable for ticket price
-                sql_helper.db_change_location(tid,10,travel_pay)
+                sql_helper.db_change_location(tid,8,travel_pay)
                 #bot.send_message(tid, f"✈ Вы телепортировались в Эквестрию 🌈 💰{travel_pay}")
                 bot.send_message(tid, '🌈')
                 sql_helper.db_exp_up(tid,1)
@@ -2376,7 +2376,7 @@ def travel_new(query):
     for w in routes_arr:
         # TODO travel price generates multi connection - need to rewrite SQL query to collect all prices with for routes_arr if it possible
         portal = 0
-        if w == 10:
+        if w == 8:
             # check portal
             portal = sql_helper.db_check_owned_item(tid,47)
             if not portal:
