@@ -152,6 +152,10 @@ def db_get_owned_items(tid, filter=None):
     """
     print('SQL get all players items')
     if filter == 'auction':
+        q = '''select any_value(p.id), i."name", price, every(charged), location,  i.id, min(durability) 
+        from  property p join items i on i.id = p.item_id  where owner = %s and location is null group by 2,3,5,6;'''
+    #depricated
+    elif filter == 'auc':
         q = '''select  p.id, i."name", price, charged, location, i.id, durability from  property p join items i on i.id = p.item_id  where owner = %s and location is null;'''
     else:
         q = '''select  p.id, i."name", price, charged, location, i.id, durability from  property p join items i on i.id = p.item_id  where owner = %s;'''

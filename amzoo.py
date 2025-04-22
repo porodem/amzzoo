@@ -727,6 +727,7 @@ def set_cage_password(message, stype = 0, item = None):
                 item_type = item[5]
                 is_animal = True if item[4] == 'animal_auc_mark' else False
                 if is_animal:
+                    sql_helper.db_change_hunger(prop_id,False,2)
                     sql_helper.auction_property_sell(auction_price,fast_buy_price,tid,prop_id,item_type,animal=True)
                     sql_helper.change_property_owner(tid,10,prop_id,animal=True)
                 else:
