@@ -1239,14 +1239,15 @@ def lucky_treasure(query):
                 sql_helper.db_exp_up(tid,2)
         else:
             if sql_helper.tech_done_check(tid,2) > 0:
-                uran_chance = 9
+                uran_chance = 8
             else:
                 uran_chance = 5
             if random.randrange(1,101) <= uran_chance:
                 sql_helper.db_get_item(tid,45)
                 bot.send_message(tid,"Найден уран 🪨")
-            sql_helper.db_exp_up(tid,1)
-            bot.answer_callback_query(query.id, "🌟+1", show_alert=False)
+            if random.randrange(0,2):
+                sql_helper.db_exp_up(tid,1)
+                bot.answer_callback_query(query.id, "🌟+1", show_alert=False)
         brok = random.randrange(1,11)
         pick_tool= sql_helper.db_check_owned_item(tid,16,'durability')
         if brok < 4:
@@ -1272,13 +1273,13 @@ def lucky_treasure(query):
         if i[0] == 0:
             # 
             deep = 2
-            cell_emoji = '⬛️' if i[1] != 0 else '🚫'
-            btn = types.InlineKeyboardButton(f"{cell_emoji}{i}",callback_data=f"dig_{counter}_{deep}")
+            cell_emoji = '🕳️' if i[1] != 0 else '🚫'
+            btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
         else:
             deep = 1
-            cell_emoji = '◾️' if i[1] != 0 else '🚫'
-            btn = types.InlineKeyboardButton(f"{cell_emoji}{i}",callback_data=f"dig_{counter}_{deep}")
-            #btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
+            cell_emoji = '☘️' if i[1] != 0 else '🚫'
+            btn = types.InlineKeyboardButton(f"{cell_emoji}",callback_data=f"dig_{counter}_{deep}")
+            #btn = types.InlineKeyboardButton(f"{cell_emoji}{i}",callback_data=f"dig_{counter}_{deep}")
         counter +=1
         pin_pad_buttons.append(btn)
     btn_exit = types.InlineKeyboardButton(f"🔙",callback_data=f"dig_100")
