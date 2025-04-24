@@ -493,12 +493,22 @@ def show_pets(query):
             sql_helper.db_feed_all(query.from_user.id)
         elif int(extract_numbers(query.data,1)) == 4:
             print('clean shit option')
+            cleaning_text = '🫧 Уборка завершена!'
+            pet_space = sql_helper.db_get_player_info(query.from_user.id)[4]
+            zoo_size = len(owned_pets)
+            if zoo_size > pet_space:
+                print('zoo_oversize')
+                if random.randrange(0,zoo_size - pet_space):
+                    print(f"{zoo_size} - {pet_space}")
+                    pet_victim = sql_helper.db_get_cheapest_pet(query.from_user.id)
+                    sql_helper.db_change_health(pet_victim[0],cure=False,val=1)
+                    cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -1💔! "
             shit_load = sql_helper.clean_shit(pet_info[0])
             is_hard_cleaning = ''
             if shit_load > 8:
                 sql_helper.db_stamina_drain(query.from_user.id,1)
                 is_hard_cleaning = f" Это было непросто! -1💪. Уборка более 8 куч 💩 требует сил."
-            bot.send_message(query.from_user.id, f"🫧 Уборка завершена!{is_hard_cleaning}")
+            bot.send_message(query.from_user.id, f"{cleaning_text} {is_hard_cleaning}")
                 
     else:
         cidx = 0
@@ -1034,6 +1044,9 @@ def do_ability_up(query):
                 elif item[0] == 7:
                     sql_helper.db_points_down(tid,item[0])
                     sql_helper.lockpick_up(tid,1)
+                elif item[0] == 8:
+                    sql_helper.db_points_down(tid,item[0])
+                    sql_helper.db_change_pet_space(tid,1)
                 else:
                     print('not ready yet')
                     upgrade_ready = False
