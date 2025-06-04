@@ -509,6 +509,9 @@ def show_pets(query):
                 sql_helper.db_stamina_drain(query.from_user.id,1)
                 is_hard_cleaning = f" Это было непросто! -1💪. Уборка более 8 куч 💩 требует сил."
             bot.send_message(query.from_user.id, f"{cleaning_text} {is_hard_cleaning}")
+        elif int(extract_numbers(query.data,1)) == 5:
+            sql_helper.total_shit(query.from_user.id)
+            bot.send_message(query.from_user.id, f"🫧 Уборка всего зоопарка завершена 🫧")
                 
     else:
         cidx = 0
@@ -557,6 +560,10 @@ def show_pets(query):
     if pet_info[10]:
         btn_shit = types.InlineKeyboardButton(f"💩{pet_info[10]}",callback_data="pet" + str(cidx) + '_4')
         btn_pack = btn_pack + [btn_shit]
+        smart_clean = sql_helper.db_check_owned_item(query.from_user.id, 32)
+        if smart_clean > 0:
+                btn_feed_all = types.InlineKeyboardButton(f"🫧🚽 всех",callback_data="pet" + str(cidx) + '_5')
+                btn_pack = btn_pack + [btn_feed_all]
 
     markup.add(*btn_pack)
     # if len(owned_pets) > 1:

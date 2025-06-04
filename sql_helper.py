@@ -1204,6 +1204,20 @@ def clean_shit(pet):
     con.commit()
     return p
 
+def total_shit(tid):
+    """
+    returns: id, time_start, time_point, stamina_spend, tid, tech_id, lvl 
+    """
+    q = "select sum(shit) shit_sum from pets where owner = %s;"
+    q2 = "UPDATE pets SET shit = 0 where owner = %s"
+    cur = con.cursor()
+    cur.execute(q,(tid,))
+    b = cur.fetchall()
+    cur.execute(q2,(tid,))
+    con.commit()
+    cur.close()
+    return b
+
 
 def db_change_zoo_pass(tid, password):
     '''

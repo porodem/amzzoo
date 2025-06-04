@@ -108,6 +108,8 @@ def item_emoji(id):
         e = "🥣"
     elif id == 31:
         e = "🚐"
+    elif id == 32:
+        e = "🚽"
     elif id == 40:
         e = "🦴"
     elif id == 41:
