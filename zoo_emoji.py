@@ -104,6 +104,8 @@ def item_emoji(id):
         e = "⛏️"
     elif id == 20:
         e = "🔑"
+    elif id == 21:
+        e = "💥"
     elif id == 30:
         e = "🥣"
     elif id == 31:
@@ -189,6 +191,8 @@ def tech_emoji(id):
         e = "☢️"
     elif id == 9:
         e = "💫"
+    elif id == 10:
+        e = "⚛️"
     else:
         e = "❔"
     return e

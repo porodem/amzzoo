@@ -545,7 +545,7 @@ def event_exe(event, renew=False):
     #q = "UPDATE events SET last_executed =%s, is_active = %s WHERE name = %s"
     if renew:
         print('- - - SQL renew_event')
-        q = "UPDATE events SET last_executed = current_date - interval '1 month' WHERE name = %s"
+        q = "UPDATE events SET last_executed = current_date - interval '1 month', is_active = false WHERE name = %s"
     else:
         print('- - - SQL - exec now -')
         q = "UPDATE events SET last_executed = current_date WHERE name = %s"
@@ -1143,7 +1143,7 @@ def db_buy_healing(pet_id: int, cost: int, tid: int):
     cur.close()
     return result
 
-def db_infect_pets(game_location=0):
+def db_infect_pets(game_location=0, atomic: bool=False):
     '''
     epidemic
     '''
@@ -1151,7 +1151,11 @@ def db_infect_pets(game_location=0):
     if game_location:
         q = '''update pets p set health = health -4  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) returning owner;'''
     else:
-        q = '''update pets set health = health - 4 where animal_id not in (0,31) and id % (random() *10 + 1)::int = 0 returning owner;'''
+        if atomic:
+            q = '''update pets set health = health - 7 where animal_id <> 0 returning owner;'''
+            print('SQL ATOMIC')
+        else:
+            q = '''update pets set health = health - 4 where animal_id not in (0,31) and id % (random() *10 + 1)::int = 0 returning owner;'''
     
     infected_pet_list = []
 
@@ -1182,6 +1186,8 @@ def db_change_health(pet_id: int, cure: bool=False, val: int=1):
     con.commit()
     cur.close()
     return
+
+
 
 
 def shit(tid, shit_limit, chance):
@@ -1217,6 +1223,16 @@ def total_shit(tid):
     con.commit()
     cur.close()
     return b
+
+def set_atomic_start():
+    '''
+    prepare atomic bomb for execution
+    '''
+    print(' - - ATOMIC BOMB PREPARED - -')
+    q = "UPDATE events set is_active = true, last_executed = current_date + interval '1 day' where name = 'atomic';"
+    con.execute(q)
+    con.commit()
+    return 
 
 
 def db_change_zoo_pass(tid, password):

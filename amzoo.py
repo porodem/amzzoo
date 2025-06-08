@@ -113,6 +113,7 @@ def get_hunger():
         prev_refil_pits_day = None
         prev_asteroid_month = None
         is_asteroid = False
+        is_atomic = False
         target_location = 0
         #prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
         today = datetime.now().day
@@ -123,6 +124,13 @@ def get_hunger():
                 is_refiling_pits = False
 
         prev_asteroid_month = int(sql_helper.event_get('asteroid')[2])
+        atomic_event = sql_helper.event_get('atomic')
+        atomic_day = int(atomic_event[1])
+        atomic_ready = atomic_event[0]
+        if atomic_day == today and atomic_ready:
+            print('TODAY ATOMIC DAY')
+            is_atomic = True
+
         this_month = datetime.now().month
 
         # asteroid alarm
@@ -138,20 +146,24 @@ def get_hunger():
         # sql_helper.event_exe('asteroid', renew=True) # 
                 
 
-        if is_asteroid:
+        if is_asteroid or is_atomic:
             target_location = random.randrange(1,8) 
             target_location = 4 if target_location == 2 else target_location
             tloc_icon = habitat_emoji(target_location)
             astronomers = sql_helper.tech_players_with(1,tech_lvl_req=1)
             print(f"astronomers: {astronomers}")
+            if is_atomic:
+                warn_msg = f"☢️ Внимание! Замечен запуск ядероной ракеты! Расчетное место - все локации. Удар примерно через {hunger_interval} часа."
+            else:
+                warn_msg = f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа."
             for a in astronomers:
                 try:
-                    bot.send_message(a[0], f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа.")
+                    bot.send_message(a[0], f"warn_msg")
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        time.sleep(hunger_interval * 60 * 60)
-        #time.sleep(hunger_interval * 7)        
+        #time.sleep(hunger_interval * 60 * 60)
+        time.sleep(hunger_interval * 9)        
 
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
@@ -181,25 +193,41 @@ def get_hunger():
         today = datetime.now().day  
         
         
-        if is_asteroid:
-            print('ASTEROID_EXECUTION')
-            sql_helper.event_exe('asteroid')
+        if is_asteroid or is_atomic:
+            print('CATASTROPHE_EXECUTION')
+            if is_atomic:
+                print('atomic renew event')
+                sql_helper.event_exe('atomic', renew=True)
+            else:
+                sql_helper.event_exe('asteroid')
             
             victims = sql_helper.db_get_nearby_players(target_location)
             print("victim list:")
             # TODO hit pets more lethal 
-            sql_helper.db_infect_pets(target_location) 
-            for v in victims:
-                tid = v[0]
-                uname = v[1]
-                print(f"{uname} gets asteroid damage")
-                dmg_percent = 25
-                impact_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
-                sql_helper.db_remove_money(tid,impact_damage)
-                try:
-                    bot.send_message(tid,"☄️ Тревога! Неожидано с неба упал астероид! Ваши животные и имущество пострадали! Если бы вы обнаружили астероид заранее, возможно вы бы знали куда он упадет.")
-                except apihelper.ApiTelegramException:
-                    print('ERROR notify ill of hunger ' + str(tid) )
+            if is_atomic:
+                sql_helper.db_infect_pets(0, atomic=True) 
+                print('atomic_harm_pets')
+            else:
+                sql_helper.db_infect_pets(target_location) 
+            if is_asteroid:
+                for v in victims:
+                    tid = v[0]
+                    uname = v[1]
+                    print(f"{uname} gets asteroid damage")
+                    dmg_percent = 25
+                    impact_damage = int(dmg_percent / 100 * sql_helper.db_get_player_info(tid)[0])
+                    sql_helper.db_remove_money(tid,impact_damage)
+                    try:
+                        bot.send_message(tid,"☄️ Тревога! Неожидано с неба упал астероид! Ваши животные и имущество пострадали! Если бы вы обнаружили астероид заранее, возможно вы бы знали куда он упадет.")
+                    except apihelper.ApiTelegramException:
+                        print('ERROR notify ill of hunger ' + str(tid) )
+            else:
+                all_tids = sql_helper.db_get_all_tids()
+                for tid in all_tids:
+                    try:
+                        bot.send_message(tid,'☢️ Ядерная угроза! Кто-то запустил ядерную ракету.')
+                    except apihelper.ApiTelegramException:
+                        print('ERROR notify ill of hunger ' + str(tid) )
         else:
             print('this month asteroid was already')
         
@@ -665,10 +693,14 @@ def stats_up(message):
     else:        
         markup.add(btn1,btn2,btn_back)
     map_item = sql_helper.db_check_owned_item(tid,13)
+    bomb = sql_helper.db_check_owned_item(tid,21)
     paleo = sql_helper.tech_done_check(tid,2)
     if map_item and paleo:
         btn_map = types.KeyboardButton("Карта🗺️")
         markup.add(btn_map)
+    if bomb:
+        btn_bomb = types.KeyboardButton("☢️Атомный взрыв💥")
+        markup.add(btn_bomb)
     bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup) 
     bot.register_next_step_handler(message, stats_up_selection)
 
@@ -704,6 +736,13 @@ def stats_up_selection(message):
         sql_helper.db_remove_property(m)
         no_mamont_location = sql_helper.map_no_mamont()
         bot.send_message(message.from_user.id, f"Судя по данных, останков мамонта точно нет в {habitat_emoji(no_mamont_location)}\nВозможно используя данные другой карты 🗺️ можно уточнить местоположение.")
+    elif re.match('.*Атомный.*',message.text):
+        bomb = sql_helper.db_check_owned_item(message.from_user.id, 21)
+        if not bomb:
+            bot.send_message(message.from_user.id, "У вас нет атомной бомбы!")
+            return
+        sql_helper.db_remove_property(bomb)
+        sql_helper.set_atomic_start()
     else:
         echo_all(message)
 
@@ -855,6 +894,17 @@ def do_tech(query):
                     sql_helper.db_remove_property(owned_radio_uran)
                     sql_helper.tech_player_start(tid,item[0])
                     sql_helper.db_remove_money(tid,required_coins) 
+                elif tech_id == 10:
+                    for i in player_items:
+                        if i[0] == 46:
+                            radio_uran_pieces = i[2]
+                    if radio_uran_pieces >= 5:
+                        sql_helper.tech_player_start(tid,item[0]) 
+                        sql_helper.db_remove_properties(tid,46,5)
+                        sql_helper.db_remove_money(tid,required_coins)
+                    else:
+                        tech_status = f"\n⚠️Нужно больше урана ☢️ ({uran_pieces}/6)"
+                        resourses_required = True
                 else:
                     print('TECH SOMETHING ELSE - - - ')
                      
@@ -958,6 +1008,13 @@ def do_tech(query):
                         sql_helper.tech_reset_hard(tid,item[0])
                         #bot.send_message(tid, f"🦄")
                         bot.send_message(tid, f"Вы получили портал💫 Отправляйтесь в Австралию, там вы найдете путь в секретную локацию!")
+                        bot.delete_message(query.message.chat.id, query.message.id) 
+                        return
+                    elif item[0] == 10:
+                        print('ATOMIC BOMB DONE')
+                        sql_helper.db_get_item(tid,21)
+                        sql_helper.tech_reset_hard(tid,item[0])
+                        bot.send_message(tid, f"☢️Ядерная бомба создана!")
                         bot.delete_message(query.message.chat.id, query.message.id) 
                         return
                     else:
