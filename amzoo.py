@@ -1465,7 +1465,8 @@ def stealing(query):
                     print('Successful harm: pet escaped!')
                     if strong_lock:
                         print('renew_zoo_pass')
-                        new_pass = random.randrange(0,9)
+                        bot.send_message(query.from_user.id,"Сработала блокировка. Установлен случайный код от 1 до 4")
+                        new_pass = random.randrange(1,5)
                         sql_helper.db_change_zoo_pass(victim, new_pass)
                     if chapest_pet[2] == 31: # moomoth
                         sql_helper.db_change_health(chapest_pet[0],val=5)
@@ -1483,6 +1484,7 @@ def stealing(query):
 
                 if zoo_alarm:
                     print('ZOO_ALARM')
+                    bot.send_message(query.from_user.id,"🚨 Сработала сигнализация!")
                     bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
         elif action == 2:
             print('item_stealing')
@@ -1496,7 +1498,8 @@ def stealing(query):
                 sql_helper.db_remove_property(random_property[0])
                 if strong_lock:
                         print('renew_zoo_pass')
-                        new_pass = random.randrange(0,9)
+                        bot.send_message(query.from_user.id,"Сработала блокировка. Установлен случайный код от 1 до 4")
+                        new_pass = random.randrange(1,5)
                         sql_helper.db_change_zoo_pass(victim, new_pass)
                 bot.send_message(query.from_user.id, f"Вы испортили имущество конкурента: {random_property[1]}")
                 try:
