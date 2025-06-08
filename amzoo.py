@@ -2255,7 +2255,7 @@ def check_relax(tid, overpopulated: bool=False):
     if day_left != 0:
         print('relax day or more')
         if overpopulated:
-            bot.send_message(tid,"⚠️Зоопарк переполнен и неможет приносить доход")
+            bot.send_message(tid,"⚠️Зоопарк переполнен и неможет приносить доход! ")
             profit = 0
         else:
             profit = sql_helper.db_get_profit_pg(tid, 18) #sql_helper.db_get_profit(tid)  
