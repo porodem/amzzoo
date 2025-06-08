@@ -163,7 +163,7 @@ def get_hunger():
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
         #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(hunger_interval * 9)        
+        time.sleep(hunger_interval * 19)        
 
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
@@ -191,13 +191,15 @@ def get_hunger():
         previous_fire_day = int(sql_helper.event_get('fire')[1])
 
         today = datetime.now().day  
+
+        atomic_executor = None
         
         
         if is_asteroid or is_atomic:
             print('CATASTROPHE_EXECUTION')
             if is_atomic:
                 print('atomic renew event')
-                sql_helper.event_exe('atomic', renew=True)
+                atomic_executor = sql_helper.event_exe('atomic', renew=True)
             else:
                 sql_helper.event_exe('asteroid')
             
@@ -205,7 +207,11 @@ def get_hunger():
             print("victim list:")
             # TODO hit pets more lethal 
             if is_atomic:
-                sql_helper.db_infect_pets(0, atomic=True) 
+                executor_location = sql_helper.db_get_player_info(atomic_executor)[5]
+                sql_helper.db_infect_pets(executor_location, atomic=True)
+                sql_helper.db_remove_money(atomic_executor,100000)
+                sql_helper.db_remove_properties(atomic_executor,30) # TODO maby remove all or more items
+                sql_helper.db_exp_up(atomic_executor,50)
                 print('atomic_harm_pets')
             else:
                 sql_helper.db_infect_pets(target_location) 
@@ -225,7 +231,7 @@ def get_hunger():
                 all_tids = sql_helper.db_get_all_tids()
                 for tid in all_tids:
                     try:
-                        bot.send_message(tid,'☢️ Ядерная угроза! Кто-то запустил ядерную ракету.')
+                        bot.send_message(tid,f"☢️ Ядерный взрыв в {habitat_emoji(executor_location)}! Кто-то из игроков взорвал бомбу!")
                     except apihelper.ApiTelegramException:
                         print('ERROR notify ill of hunger ' + str(tid) )
         else:
@@ -742,7 +748,7 @@ def stats_up_selection(message):
             bot.send_message(message.from_user.id, "У вас нет атомной бомбы!")
             return
         sql_helper.db_remove_property(bomb)
-        sql_helper.set_atomic_start()
+        sql_helper.set_atomic_start(message.from_user.id)
     else:
         echo_all(message)
 
@@ -2226,7 +2232,7 @@ def treasure_dice_result(message):
     print(' - - - treasure dice result ---')
     print(message.dice)
 
-def check_relax(tid):
+def check_relax(tid, overpopulated: bool=False):
     '''
     returns: stamina point if player rest enough hours
     '''
@@ -2248,12 +2254,17 @@ def check_relax(tid):
     #print('hours: ' + str(hours_rest))
     if day_left != 0:
         print('relax day or more')
-        profit = sql_helper.db_get_profit_pg(tid, 18) #sql_helper.db_get_profit(tid)  
+        if overpopulated:
+            bot.send_message(tid,"⚠️Зоопарк переполнен и неможет приносить доход")
+            profit = 0
+        else:
+            profit = sql_helper.db_get_profit_pg(tid, 18) #sql_helper.db_get_profit(tid)  
+            bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
         if profit == -1:
             bot.send_message(tid,"⚠️ Мошенничество -10💰 " )
             sql_helper.db_remove_money(tid,10)
             return
-        bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
+        
         if stamina_before == stamina_limit:
             sql_helper.db_stamina_up(tid,0,stamina_limit) # set new last_work time to prevent profit loop
             return stamina_before
@@ -2921,7 +2932,7 @@ def get_statistics(tid):
     for i in items:
         q = '' if i[2] == 1 else f"x{i[2]}"
         item_overview = item_overview + f"{item_emoji(i[0])}{q}"
-    check_relax(tid)
+    
     pinfo = sql_helper.db_get_player_info(tid)
     known_animals = pinfo[14] #TODO add no statistics
     this_moment = datetime.now()
@@ -2934,6 +2945,8 @@ def get_statistics(tid):
     stamina_max = pinfo[8] 
     pet_space = pinfo[4]
     exp = pinfo[6]
+    overpopulated = True if pet_cnt > pet_space else False;
+    check_relax(tid, overpopulated)
     loc = habitat_emoji(pinfo[5]) 
     lvl_points = f"\n❇️Очки талантов: {pinfo[7]}" if pinfo[7] != 0 else ""; 
     lvl_taming = f"\n🔑Навык взлома: {pinfo[9]}" if pinfo[9] != 0 else ""

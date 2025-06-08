@@ -541,19 +541,24 @@ def taming_up(tid,value):
     return
 
 def event_exe(event, renew=False):
-    print(' SQL update event')
+    """
+    reset event or set date on execution
+    returns executor tid
+    """
+    print(' SQL update event.')
     #q = "UPDATE events SET last_executed =%s, is_active = %s WHERE name = %s"
     if renew:
         print('- - - SQL renew_event')
-        q = "UPDATE events SET last_executed = current_date - interval '1 month', is_active = false WHERE name = %s"
+        q = "UPDATE events SET last_executed = current_date - interval '1 month', is_active = false WHERE name = %s RETURNING executor_tid" 
     else:
         print('- - - SQL - exec now -')
-        q = "UPDATE events SET last_executed = current_date WHERE name = %s"
+        q = "UPDATE events SET last_executed = current_date WHERE name = %s RETURNING executor_tid"
     cur = con.cursor()
     cur.execute(q,(event,))
+    tid = cur.fetchone()[0]
     con.commit()
     cur.close()
-    return
+    return tid
 
 def event_get(event):
     """
@@ -1147,20 +1152,23 @@ def db_infect_pets(game_location=0, atomic: bool=False):
     '''
     epidemic
     '''
-    print(f"SQL infect location {game_location}")
+    print(f"SQL affect location: {game_location}")
     if game_location:
-        q = '''update pets p set health = health -4  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) returning owner;'''
-    else:
         if atomic:
-            q = '''update pets set health = health - 7 where animal_id <> 0 returning owner;'''
+            q = '''update pets p set health = health - 9 from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id <> 0 returning owner;'''
+            q2 = '''update pets p set health = health - 7 from (select u.telegram_id tid from players u where u.game_location <> %s) tt where tt.tid = p."owner" and  animal_id <> 0 returning owner;'''
             print('SQL ATOMIC')
         else:
-            q = '''update pets set health = health - 4 where animal_id not in (0,31) and id % (random() *10 + 1)::int = 0 returning owner;'''
+            q = '''update pets p set health = health -4  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) returning owner;'''
+    else:
+        q = '''update pets set health = health - 4 where animal_id not in (0,31) and id % (random() *10 + 1)::int = 0 returning owner;'''
     
     infected_pet_list = []
 
     with con.cursor() as cur:
         cur.execute(q,(game_location,)) if game_location else cur.execute(q)
+        if atomic:
+            cur.execute(q2,(game_location,))
         b = cur.fetchall()
         #print(list(b))
         for record in b:
@@ -1224,13 +1232,13 @@ def total_shit(tid):
     cur.close()
     return b
 
-def set_atomic_start():
+def set_atomic_start(tid):
     '''
     prepare atomic bomb for execution
     '''
     print(' - - ATOMIC BOMB PREPARED - -')
-    q = "UPDATE events set is_active = true, last_executed = current_date + interval '1 day' where name = 'atomic';"
-    con.execute(q)
+    q = "UPDATE events set is_active = true, last_executed = current_date + interval '1 day', executor_tid = %s where name = 'atomic';"
+    con.execute(q,(tid,))
     con.commit()
     return 
 
