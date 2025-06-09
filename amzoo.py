@@ -18,7 +18,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token_test.txt","r")
+f = open("token.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -162,8 +162,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(hunger_interval * 19)        
+        time.sleep(hunger_interval * 60 * 60)
+        #time.sleep(hunger_interval * 7)        
 
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
@@ -230,10 +230,15 @@ def get_hunger():
             else:
                 all_tids = sql_helper.db_get_all_tids()
                 for tid in all_tids:
+                    # try:
+                    #     bot.send_message(tid,f"☢️ Ядерный взрыв в {habitat_emoji(executor_location)}! Кто-то из игроков взорвал бомбу!")
+                    # except apihelper.ApiTelegramException:
+                    #     print('ERROR notify ill of hunger ' + str(tid) )
+                    # blast image
                     try:
-                        bot.send_message(tid,f"☢️ Ядерный взрыв в {habitat_emoji(executor_location)}! Кто-то из игроков взорвал бомбу!")
+                        bot.send_photo(tid,'AgACAgIAAxkBAAEDvcBoRYxIVGM--cm2UTUtFSQxBbu5BgACpPYxGwR_KUqqkVqgbc61lgEAAwIAA3MAAzYE')
                     except apihelper.ApiTelegramException:
-                        print('ERROR notify ill of hunger ' + str(tid) )
+                        print('Exception_img')
         else:
             print('this month asteroid was already')
         
@@ -535,7 +540,8 @@ def show_pets(query):
                 if random.randrange(0,zoo_size - pet_space):
                     print(f"{zoo_size} - {pet_space}")
                     pet_victim = sql_helper.db_get_cheapest_pet(query.from_user.id)
-                    sql_helper.db_change_health(pet_victim[0],cure=False,val=1)
+                    hurt = random.randrange(1,3)
+                    sql_helper.db_change_health(pet_victim[0],cure=False,val=hurt)
                     cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -1💔! "
             shit_load = sql_helper.clean_shit(pet_info[0])
             is_hard_cleaning = ''
@@ -546,6 +552,17 @@ def show_pets(query):
         elif int(extract_numbers(query.data,1)) == 5:
             sql_helper.total_shit(query.from_user.id)
             bot.send_message(query.from_user.id, f"🫧 Уборка всего зоопарка завершена 🫧")
+            #TODO duplicated code review
+            pet_space = sql_helper.db_get_player_info(query.from_user.id)[4]
+            zoo_size = len(owned_pets)
+            if zoo_size > pet_space:
+                print('zoo_oversize')
+                if random.randrange(0,zoo_size - pet_space):
+                    print(f"{zoo_size} - {pet_space}")
+                    pet_victim = sql_helper.db_get_cheapest_pet(query.from_user.id)
+                    hurt = random.randrange(1,4)
+                    sql_helper.db_change_health(pet_victim[0],cure=False,val=hurt)
+                    cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -1💔! "
                 
     else:
         cidx = 0
@@ -2255,15 +2272,18 @@ def check_relax(tid, overpopulated: bool=False):
     if day_left != 0:
         print('relax day or more')
         if overpopulated:
-            bot.send_message(tid,"⚠️Зоопарк переполнен и неможет приносить доход! ")
-            profit = 0
+            profit_percent = 5
         else:
-            profit = sql_helper.db_get_profit_pg(tid, 18) #sql_helper.db_get_profit(tid)  
-            bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
+            profit_percent = 15
+
+        profit = sql_helper.db_get_profit_pg(tid, profit_percent) #sql_helper.db_get_profit(tid)  
         if profit == -1:
             bot.send_message(tid,"⚠️ Мошенничество -10💰 " )
             sql_helper.db_remove_money(tid,10)
             return
+        
+        
+        bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
         
         if stamina_before == stamina_limit:
             sql_helper.db_stamina_up(tid,0,stamina_limit) # set new last_work time to prevent profit loop
