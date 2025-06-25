@@ -18,7 +18,7 @@ from collections import defaultdict # anticheat - protect from very frequently m
 
 print('- - - - - S T A R T E D - - - - - - ')
 
-f = open("token.txt","r")
+f = open("token_test.txt","r")
 token = f.readline()
 token = token.rstrip() # read about function
 print(token, type(token))
@@ -162,13 +162,17 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        time.sleep(hunger_interval * 60 * 60)
-        #time.sleep(hunger_interval * 7)        
+        #time.sleep(hunger_interval * 60 * 60)
+        time.sleep(hunger_interval * 5)        
 
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
-            
+            auto_feed = sql_helper.db_check_owned_item(player[0],33)
+            if auto_feed:
+                print(f"AUTOFEED {player[0]}")
+                sql_helper.db_remove_money(player[0],10)
+                sql_helper.db_change_hunger(player[3],True,10) # TODO maby add variation in some cases feed less or more
             health = player[2]
             if player[1] == 0:
                 try:
@@ -182,7 +186,8 @@ def get_hunger():
                     print('ERROR notify ill of hunger ' + str(player[0]) )
             else:
                 try:
-                    bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} голоден! Покормите его!")
+                    if not auto_feed:
+                        bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} голоден! Покормите его!")
                 except apihelper.ApiTelegramException:
                     print('ERROR notify hunger ' + str(player[0]) )
         
