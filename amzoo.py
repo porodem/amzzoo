@@ -1143,6 +1143,9 @@ def do_ability_up(query):
                 elif item[0] == 9:
                     sql_helper.db_points_down(tid,item[0])
                     sql_helper.lockpick_up(tid,1)
+                elif item[0] == 10:
+                    sql_helper.db_points_down(tid,item[0])
+                    sql_helper.lockpick_up(tid,1)
                 else:
                     print('not ready yet')
                     upgrade_ready = False
