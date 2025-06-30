@@ -162,8 +162,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(hunger_interval * 5)        
+        time.sleep(hunger_interval * 60 * 60)
+        #time.sleep(hunger_interval * 5)        
 
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
@@ -999,8 +999,9 @@ def do_tech(query):
                             sql_helper.db_exp_up(tid,5)
                     # ALIVE DINO
                     elif item[0] in [6,7]:
-                        
-                        if random.randrange(0,2):   # 50 percent success on revive dinosaur
+                        alive_percent = 20
+                        alive_dino = random.randrange(1,101)
+                        if alive_dino < alive_percent:   #  percent success on revive dinosaur
                             print(f"{datetime.now()};{tid};Research COMPLETED;{item[0]}")
                             #sql_helper.tech_done(tid,item[0])
                             trex_egg = 1 if item[0]== 7 else 0
@@ -1139,6 +1140,9 @@ def do_ability_up(query):
                 elif item[0] == 8:
                     sql_helper.db_points_down(tid,item[0])
                     sql_helper.db_change_pet_space(tid,1)
+                elif item[0] == 9:
+                    sql_helper.db_points_down(tid,item[0])
+                    sql_helper.lockpick_up(tid,1)
                 else:
                     print('not ready yet')
                     upgrade_ready = False
@@ -1493,8 +1497,12 @@ def stealing(query):
                     print('Successful harm: pet escaped!')
                     if strong_lock:
                         print('renew_zoo_pass')
-                        bot.send_message(query.from_user.id,"Сработала блокировка. Установлен случайный код от 1 до 4")
-                        new_pass = random.randrange(1,5)
+                        if pinfo[9] >= 3: 
+                            bot.send_message(query.from_user.id,"Сработала блокировка. Установлен случайный код от 1 до 2")
+                            new_pass = random.randrange(1,3)
+                        else:
+                            bot.send_message(query.from_user.id,"Сработала блокировка. Установлен случайный код от 1 до 4")
+                            new_pass = random.randrange(1,5)
                         sql_helper.db_change_zoo_pass(victim, new_pass)
                     if chapest_pet[2] == 31: # moomoth
                         sql_helper.db_change_health(chapest_pet[0],val=5)

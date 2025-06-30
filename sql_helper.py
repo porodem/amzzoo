@@ -1117,7 +1117,7 @@ def db_cure_pet(pet_id: int, tech_upgrade: bool=False):
     """
     print(' - - SQL pet curing - -')
     if tech_upgrade:
-        q = '''UPDATE pets SET health = max_health, max_health = max_health + 1 where id = %s;'''
+        q = '''UPDATE pets SET health = max_health, max_health = max_health + (random() *1)::int where id = %s;'''
         print(' TECH cure')
     else:
         q = '''UPDATE pets SET health = 10 where id = %s;'''
