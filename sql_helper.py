@@ -216,6 +216,7 @@ def db_check_owned_item(tid, id, parameter=''):
         cur = con.cursor()
         cur.execute(q,(tid,id))
         b = cur.fetchone()
+        con.commit()
         pid = 0 if b is None else b[0]
         return pid
     # TODO rewrite this fucn for for compact (use only 2nd variand it needs to change all func execution in amzoo.py)
@@ -224,6 +225,7 @@ def db_check_owned_item(tid, id, parameter=''):
         cur = con.cursor()
         cur.execute(q,(tid,id))
         b = cur.fetchone()
+        con.commit()
         return b
     
 
@@ -454,6 +456,7 @@ def db_get_field(location):
     f = cur.fetchone()
     #print(f) # show all feild array 
     cur.close()
+    con.commit()
     return f[0]
 
 def db_dig_field(location, cell, deep_cell, tid):
