@@ -42,3 +42,4 @@
 12. fix double daily profit form animals
 13. fix exp on trying dig without stamina
 14. travel only on button click not writing location name
+15. Add activity to cut bushes and leafs in zoo, to protect animals from leaving over fence, or obscure view that downgrade profit

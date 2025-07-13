@@ -240,8 +240,10 @@ def db_count_item_type(tid, id):
     b = cur.fetchone()
     return b[0]
 
+
 def db_get_profit(tid):
     """
+        DEPRICATED
         :param tid: telegram id of current player.
 
         :return sum of coins for owned pets

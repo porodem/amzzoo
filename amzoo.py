@@ -2253,7 +2253,7 @@ def search_money(message, stamina):
             bot.send_message(tid,f"Ура! Приз! 💰 x {coins}",  reply_markup=markup)            
         elif dig_result == 6:
             time.sleep(3)
-            coins = coins + 1 if coins < 3 else 5
+            coins = coins + 1 if coins < 3 else 6
             sql_helper.db_add_money(tid,coins)
             bot.send_message(tid,f"Ура! Приз! 💰 x {coins}",  reply_markup=markup)            
 
@@ -2979,13 +2979,13 @@ def get_statistics(tid):
     time_rest = time_rest.split('.')[0]
     nick = pinfo[11]
     lvl = pinfo[1]
-    coins = pinfo[0]
-    stamina = pinfo[2]   
-    stamina_max = pinfo[8] 
     pet_space = pinfo[4]
-    exp = pinfo[6]
     overpopulated = True if pet_cnt > pet_space else False;
     check_relax(tid, overpopulated)
+    coins = pinfo[0]
+    stamina = pinfo[2]   
+    stamina_max = pinfo[8]     
+    exp = pinfo[6]       
     loc = habitat_emoji(pinfo[5]) 
     lvl_points = f"\n❇️Очки талантов: {pinfo[7]}" if pinfo[7] != 0 else ""; 
     lvl_taming = f"\n🔑Навык взлома: {pinfo[9]}" if pinfo[9] != 0 else ""
