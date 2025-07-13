@@ -1278,6 +1278,7 @@ def lucky_treasure(query):
         dig_cell = int(extract_numbers(query.data))
 
         if dig_cell == 100:
+            print(f"exit fields")
             bot.send_message(query.from_user.id, "выход")
             bot.delete_message(query.message.chat.id, query.message.id)
             return
@@ -1856,19 +1857,21 @@ def pet_shop(message, catch_mode=False):
     location =  sql_helper.db_check_location(tid)
     if catch_mode:
         animals = sql_helper.db_get_animal_for_catch(location)
+        msg = 'Здесь есть шанс поймать:'
     else:
         animals = sql_helper.db_get_animal_shop(location, catch_mode)
+        msg = 'Здесь можно купить:'
     btn_pack = []
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)                   
     print(list(animals))
     for a in animals:
         if catch_mode:
-            btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}%")
-            msg = 'Здесь есть шанс поймать:'
+            btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰" + str(a[3]) + f" 💪{a[4]} 🎲{a[5]}% ")
+            msg = msg + f"\n {pet_emoji(a[0])} 💵{a[2]} ⭐{a[6]}"
         else:
             btn = types.KeyboardButton(f"#{a[0]} " + pet_emoji(a[0]) + " 💰 " + str(a[2]) + f" ⭐{a[3]}")
-            msg = 'Здесь можно купить:'
+            
         btn_pack.append(btn)
     btn_sell = types.KeyboardButton("Продать ")
     btn_back = types.KeyboardButton("🔙 Назад")

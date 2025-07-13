@@ -301,10 +301,10 @@ def db_get_animal_for_catch(location_id):
     """
         :param location_id: location of shop. [5 - any, 4 water, 3 forest, 2 field, 1 desert]
 
-        :return list: [animal_id, species, price, catch_price, catch_difficulty, catch_chance] from pets table
+        :return list: [animal_id, species, price, catch_price, catch_difficulty, catch_chance, 6 rating] from pets table
     """     
 
-    q = '''select id, species, price, catch_price, catch_difficulty, catch_chance  from animal_list al where habitat = %s and price > 0 and catch_price > 0;'''
+    q = '''select id, species, price, catch_price, catch_difficulty, catch_chance, rating  from animal_list al where habitat = %s and price > 0 and catch_price > 0;'''
     pet_list = []
 
     with con.cursor() as cur:
