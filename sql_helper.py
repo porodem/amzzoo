@@ -67,6 +67,15 @@ def db_check_owned_pets(tid):
 
     return result
 
+def db_check_overgrow_zoo(tid):
+    """
+        :return list: [pets_total, pet_space] for player
+    """
+    q = '''select count(*), max(pet_space)  from pets p join players u on p."owner" = u.telegram_id where owner = %s;'''
+    b = con.execute(q,(tid,)).fetchone()
+    con.commit()
+    return b
+
 def db_check_owned_coins(tid):
     print('SQL check owned coins')
     q = '''SELECT coins from players where telegram_id = %s'''
@@ -109,10 +118,10 @@ def db_pet_info(id):
     """
         :param id: pet id from pets table.
 
-        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating, shit] of pets 
+        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating, shit, 11 bloodthirsty] of pets 
     """
     print('SQL pet_info')
-    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating, shit from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
+    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating, shit, bloodthirsty from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
     cur = con.cursor()
     cur.execute(q,(id,))
     con.commit()
@@ -1089,11 +1098,11 @@ def db_change_hunger_all():
     """  
         lowers all pets hunger level on 1 (one)
 
-        :return list: [owner, animal_id, health, pet_id]
+        :return list: [owner, animal_id, health, pet_id, food_type]
     """
     print(' - - change hunger all pet DB func - -')
     q = '''select change_hunger(id, false , 1) from pets p where health > 0;;'''
-    q2 = '''select "owner", animal_id, health, id FROM pets p join players u on u.telegram_id = p.owner where hunger < 3 and pet_space <> 0 and p.animal_id <> 0;'''
+    q2 = '''select "owner", animal_id, health, p.id, a.food_type FROM pets p join players u on u.telegram_id = p.owner join animal_list a on a.id = p.animal_id where hunger < 3 and pet_space <> 0 and p.animal_id <> 0;'''
     cur = con.cursor()
     cur.execute(q)
     cur.execute(q2)
@@ -1200,7 +1209,16 @@ def db_change_health(pet_id: int, cure: bool=False, val: int=1):
     cur.close()
     return
 
-
+def carnivore_hunts(tid):
+    """
+    :return list: [hunt_result, attacker_pet_id, prey_pet_id, 3 attacker_animal_id,  4 prey_animal_id]
+    result codes: 1 kills, 2 attacks, 3 fight
+    """
+    print(f"SQL hunting :{tid} ")
+    q = "SELECT carnivore_hunts(%s)"
+    record = con.execute(q,(tid,)).fetchone()[0]
+    con.commit()
+    return record
 
 
 def shit(tid, shit_limit, chance):

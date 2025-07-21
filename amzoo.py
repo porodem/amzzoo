@@ -168,6 +168,21 @@ def get_hunger():
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
             print(list(player))
+            #hunting
+            zoo = sql_helper.db_check_overgrow_zoo(player[0])
+            if player[4] == 3 and zoo[0] > zoo[1]: # if it carnivore
+                        
+                        #if zoo[0] > zoo[1]:
+                            print('zoo is oversized')
+                            attack_info = sql_helper.carnivore_hunts(player[0])
+                            attack_result = int(attack_info[0])
+                            attacker = int(attack_info[1])
+                            prey = int(attack_info[2])
+                            print(f'attack result: {attack_info}')
+                            if attack_result == 1:
+                                bot.send_message(player[0],f"Ваш {pet_emoji(attacker)} напал на {pet_emoji(prey)} и загрыз его! Теперь {pet_emoji(attacker)} сыт и стал более кровожадным🩸.")
+                            elif attack_result > 1:
+                                bot.send_message(player[0],f"Ваш {pet_emoji(attacker)} напал на {pet_emoji(prey)}!")
             auto_feed = sql_helper.db_check_owned_item(player[0],33)
             if auto_feed:
                 print(f"AUTOFEED {player[0]}")
@@ -185,7 +200,9 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify ill of hunger ' + str(player[0]) )
             else:
+                # hunger carnivore attack 
                 try:
+                    # hunting was here before
                     if not auto_feed:
                         bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} голоден! Покормите его!")
                 except apihelper.ApiTelegramException:
@@ -548,6 +565,10 @@ def show_pets(query):
                     hurt = random.randrange(1,3)
                     sql_helper.db_change_health(pet_victim[0],cure=False,val=hurt)
                     cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -1💔! "
+                    if random.randrange(1,5) == 5:
+                        print('attack single on cleaning')
+                        attack_info = sql_helper.carnivore_hunts(query.from_user.id)
+                        print(f'cleaning single attack result: {attack_info}')
             shit_load = sql_helper.clean_shit(pet_info[0])
             is_hard_cleaning = ''
             if shit_load > 8:
@@ -567,7 +588,11 @@ def show_pets(query):
                     pet_victim = sql_helper.db_get_cheapest_pet(query.from_user.id)
                     hurt = random.randrange(1,4)
                     sql_helper.db_change_health(pet_victim[0],cure=False,val=hurt)
-                    cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -1💔! "
+                    cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -{hurt}💔! "
+                    if hurt == 4:
+                        print('attack on cleaning')
+                        attack_info = sql_helper.carnivore_hunts(query.from_user.id)
+                        print(f'cleaning attack result: {attack_info}')
                 
     else:
         cidx = 0
@@ -585,7 +610,8 @@ def show_pets(query):
     habitat = habitat_emoji(pet_info[6])
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
     shit_meter = '💩' * pet_info[10] if pet_info[10] else ''
-    btn_lbl = pet_emoji(pet_info[1]) + f"{shit_meter}\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat} \nрейтинг⭐:{pet_info[9]}"     
+    bloodthirsty = '🩸' * pet_info[11] if pet_info[11] else ''
+    btn_lbl = pet_emoji(pet_info[1]) + f"{bloodthirsty}{shit_meter}\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat} \nрейтинг⭐:{pet_info[9]}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn_pack = []
     action = '_0'
