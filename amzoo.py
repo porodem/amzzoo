@@ -174,7 +174,7 @@ def get_hunger():
                         
                         #if zoo[0] > zoo[1]:
                             print('zoo is oversized')
-                            attack_info = sql_helper.carnivore_hunts(player[0])
+                            attack_info = sql_helper.carnivore_hunts(player[0],player[3])
                             attack_result = int(attack_info[0])
                             attacker = int(attack_info[1])
                             prey = int(attack_info[2])

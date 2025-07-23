@@ -1220,6 +1220,17 @@ def carnivore_hunts(tid):
     con.commit()
     return record
 
+def carnivore_hunts(tid, attacker):
+    """
+    :return list: [hunt_result, attacker_pet_id, prey_pet_id, 3 attacker_animal_id,  4 prey_animal_id]
+    result codes: 1 kills, 2 attacks, 3 fight
+    """
+    print(f"SQL hunting :{tid} attacker {attacker} ")
+    q = "SELECT carnivore_hunts(%s,%s)"
+    record = con.execute(q,(tid,attacker)).fetchone()[0]
+    con.commit()
+    return record
+
 
 def shit(tid, shit_limit, chance):
     """
