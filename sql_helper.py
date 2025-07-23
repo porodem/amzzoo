@@ -71,7 +71,7 @@ def db_check_overgrow_zoo(tid):
     """
         :return list: [pets_total, pet_space] for player
     """
-    q = '''select count(*), max(pet_space)  from pets p join players u on p."owner" = u.telegram_id where owner = %s;'''
+    q = '''select count(*), max(pet_space)  from pets p join players u on p."owner" = u.telegram_id where owner = %s and animal_id <> 31;'''
     b = con.execute(q,(tid,)).fetchone()
     con.commit()
     return b
