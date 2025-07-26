@@ -52,7 +52,7 @@ def location_info(loc_id):
 
 def db_check_owned_pets(tid):
     #print('SQL check owned pets')
-    q = '''SELECT count(*) from pets where owner = %s'''
+    q = '''SELECT count(*) from pets where owner = %s and animal_id <> 31'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
