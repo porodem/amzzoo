@@ -593,6 +593,30 @@ def show_pets(query):
                         print('attack on cleaning')
                         attack_info = sql_helper.carnivore_hunts(query.from_user.id)
                         print(f'cleaning attack result: {attack_info}')
+        elif int(extract_numbers(query.data,1)) == 6:
+            print('freezing pet')
+            
+            freezer_item = sql_helper.db_check_owned_item(query.from_user.id,48)
+            #sql_helper.db_change_health(pet_info[0],cure=True,val=15)
+            # if sql_helper.tech_done_check(query.from_user.id,3) > 0:
+            #     sql_helper.db_cure_pet(pet_info[0], tech_upgrade=True)
+            # else:
+            #     sql_helper.db_cure_pet(pet_info[0], tech_upgrade=False)
+            sql_helper.freez_pet(pet_info[0])
+            sql_helper.db_remove_property(freezer_item)
+            bot.send_message(query.from_user.id, "❄️ заморожен")
+        elif int(extract_numbers(query.data,1)) == 7:
+            print('melt pet')
+            
+            #freezer_item = sql_helper.db_check_owned_item(query.from_user.id,48) # TODO maby add unfreez items
+            #sql_helper.db_change_health(pet_info[0],cure=True,val=15)
+            # if sql_helper.tech_done_check(query.from_user.id,3) > 0:
+            #     sql_helper.db_cure_pet(pet_info[0], tech_upgrade=True)
+            # else:
+            #     sql_helper.db_cure_pet(pet_info[0], tech_upgrade=False)
+            #sql_helper.db_remove_property(freezer_item)
+            bot.send_message(query.from_user.id, "💧 Разморожен") # TODO maby add chance fail or health down
+            sql_helper.freez_pet(pet_info[0], True)
                 
     else:
         cidx = 0
@@ -620,6 +644,15 @@ def show_pets(query):
         btn_backward = types.InlineKeyboardButton('◀',callback_data="pet" + str(cidx-1) + action)
         btn_forward = types.InlineKeyboardButton('▶',callback_data="pet" + str(next_cid) + action)
         btn_pack = btn_pack + [btn_backward,btn_forward]
+    if pet_info[4] > 50:
+        btn_melt = types.InlineKeyboardButton(f"💧",callback_data="pet" + str(cidx) + '_7')
+        btn_pack = btn_pack + [btn_melt]
+    if pet_info[2] > 9 and pet_info[3] > 9 and pet_info[4] < 90:
+        freezing_item = sql_helper.db_check_owned_item(query.from_user.id, 48)
+        if freezing_item > 0:
+            print(f"{query.from_user.id} have freezer {freezing_item}")
+            btn_freez = types.InlineKeyboardButton(f"❄️",callback_data="pet" + str(cidx) + '_6')
+            btn_pack = btn_pack + [btn_freez]
     if pet_info[2] < 10 and pet_info[1] != 0:
         btn_feed = types.InlineKeyboardButton(f"🍽💰{feed_price}",callback_data="pet" + str(cidx) + '_1')
         if len(owned_pets) > 1:
@@ -961,7 +994,8 @@ def do_tech(query):
                         resourses_required = True
                 else:
                     print('TECH SOMETHING ELSE - - - ')
-                     
+                    if tech_id > 3:
+                        sql_helper.db_remove_properties(tid, 46)
                     sql_helper.tech_player_start(tid,item[0])  
                     sql_helper.db_remove_money(tid,required_coins)              
             else:
@@ -1070,6 +1104,13 @@ def do_tech(query):
                         sql_helper.db_get_item(tid,21)
                         sql_helper.tech_reset_hard(tid,item[0])
                         bot.send_message(tid, f"☢️Ядерная бомба создана!")
+                        bot.delete_message(query.message.chat.id, query.message.id) 
+                        return
+                    elif item[0] == 11:
+                        print('FREEZING DONE')
+                        sql_helper.db_get_item(tid,48)
+                        sql_helper.tech_reset_hard(tid,item[0])
+                        bot.send_message(tid, f"❄️ Вещество для замораживания животного создано!")
                         bot.delete_message(query.message.chat.id, query.message.id) 
                         return
                     else:

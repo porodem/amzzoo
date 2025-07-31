@@ -259,7 +259,7 @@ def db_get_profit(tid):
     """
     profit_percent = 18
     print(f"Profit {tid} at " + str(datetime.now()))
-    q = '''select sum(price) * %s / 100 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = %s'''
+    q = '''select sum(price) * %s / 100 as profit from pets p join animal_list a on a.id = p.animal_id where "owner" = %s and mood < 50'''
     cur = con.cursor()
     cur.execute(q,(profit_percent,tid,))
     b = cur.fetchone()
@@ -439,7 +439,7 @@ def db_get_cheapest_pet(tid):
     Returns: list: [pet ID, PRICE, animal_id]
     '''
     print('SQL get cheapest pet')
-    q = '''select p.id, al.price, p.animal_id from pets p join animal_list al on al.id = p.animal_id where p.animal_id > 2 and "owner" = %s order by price limit 1;'''
+    q = '''select p.id, al.price, p.animal_id from pets p join animal_list al on al.id = p.animal_id where p.animal_id > 2 and "owner" = %s and mood < 10 order by price limit 1;'''
     cur = con.cursor()
     cur.execute(q,(tid,))
     b = cur.fetchone()
@@ -1101,7 +1101,7 @@ def db_change_hunger_all():
         :return list: [owner, animal_id, health, pet_id, food_type]
     """
     print(' - - change hunger all pet DB func - -')
-    q = '''select change_hunger(id, false , 1) from pets p where health > 0;;'''
+    q = '''select change_hunger(id, false , 1) from pets p where health > 0 and mood < 50;;'''
     q2 = '''select "owner", animal_id, health, p.id, a.food_type FROM pets p join players u on u.telegram_id = p.owner join animal_list a on a.id = p.animal_id where hunger < 3 and pet_space <> 0 and p.animal_id <> 0;'''
     cur = con.cursor()
     cur.execute(q)
@@ -1145,6 +1145,18 @@ def db_cure_pet(pet_id: int, tech_upgrade: bool=False):
     cur.close()
     return result
 
+def freez_pet(pet_id: int, unfreez: bool=False):
+    print(f" SQL pet freezing {pet_id}")
+    if unfreez:
+        print('unfreez')
+        q = '''UPDATE pets SET mood = 3 where id = %s;'''
+    else:
+        q = '''UPDATE pets SET mood = 100 where id = %s;'''
+        print('freez')
+    b = con.execute(q,(pet_id,))
+    con.commit()
+    return 
+
 def tech_antibiotic_use(tid, tech_id):
     q = "UPDATE player_tech SET lvl = lvl + 1 WHERE tid = %s and tech_id = %s returning lvl;"
     b = con.execute(q,(tid,tech_id)).fetchone()[0]
@@ -1173,9 +1185,9 @@ def db_infect_pets(game_location=0, atomic: bool=False):
             q2 = '''update pets p set health = health - 7 from (select u.telegram_id tid from players u where u.game_location <> %s) tt where tt.tid = p."owner" and  animal_id <> 0 returning owner;'''
             print('SQL ATOMIC')
         else:
-            q = '''update pets p set health = health -4  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) returning owner;'''
+            q = '''update pets p set health = health -4  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) and mood < 50 returning owner;'''
     else:
-        q = '''update pets set health = health - 4 where animal_id not in (0,31) and id % (random() *10 + 1)::int = 0 returning owner;'''
+        q = '''update pets set health = health - 4 where animal_id not in (0,31) and mood < 50 and id % (random() *10 + 1)::int = 0 returning owner;'''
     
     infected_pet_list = []
 

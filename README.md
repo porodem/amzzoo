@@ -45,3 +45,4 @@
 15. Add activity to cut bushes and leafs in zoo, to protect animals from leaving over fence, or obscure view that downgrade profit
 16. think about space that bones consume in zoo
 17. don't increase health of mamooth on antibiotick buff
+18. stealing pet increase when shit on animal (mood maby too) + think about bloodthirsty

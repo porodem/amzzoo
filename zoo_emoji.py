@@ -128,6 +128,8 @@ def item_emoji(id):
         e = "☢️"
     elif id == 47:
         e = "💫"
+    elif id == 48:
+        e = "❄️"
     else:
         e = "✖"
     return e
@@ -159,6 +161,9 @@ def define_mood(pet: list, environment: list=None):
     hunger = pet[2]
     health = pet[3]
     habitat = pet[6]
+    freezd = True if pet[4] == 100 else False
+    if freezd:
+        return "🥶"
     shit = pet[10]
     sum_points = hunger + health - shit
     mood = "😐"
@@ -195,6 +200,8 @@ def tech_emoji(id):
         e = "💫"
     elif id == 10:
         e = "⚛️"
+    elif id == 11:
+        e = "❄️"
     else:
         e = "❔"
     return e
