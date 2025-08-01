@@ -2642,7 +2642,7 @@ def vet(query):
         health = p[3]
         max_health = p[5]
         if p[1] == 0 or health == max_health: continue # escape corpses
-        cure_price = int((p[2] * 0.7) * ((max_health-health) / max_health))  #str(int(p[2] / 2)) # sell price its original price / 2
+        cure_price = int((p[2] * 0.6) * ((max_health-health) / max_health))  #str(int(p[2] / 2)) # sell price its original price / 2
         if cure_price == 0: cure_price = 1
         emj = str(pet_emoji(p[1]) + f" ♥ {str(health)}/{max_health} 💰x" + str(cure_price))
         cb_prefix = 'cure'
