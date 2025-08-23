@@ -162,8 +162,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        time.sleep(hunger_interval * 60 * 60)
-        #time.sleep(hunger_interval * 5)        
+        #time.sleep(hunger_interval * 60 * 60)
+        time.sleep(hunger_interval * 5)        
 
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
@@ -565,7 +565,7 @@ def show_pets(query):
                     hurt = random.randrange(1,3)
                     sql_helper.db_change_health(pet_victim[0],cure=False,val=hurt)
                     cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -1💔! "
-                    if random.randrange(1,5) == 5:
+                    if random.randrange(1,5) == 4:
                         print('attack single on cleaning')
                         attack_info = sql_helper.carnivore_hunts(query.from_user.id)
                         print(f'cleaning single attack result: {attack_info}')
@@ -589,7 +589,7 @@ def show_pets(query):
                     hurt = random.randrange(1,4)
                     sql_helper.db_change_health(pet_victim[0],cure=False,val=hurt)
                     cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -{hurt}💔! "
-                    if hurt == 4:
+                    if hurt == 3:
                         print('attack on cleaning')
                         attack_info = sql_helper.carnivore_hunts(query.from_user.id)
                         print(f'cleaning attack result: {attack_info}')

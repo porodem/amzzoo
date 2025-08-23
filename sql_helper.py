@@ -1223,7 +1223,7 @@ def db_change_health(pet_id: int, cure: bool=False, val: int=1):
 
 def carnivore_hunts(tid):
     """
-    :return list: [hunt_result, attacker_pet_id, prey_pet_id, 3 attacker_animal_id,  4 prey_animal_id]
+    :return list: [hunt_result, attacker_animal, prey_animal_id, 3 attacker_pet_id,  4 prey_pet_id]
     result codes: 1 kills, 2 attacks, 3 fight
     """
     print(f"SQL hunting :{tid} ")
@@ -1234,7 +1234,7 @@ def carnivore_hunts(tid):
 
 def carnivore_hunts(tid, attacker):
     """
-    :return list: [hunt_result, attacker_pet_id, prey_pet_id, 3 attacker_animal_id,  4 prey_animal_id]
+    :return list: [hunt_result, attacker_animal, prey_animal_id, 3 attacker_pet_id,  4 prey_pet_id]
     result codes: 1 kills, 2 attacks, 3 fight
     """
     print(f"SQL hunting :{tid} attacker {attacker} ")
