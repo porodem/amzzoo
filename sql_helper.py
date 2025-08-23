@@ -1221,7 +1221,7 @@ def db_change_health(pet_id: int, cure: bool=False, val: int=1):
     cur.close()
     return
 
-def carnivore_hunts(tid):
+def some_carnivore_hunts(tid):
     """
     :return list: [hunt_result, attacker_animal, prey_animal_id, 3 attacker_pet_id,  4 prey_pet_id]
     result codes: 1 kills, 2 attacks, 3 fight
@@ -1266,13 +1266,13 @@ def clean_shit(pet):
 
 def total_shit(tid):
     """
-    returns: id, time_start, time_point, stamina_spend, tid, tech_id, lvl 
+    returns: 
     """
     q = "select sum(shit) shit_sum from pets where owner = %s;"
     q2 = "UPDATE pets SET shit = 0 where owner = %s"
     cur = con.cursor()
     cur.execute(q,(tid,))
-    b = cur.fetchall()
+    b = cur.fetchone()[0]
     cur.execute(q2,(tid,))
     con.commit()
     cur.close()

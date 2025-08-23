@@ -567,19 +567,22 @@ def show_pets(query):
                     cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -1💔! "
                     if random.randrange(1,5) == 4:
                         print('attack single on cleaning')
-                        attack_info = sql_helper.carnivore_hunts(query.from_user.id)
+                        attack_info = sql_helper.some_carnivore_hunts(query.from_user.id)
                         print(f'cleaning single attack result: {attack_info}')
             shit_load = sql_helper.clean_shit(pet_info[0])
             is_hard_cleaning = ''
-            if shit_load > 8:
+            if shit_load > 5:
                 sql_helper.db_stamina_drain(query.from_user.id,1)
-                is_hard_cleaning = f" Это было непросто! -1💪. Уборка более 8 куч 💩 требует сил."
+                is_hard_cleaning = f" Это было непросто! -1💪. Уборка более 5 куч 💩 требует сил."
             bot.send_message(query.from_user.id, f"{cleaning_text} {is_hard_cleaning}")
         elif int(extract_numbers(query.data,1)) == 5:
-            sql_helper.total_shit(query.from_user.id)
-            bot.send_message(query.from_user.id, f"🫧 Уборка всего зоопарка завершена 🫧")
+            shit_load = sql_helper.total_shit(query.from_user.id)
+            if shit_load > 10:
+                sql_helper.db_stamina_drain(query.from_user.id,1)
+                is_hard_cleaning = f" Это было непросто! -1💪. Уборка более 10 куч 💩 требует сил даже с калосборниками."
+            bot.send_message(query.from_user.id, f"🫧 Уборка всего зоопарка завершена 🫧\n 💩x{shit_load} {is_hard_cleaning}")
             #TODO duplicated code review
-            pinfo = sql_helper.db_get_player_info(query.from_user.id)[4]
+            pinfo = sql_helper.db_get_player_info(query.from_user.id)
             pet_space = pinfo[4]
             zoo_size = len(owned_pets)
             if zoo_size > pet_space:
@@ -592,7 +595,7 @@ def show_pets(query):
                     cleaning_text = f"{pet_emoji(pet_info[1])}Наступил на {pet_emoji(pet_victim[2])} во время уборки -{hurt}💔! "
                     if hurt == 3:
                         print('attack on cleaning')
-                        attack_info = sql_helper.carnivore_hunts(query.from_user.id)
+                        attack_info = sql_helper.some_carnivore_hunts(query.from_user.id)
                         print(f'cleaning attack result: {attack_info}')
         elif int(extract_numbers(query.data,1)) == 6:
             print('freezing pet')
