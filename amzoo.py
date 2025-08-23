@@ -162,8 +162,8 @@ def get_hunger():
                 except apihelper.ApiTelegramException:
                     print('ERROR notify dead of hunger ' + str(player[0]) )
 
-        #time.sleep(hunger_interval * 60 * 60)
-        time.sleep(hunger_interval * 5)        
+        time.sleep(hunger_interval * 60 * 60)
+        #time.sleep(hunger_interval * 5)        
 
         hungry_animals = sql_helper.db_change_hunger_all()
         for player in hungry_animals:
@@ -579,10 +579,11 @@ def show_pets(query):
             sql_helper.total_shit(query.from_user.id)
             bot.send_message(query.from_user.id, f"🫧 Уборка всего зоопарка завершена 🫧")
             #TODO duplicated code review
-            pet_space = sql_helper.db_get_player_info(query.from_user.id)[4]
+            pinfo = sql_helper.db_get_player_info(query.from_user.id)[4]
+            pet_space = pinfo[4]
             zoo_size = len(owned_pets)
             if zoo_size > pet_space:
-                print('zoo_oversize')
+                print(f'zoo_oversize {pinfo[11]}')
                 if random.randrange(0,zoo_size - pet_space):
                     print(f"{zoo_size} - {pet_space}")
                     pet_victim = sql_helper.db_get_cheapest_pet(query.from_user.id)
@@ -2610,7 +2611,8 @@ def vet(query):
     tid = query.from_user.id
     if hasattr(query,'data'):
         print(query.data)
-        coins = sql_helper.db_get_player_info(tid)[0]
+        pinfo = sql_helper.db_get_player_info(tid)[0]
+        coins = pinfo[0]
         cure_price = int(extract_numbers(query.data, 1))   
         print('cure_price from data:' + str(cure_price))     
         if coins < cure_price:
@@ -2618,9 +2620,9 @@ def vet(query):
             bot.send_message(query.from_user.id, lbl, reply_markup=None)
             
         else:
-            healing_pet_id = extract_numbers(query.data)
-            print('Healing pet_id: ' + healing_pet_id)     
+            healing_pet_id = extract_numbers(query.data)    
             animal_id = sql_helper.db_buy_healing(healing_pet_id, cure_price, tid)#sql_helper.db_cure_pet(healing_pet_id)  
+            print(f'Healing {pinfo[11]} animal {pet_emoji(animal_id)} pet_id: ' + healing_pet_id ) 
             lbl = str(pet_emoji(animal_id)) + 'вылечен 🤗  💰-' + str(cure_price) 
             bot.send_message(tid, '💊')
             # TODO learn how to show notification and show it  
