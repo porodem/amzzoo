@@ -46,3 +46,6 @@
 16. think about space that bones consume in zoo
 17. don't increase health of mamooth on antibiotick buff
 18. stealing pet increase when shit on animal (mood maby too) + think about bloodthirsty
+19. Decrease durability on luxury items and to repair it go to location with reparing station.
+20. add field GROUP to table players. Name of groups can be chosen when in zoo management on request infive code
+21. maby add ability to became owner of auction (in every location or only one) and owner receives fee for every operation of exchange

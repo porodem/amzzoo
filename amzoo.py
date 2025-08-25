@@ -1337,6 +1337,7 @@ def lucky_treasure(query):
     player = sql_helper.db_get_player_info(tid)
     location = player[5]
     stamina = player[2]
+    stamina_max = player[8]
 
     # TODO add ability to set mine (bomb) in cell 
     # TODO add tool required ⛏️
@@ -1553,7 +1554,7 @@ def stealing(query):
     print(f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}; pwr:{pwr}; act: {action}")
 
     if input_pass == secret:
-        sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove whan stealing (lockpicking improved)
+        sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove when stealing (lockpicking improved)
         if action == 1:
             print('cage unlocked')
             chapest_pet = sql_helper.db_get_cheapest_pet(victim)
@@ -1705,12 +1706,16 @@ def search_victims(query):
                 # TODO tomato
                 print('tomato')
                 thrower = sql_helper.db_get_player_info(tid)[11]
-                try:
-                    bot.send_message(victim,f"{thrower} бросил в вас тухлый помидор 🍅")
-                    bot.send_message(query.from_user.id, f"Вы бросили тухлый помидор 🍅")
-                    # TODO maby send message for thrower also
-                except apihelper.ApiTelegramException:
-                    print('tomato exception')
+                neighbourhood = sql_helper.db_get_nearby_players(location)
+                target_name = sql_helper.db_get_player_info(victim)[11]
+                for n in neighbourhood:
+                    try:
+                        bot.send_message(n,f"{thrower} бросил в {target_name} тухлый помидор 🍅")
+                        #bot.send_message(victim,f"{thrower} бросил в вас тухлый помидор 🍅")
+                        #bot.send_message(query.from_user.id, f"Вы бросили тухлый помидор 🍅")
+                        # TODO maby send message for thrower also
+                    except apihelper.ApiTelegramException:
+                        print('tomato exception')
                 bot.delete_message(query.message.chat.id, query.message.id)
                 sql_helper.db_remove_money(tid,10)
                 return
@@ -2614,7 +2619,7 @@ def vet(query):
     tid = query.from_user.id
     if hasattr(query,'data'):
         print(query.data)
-        pinfo = sql_helper.db_get_player_info(tid)[0]
+        pinfo = sql_helper.db_get_player_info(tid)
         coins = pinfo[0]
         cure_price = int(extract_numbers(query.data, 1))   
         print('cure_price from data:' + str(cure_price))     
