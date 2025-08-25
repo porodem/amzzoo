@@ -1710,7 +1710,7 @@ def search_victims(query):
                 target_name = sql_helper.db_get_player_info(victim)[11]
                 for n in neighbourhood:
                     try:
-                        bot.send_message(n,f"{thrower} бросил в {target_name} тухлый помидор 🍅")
+                        bot.send_message(n[0],f"{thrower} бросил в {target_name} тухлый помидор 🍅")
                         #bot.send_message(victim,f"{thrower} бросил в вас тухлый помидор 🍅")
                         #bot.send_message(query.from_user.id, f"Вы бросили тухлый помидор 🍅")
                         # TODO maby send message for thrower also
