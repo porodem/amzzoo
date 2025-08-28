@@ -2047,7 +2047,16 @@ def catch_pet(message):
             time.sleep(2)
             print(f"catching {tid}; upgrade worked; slot {dig_result}")
             sql_helper.db_get_pet(tid, animal_id)
-            bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)    
+            bot.send_message(tid,f"Ура! Вы поймали {pet_emoji(animal_id)}",  reply_markup=markup)
+            # TODO send only for players with special item (telescop, or some new)
+            all_active_players = sql_helper.db_get_all_tids()
+            for n in all_active_players:
+                if n == tid:
+                    continue
+                try:
+                    bot.send_message(n,f"{info[11]} поймал {pet_emoji(animal_id)}!")
+                except apihelper.ApiTelegramException:
+                    print('catch announce exception')       
             return
         else:
             print(f"failed with slot: {dig_result}")
