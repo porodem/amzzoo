@@ -963,14 +963,15 @@ def remove_old_dead_pets():
     
 
 def db_buy_item(tid, item_id, extra = 0.0):
-    print(' - -  write to DB buy item - -')
+    """ returns: row (item_id, item_name)"""
+    print('SQL buy item - -')
     q = '''SELECT buy_item(%s,%s,%s);'''
     cur = con.cursor()
     cur.execute(q,(tid,item_id,extra))
     result = cur.fetchone()
     con.commit()
     print('result ' + str(result))
-    return result[0]
+    return result
 
 def db_get_item(tid, item_id):
     """ player receive item for free

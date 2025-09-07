@@ -1813,23 +1813,24 @@ def to_shop(message):
     else:
         echo_all(message)
 
-def bazar_shop(message):
-    tid = message.from_user.id  
-    # TODO check owned items
-    location =  sql_helper.db_check_location(tid)
-    available_items = sql_helper.db_get_bazar_shop_items(location)
-    btn_pack = []
+# TODO looks like depricated
+# def bazar_shop(message):
+#     tid = message.from_user.id  
+#     # TODO check owned items
+#     location =  sql_helper.db_check_location(tid)
+#     available_items = sql_helper.db_get_bazar_shop_items(location)
+#     btn_pack = []
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)                   
-    print(list(available_items))
-    for a in available_items:
-        btn = types.KeyboardButton(f"#{a[0]}" + " 📦 "  + a[1] + " 💰 " + str(a[2]))
-        btn_pack.append(btn)
-    #btn_sell = types.KeyboardButton("Продать ") # NOTICE maby later
-    btn_back = types.KeyboardButton("🔙 Назад")
-    markup.add(*btn_pack,btn_back)
-    bot.send_message(tid, 'Выберите покупку:', reply_markup=markup)
-    bot.register_next_step_handler(message, buy_item)
+#     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)                   
+#     print(list(available_items))
+#     for a in available_items:
+#         btn = types.KeyboardButton(f"#{a[0]}" + " 📦 "  + a[1] + " 💰 " + str(a[2]))
+#         btn_pack.append(btn)
+#     #btn_sell = types.KeyboardButton("Продать ") # NOTICE maby later
+#     btn_back = types.KeyboardButton("🔙 Назад")
+#     markup.add(*btn_pack,btn_back)
+#     bot.send_message(tid, 'Выберите покупку:', reply_markup=markup)
+#     bot.register_next_step_handler(message, buy_item)
 
 @bot.callback_query_handler(lambda message: 'bazar' in message.data )
 def bazar_shop_new(message):
@@ -1863,7 +1864,7 @@ def bazar_shop_new(message):
                 extra_price = 1
             buying_ok = sql_helper.db_buy_item(tid,item[0], extra_price)
             print(f"{datetime.now()}, {tid} buying item {item[0]} in loc: {location};extra_price:{extra_price};buy_ok:{buying_ok}")    
-            if buying_ok:
+            if buying_ok[0]:
                 bot.answer_callback_query(message.id, f"📦 Вы купили {item[1]}!")            
                 if item[0] == 10:
                     bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре! (20 символов)\n⚠️ Разрешены только цифры, буквы и знак подчеркивания _.")
@@ -2146,6 +2147,7 @@ def buy_pet(message):
     else:
         echo_all(message)
 
+
 def buy_item(message):
     print(str(datetime.now()) + f";{message.from_user.id} buying")
     if re.match('.*#.*',message.text):
@@ -2159,12 +2161,13 @@ def buy_item(message):
             bot.send_message(message.from_user.id, "❌ У вас уже есть такой предмет!")
             return
         ok = sql_helper.db_buy_item(message.from_user.id, item_id)
+        print(f"item: {ok[1]}")
         # item id 1 and 2 its different types of boxes
-        if ok and item_id in [1,2]:
+        if ok[0] and item_id in [1,2]:
             bot.send_message(message.from_user.id, "🎉 Поздравляем с покупкой! Вернитесь домой, чтобы использовать клетку.\n Эту клетку можно использовать только один раз!")
             bot.send_photo(message.from_user.id,'AgACAgIAAxkBAAIkIWdC48JXnJZFGVULAAFBQefELqAT0AAC8eUxG72lGUq9LWS8E531jQEAAwIAA3MAAzYE')
             echo_all(message)
-        elif ok and item_id == 10:
+        elif ok[0] and item_id == 10:
             # passport 
             bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре! ")
             bot.register_next_step_handler(message, set_nickname)
