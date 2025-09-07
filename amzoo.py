@@ -158,55 +158,55 @@ def get_hunger():
                 warn_msg = f"☄️ Внимание! Обнаружен опасный астероид! Расчетное место падения: {tloc_icon}. Астероид упадет примерно через {hunger_interval} часа."
             for a in astronomers:
                 try:
-                    bot.send_message(a[0], f"warn_msg")
+                    bot.send_message(a[0], f"{warn_msg}")
                 except apihelper.ApiTelegramException:
-                    print('ERROR notify dead of hunger ' + str(player[0]) )
+                    print('ERROR notify catastrophe ' + str(a[0]) )
 
         time.sleep(hunger_interval * 60 * 60)
         #time.sleep(hunger_interval * 5)        
 
         hungry_animals = sql_helper.db_change_hunger_all()
-        for player in hungry_animals:
-            print(list(player))
+        for pet in hungry_animals:
+            print(list(pet))
+            tid = pet[0]
+            nick = pet[5]
             #hunting
-            zoo = sql_helper.db_check_overgrow_zoo(player[0])
-            if player[4] == 3 and zoo[0] > zoo[1]: # if it carnivore
-                        
-                        #if zoo[0] > zoo[1]:
-                            print('zoo is oversized')
-                            attack_info = sql_helper.carnivore_hunts(player[0],player[3])
-                            attack_result = int(attack_info[0])
-                            attacker = int(attack_info[1])
-                            prey = int(attack_info[2])
-                            print(f'attack result: {attack_info}')
-                            if attack_result == 1:
-                                bot.send_message(player[0],f"Ваш {pet_emoji(attacker)} напал на {pet_emoji(prey)} и загрыз его! Теперь {pet_emoji(attacker)} сыт и стал более кровожадным🩸.")
-                            elif attack_result > 1:
-                                bot.send_message(player[0],f"Ваш {pet_emoji(attacker)} напал на {pet_emoji(prey)}!")
-            auto_feed = sql_helper.db_check_owned_item(player[0],33)
+            zoo = sql_helper.db_check_overgrow_zoo(pet[0])
+            if pet[4] == 3 and zoo[0] > zoo[1]: # if it carnivore
+                print(str(datetime.now()) + f'{nick} Zoo oversized for hungry {pet[6]}')
+                attack_info = sql_helper.carnivore_hunts(tid,pet[3])
+                attack_result = int(attack_info[0])
+                attacker = int(attack_info[1])
+                prey = int(attack_info[2])
+                print(f'attack result: {attack_info}')
+                if attack_result == 1:
+                    bot.send_message(pet[0],f"Ваш {pet_emoji(attacker)} напал на {pet_emoji(prey)} и загрыз его! Теперь {pet_emoji(attacker)} сыт и стал более кровожадным🩸.")
+                elif attack_result > 1:
+                    bot.send_message(pet[0],f"Ваш {pet_emoji(attacker)} напал на {pet_emoji(prey)}!")
+            auto_feed = sql_helper.db_check_owned_item(pet[0],33)
             if auto_feed:
-                print(f"AUTOFEED {player[0]}")
-                sql_helper.db_remove_money(player[0],10)
-                sql_helper.db_change_hunger(player[3],True,10) # TODO maby add variation in some cases feed less or more
-            health = player[2]
-            if player[1] == 0:
+                print(f"AUTOFEED {pet[0]}")
+                sql_helper.db_remove_money(pet[0],10)
+                sql_helper.db_change_hunger(pet[3],True,10) # TODO maby add variation in some cases feed less or more
+            health = pet[2]
+            if pet[1] == 0:
                 try:
-                    bot.send_message(player[0], pet_emoji(player[1]) + " Один из питомцев умер 😥")
+                    bot.send_message(pet[0], pet_emoji(pet[1]) + " Один из питомцев умер 😥")
                 except apihelper.ApiTelegramException:
-                    print('ERROR notify dead of hunger ' + str(player[0]) )
+                    print('ERROR notify dead of hunger ' + str(pet[0]) )
             elif health < 6:
                 try:
-                    bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} заболел! Срочно вылечите его!💊 ")
+                    bot.send_message(pet[0],f"Ваш {pet_emoji(pet[1])} заболел! Срочно вылечите его!💊 ")
                 except apihelper.ApiTelegramException:
-                    print('ERROR notify ill of hunger ' + str(player[0]) )
+                    print('ERROR notify ill of hunger ' + str(pet[0]) )
             else:
                 # hunger carnivore attack 
                 try:
                     # hunting was here before
                     if not auto_feed:
-                        bot.send_message(player[0],f"Ваш {pet_emoji(player[1])} голоден! Покормите его!")
+                        bot.send_message(pet[0],f"Ваш {pet_emoji(pet[1])} голоден! Покормите его!")
                 except apihelper.ApiTelegramException:
-                    print('ERROR notify hunger ' + str(player[0]) )
+                    print('ERROR notify hunger ' + str(pet[0]) )
         
         prev_refil_pits_day = int(sql_helper.event_get('refill')[1])
         previous_epidemic_day = int(sql_helper.event_get('epidemic')[1])
@@ -493,10 +493,13 @@ def game_guide(query):
 
 @bot.callback_query_handler(lambda query: 'pet' in query.data )
 def show_pets(query):
-    print(' - - show pets function (callback) -- : ')
-    owned_pets = sql_helper.db_get_owned_pets(query.from_user.id)
-    total_pets_price = 0
-    total_pets_hunger = 0
+    write_log(' Show pets')
+    tid = query.from_user.id
+    pinfo = sql_helper.db_get_player_info(tid)
+    player = pinfo[11]
+    owned_pets = sql_helper.db_get_owned_pets(tid)
+    #total_pets_price = 0
+    #total_pets_hunger = 0
     total_feed_price = 0
     for pet in owned_pets:
         #total_pets_price = total_pets_price + pet[2]
@@ -504,8 +507,8 @@ def show_pets(query):
         hunger_x = float(f"0.{pet[4]}") if pet[4] < 10 else 1
         total_feed_price += int(pet[2] / 10) - int(pet[2]/10 * hunger_x)
         #print(f"price:{str(pet[2])};hunger:{pet[4]};total_feed_price {total_feed_price}")
-    print(f"total pet price: {total_pets_price} and hunger: {total_pets_hunger}")
-    print(str(query.from_user.id) + f" has {len(owned_pets)}")
+    #print(f"total pet price: {total_pets_price} and hunger: {total_pets_hunger}")
+    print(str(datetime.now()) + f";{tid} {player} has {len(owned_pets)} pets")
     if len(owned_pets) == 0:
         bot.send_message(query.from_user.id, "У вас нет питомцев")
         return
@@ -838,11 +841,10 @@ def stats_up_selection(message):
         echo_all(message)
 
 
-def set_cage_password(message, stype = 0, item = None):
-    print('input_numbers')
-    
-    tid = message.from_user.id
+def set_cage_password(message, stype = 0, item = None):      
+    tid = message.from_user.id    
     if not stype:
+        print(str(datetime.now()) + f";{tid} set cage pass")
         password = message.text
         if re.match('^\d$',password):
             sql_helper.db_change_zoo_pass(message.from_user.id, password)
@@ -851,6 +853,7 @@ def set_cage_password(message, stype = 0, item = None):
             bot.send_message(message.from_user.id, "❌ только одну цифру!")
             bot.register_next_step_handler(message, set_cage_password)
     elif stype in  (1,2):
+        print(str(datetime.now()) + f";{tid} inputs auction price")
         if re.match('^\d{1,4}$',message.text):
             minimal_price = int(item[2] / 2)
             if stype == 1:
@@ -889,8 +892,8 @@ def set_cage_password(message, stype = 0, item = None):
 
 @bot.callback_query_handler(lambda query: 'tech' in query.data)
 def do_tech(query):
-    print('- - TECH - -')
     tid = query.from_user.id 
+    print(str(datetime.now()) + f";{tid} - DO TECH -")
     available_items = sql_helper.tech_list()
     player_items = sql_helper.db_get_owned_items_group(tid)
     tech_status = ""
@@ -902,7 +905,7 @@ def do_tech(query):
     if hasattr(query,'data'):
         #print(query.data)
         cidx = int(extract_numbers(query.data))
-        print(f" - {tid} technology research item {cidx} - - - - ")
+        print(str(datetime.now()) + f" - {tid} technology research item {cidx} - - - - ")
         action = int(extract_numbers(query.data,1))
         pinfo = sql_helper.db_get_player_info(tid)
         item = available_items[cidx]
@@ -1326,7 +1329,7 @@ def to_lucky_way(message):
             bot.send_message(message.from_user.id, "❌ Нужена кирка ⛏️")
             echo_all(message)
             return
-        bot.send_message(message.from_user.id, "Это поле доступно для всех игроков. Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! \nГлубина каждой клетки 2. Попытка 💪1. \n⬛️ - Можно копать глубже. \n◾️ - не копали. 🚫 - Копать некуда.")
+        bot.send_message(message.from_user.id, "Это поле доступно для всех игроков. Возможно где-то здесь зарыто сокровище. Выбери место где копать, вдруг тебе повезёт! \nГлубина каждой клетки 2. Попытка 💪1. \n🕳️ - Можно копать глубже. \n🍀 - не копали. 🚫 - Копать некуда.")
         lucky_treasure(message)
     else:
         echo_all(message)
@@ -1345,12 +1348,12 @@ def lucky_treasure(query):
     msg = '⛏️Раскопки'
 
     if hasattr(query,'data'):
-        print(f"{datetime.now()};{tid};{query.data}")
+        print(f"{datetime.now()};{tid};{query.data};diging")
         
         dig_cell = int(extract_numbers(query.data))
 
         if dig_cell == 100:
-            print(f"exit fields")
+            print(f" - {player[11]} EXIT fields")
             bot.send_message(query.from_user.id, "выход")
             bot.delete_message(query.message.chat.id, query.message.id)
             return
@@ -1493,7 +1496,9 @@ def stealing(query):
 
     tid = query.from_user.id
     pinfo = sql_helper.db_get_player_info(tid)
-    
+
+    print(str(datetime.now()) + f";{tid} {pinfo[11]} Wants to STEAL")
+
     victim = extract_numbers(query.data,0)
     input_pass = int(extract_numbers(query.data,1))
     
@@ -1551,7 +1556,7 @@ def stealing(query):
     sql_helper.db_stamina_down(query.from_user.id, pwr)
     sql_helper.db_exp_up(tid,pwr)
 
-    print(f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}; pwr:{pwr}; act: {action}")
+    print(str(datetime.now()) + f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}; pwr:{pwr}; act: {action}")
 
     if input_pass == secret:
         sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove when stealing (lockpicking improved)
@@ -1595,7 +1600,7 @@ def stealing(query):
                 bot.send_message(query.from_user.id, f"Успешно! Замок взломан, но с {pet_emoji(chapest_pet[2])} не произошло ничего плохого. Шанс {escape_percent}%")
 
                 if zoo_alarm:
-                    print('ZOO_ALARM')
+                    print(str(datetime.now()) + 'ZOO_ALARM')
                     bot.send_message(query.from_user.id,"🚨 Сработала сигнализация!")
                     bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
         elif action == 2:
@@ -1965,6 +1970,9 @@ def catch_pet(message):
         echo_all(message)
         return
     tid = message.from_user.id
+    pinfo = sql_helper.db_get_player_info(tid)
+
+    print(str(datetime.now()) + f";{tid} {pinfo[11]} try catch animal")
 
     #anti_forward(tid, message.forward_date)
     if message.forward_date is not None:
@@ -1977,7 +1985,7 @@ def catch_pet(message):
         return
     
     owned = sql_helper.db_check_owned_pets(message.from_user.id)
-    pet_space = sql_helper.db_get_player_info(message.from_user.id)[4]
+    pet_space = pinfo[4]
     # TODO add pet space addition by buying some item (maby just a box) and return to home
 
     if owned == pet_space: 
@@ -2139,7 +2147,7 @@ def buy_pet(message):
         echo_all(message)
 
 def buy_item(message):
-    print(' - - - buy item - - - ')
+    print(str(datetime.now()) + f";{message.from_user.id} buying")
     if re.match('.*#.*',message.text):
         item_id = int(extract_numbers(message.text))
         owned_items = sql_helper.db_get_owned_items(message.from_user.id)
@@ -2978,6 +2986,8 @@ def extract_numbers(str, v=0):
 
 # emoji was here
 
+def write_log(msg):
+    print(str(datetime.now()) + f";{msg}")
 
 
 

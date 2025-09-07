@@ -136,7 +136,7 @@ def db_get_owned_pets(tid, filter=0):
         :return list: [id, animal_id, price, health, 4 hunger, 5 max_health,6 shit] from pets table
         :return list: auction [id, species, price, health, 4 animal_auc_mark, 5 animal_id,6 animal text] from pets table
     """
-    print('  SQL get all players pets')
+    #print('  SQL get all players pets')
     if filter == 'auction':
         q = '''select pets.id, species, price, health, 'animal_auc_mark', animal_id, 'Животное' from pets join animal_list a on a.id = pets.animal_id where owner = %s and (habitat = 100 or catch_chance < 15);'''
     else:
@@ -1096,13 +1096,13 @@ def db_change_hunger(pet_id: int, feed: bool, val: int=1):
 
 def db_change_hunger_all():
     """  
-        lowers all pets hunger level on 1 (one)
+        lowers all pets hunger level on 1 (one). Returns list of pets with hunger < 3
 
-        :return list: [owner, animal_id, health, pet_id, food_type]
+        :return list: [owner, animal_id, health, pet_id, food_type, 5 nick_name, species]
     """
     print(' - - change hunger all pet DB func - -')
     q = '''select change_hunger(id, false , 1) from pets p where health > 0 and mood < 50;;'''
-    q2 = '''select "owner", animal_id, health, p.id, a.food_type FROM pets p join players u on u.telegram_id = p.owner join animal_list a on a.id = p.animal_id where hunger < 3 and pet_space <> 0 and p.animal_id <> 0;'''
+    q2 = '''select "owner", animal_id, health, p.id, a.food_type, u.nick_name, a.species FROM pets p join players u on u.telegram_id = p.owner join animal_list a on a.id = p.animal_id where hunger < 3 and pet_space <> 0 and p.animal_id <> 0;'''
     cur = con.cursor()
     cur.execute(q)
     cur.execute(q2)
