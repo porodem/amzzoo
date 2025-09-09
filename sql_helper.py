@@ -360,7 +360,8 @@ def db_get_top_players(top_order):
             count(*) over () ttl , telegram_id
                 from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
                 JOIN animal_list al on al.id = pets.animal_id
-                where p.last_work > current_date - interval '14 days'
+                -- comented to see frozen players
+                --where p.last_work > current_date - interval '14 days'
                 group by username, nick_name, telegram_id order by 2 desc, 1 NULLS LAST LIMIT 10;'''
     elif top_order == 'exp':
         q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
@@ -370,7 +371,7 @@ def db_get_top_players(top_order):
             count(*) over () ttl , telegram_id, p.exp
                 from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
                 JOIN animal_list al on al.id = pets.animal_id
-                where p.last_work > current_date - interval '14 days'
+                --where p.last_work > current_date - interval '14 days'
                 group by username, nick_name, telegram_id order by 6 desc NULLS LAST LIMIT 10;'''
     elif top_order == 'profit':
         q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
@@ -380,7 +381,7 @@ def db_get_top_players(top_order):
             count(*) over () ttl , telegram_id, p.last_profit
                 from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
                 --JOIN animal_list al on al.id = pets.animal_id
-                where p.last_work > current_date - interval '14 days'
+                --where p.last_work > current_date - interval '14 days'
                 group by username, nick_name, telegram_id order by 4 desc NULLS LAST LIMIT 10;'''
     leaders = []
     with con.cursor() as cur:
