@@ -205,7 +205,7 @@ def get_random_cheap_property(tid):
     """
     get id of random cheap property
     """
-    q = "select p.id, name from items i join property p ON p.item_id = i.id and i.id in (11,13,16,20,45) where owner = %s order by random() LIMIT 1;"
+    q = "select p.id, name from items i join property p ON p.item_id = i.id and i.id in (7,11,13,16,20,45) where owner = %s order by random() LIMIT 1;"
     b = con.execute(q,(tid,)).fetchone()
     pid = 0 if b is None else b
     con.commit()

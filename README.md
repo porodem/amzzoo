@@ -29,17 +29,13 @@
 
 ### TODO List
 1. close cursor after SQL fucntion (idle in transaction)
-2. None mondey player
 3. Travel don't work for player without nickname
 4. SQL top function idle in transaction
 5. Fix price text for buttons in pet shop
 6. Limit name user :white_check_mark:
-7. Draw map for travel paths
 8. Show personal player place in info
-9. Name as nickname from telegram
 10. restore stamina 1 per hour, but remember about profit nex day problem
-11. maby consume stamine on feeding animals and travels?
-12. fix double daily profit form animals
+11. maby consume stamina on feeding animals and travels?
 13. fix exp on trying dig without stamina
 14. travel only on button click not writing location name
 15. Add activity to cut bushes and leafs in zoo, to protect animals from leaving over fence, or obscure view that downgrade profit
@@ -49,3 +45,4 @@
 19. Decrease durability on luxury items and to repair it go to location with reparing station.
 20. add field GROUP to table players. Name of groups can be chosen when in zoo management on request infive code
 21. maby add ability to became owner of auction (in every location or only one) and owner receives fee for every operation of exchange
+- Add food resourses meat and grass to feed animals

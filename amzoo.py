@@ -1559,6 +1559,7 @@ def stealing(query):
     print(str(datetime.now()) + f"STEALING; target:{victim} ;input: {input_pass} secret: {secret}; pwr:{pwr}; act: {action}")
 
     if input_pass == secret:
+        print(str(datetime.now()) + ' Theif input succesful password')
         sql_helper.db_stamina_down(tid, 1) # TODO get cheaper or remove when stealing (lockpicking improved)
         if action == 1:
             print('cage unlocked')
@@ -1604,34 +1605,40 @@ def stealing(query):
                     bot.send_message(query.from_user.id,"🚨 Сработала сигнализация!")
                     bot.send_message(victim,"🚨 Тревога! Ваши клетки пытаются открыть!")
         elif action == 2:
-            print('item_stealing')
+            print(str(datetime.now()) + ' Theif broke item')
             random_property = sql_helper.get_random_cheap_property(victim)
             if not random_property:
-                bot.send_message(query.from_user.id, f"Нет вещей которые можно было бы утащить")
-            steal_percent = 20
-            steal_ok = random.randrange(1,101)
+                bot.send_message(query.from_user.id, f"У него нет вещей которые можно было бы сломать 🚨🧯🗺️⛏️🔑🪨")
+            broke_percent = 22
+            destroy = random.randrange(1,101)
             bot.delete_message(query.message.chat.id, query.message.id)
-            if steal_percent > steal_ok:
+            if broke_percent >= destroy:
                 sql_helper.db_remove_property(random_property[0])
                 if strong_lock:
-                        print('renew_zoo_pass')
+                    print('renew_zoo_pass')
+                    # bot.send_message(query.from_user.id,"Сработала блокировка. Установлен случайный код от 1 до 4")
+                    # new_pass = random.randrange(1,5)
+                    if pinfo[9] >= 3: 
+                        bot.send_message(query.from_user.id,"Сработала блокировка. Установлен случайный код от 1 до 2")
+                        new_pass = random.randrange(1,3)
+                    else:
                         bot.send_message(query.from_user.id,"Сработала блокировка. Установлен случайный код от 1 до 4")
                         new_pass = random.randrange(1,5)
-                        sql_helper.db_change_zoo_pass(victim, new_pass)
+                    sql_helper.db_change_zoo_pass(victim, new_pass)
                 bot.send_message(query.from_user.id, f"Вы испортили имущество конкурента: {random_property[1]}")
                 try:
                     bot.send_message(victim,f"🚨 Кажется ваши вещи испортили ({random_property[1]})!")
                 except apihelper.ApiTelegramException:
                     print('send exception')
-                print('HARM')
+                print('HARM item')
             else:
-                bot.send_message(query.from_user.id, f"Успех! Замок взломан, но повредить {random_property[1]} не получилось. Шанс {steal_percent}%")
+                bot.send_message(query.from_user.id, f"Успех! Замок взломан, но повредить {random_property[1]} не получилось. Шанс {broke_percent}%")
                 if zoo_alarm:
                     print('ZOO_ALARM')
                     bot.send_message(victim,"🚨 Тревога! Попытка взлома!")
             print(f"item_steal;{tid};{victim};item:{random_property}")
     else:
-        # TODO make it as improvement or lvl up abiliti of theif
+        # TODO make it as improvement or lvl up abiliti of theif (or specific item)
         if tid in (6783999424,795547420):
             bot.send_message(tid,f"{input_pass}")
         search_victims(query)
@@ -1651,7 +1658,7 @@ def stealing(query):
 
 @bot.callback_query_handler(lambda query: 'victim' in query.data)
 def search_victims(query):
-    print(' - search_victims')
+    print(str(datetime.now()) + ' Search victims...')
 
     tid = query.from_user.id
     markup = None
@@ -1679,7 +1686,7 @@ def search_victims(query):
             return
 
         if action == 3 or 'stealing' in query.data :        
-            
+            print(' - get into victims zoo')
             #sql_helper.db_stamina_down(query.from_user.id,1)
             ask = 'Зоопарк жертвы:'
             if action == 3: 
@@ -1692,6 +1699,7 @@ def search_victims(query):
             #print('victim: ' + str(victim))
             v_emoji_pack = ''
             if next_action == 1:
+                print(' - try evict pet')
                 if location == 5:
                     bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
                     echo_all(query)
@@ -1700,6 +1708,7 @@ def search_victims(query):
                 for pet in v_zoo:
                     v_emoji_pack += pet_emoji(pet[1])
             elif next_action == 2:
+                print(' - try broke item')
                 if location == 5:
                     bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
                     echo_all(query)
