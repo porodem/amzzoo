@@ -28,21 +28,22 @@
 17. Premium: long name, cheap rename, hide animals in top, increace chance
 
 ### TODO List
-1. close cursor after SQL fucntion (idle in transaction)
-3. Travel don't work for player without nickname
-4. SQL top function idle in transaction
-5. Fix price text for buttons in pet shop
-6. Limit name user :white_check_mark:
-8. Show personal player place in info
-10. restore stamina 1 per hour, but remember about profit nex day problem
-11. maby consume stamina on feeding animals and travels?
-13. fix exp on trying dig without stamina
-14. travel only on button click not writing location name
-15. Add activity to cut bushes and leafs in zoo, to protect animals from leaving over fence, or obscure view that downgrade profit
-16. think about space that bones consume in zoo
-17. don't increase health of mamooth on antibiotick buff
-18. stealing pet increase when shit on animal (mood maby too) + think about bloodthirsty
-19. Decrease durability on luxury items and to repair it go to location with reparing station.
-20. add field GROUP to table players. Name of groups can be chosen when in zoo management on request infive code
-21. maby add ability to became owner of auction (in every location or only one) and owner receives fee for every operation of exchange
+- close cursor after SQL fucntion (idle in transaction)
+- Travel don't work for player without nickname
+- SQL top function idle in transaction
+- Fix price text for buttons in pet shop
+- Limit name user :white_check_mark:
+- Show personal player place in info
+- restore stamina 1 per hour, but remember about profit nex day problem
+- maby consume stamina on feeding animals and travels?
+- fix exp on trying dig without stamina
+- travel only on button click not writing location name
+- Add activity to cut bushes and leafs in zoo, to protect animals from leaving over fence, or obscure view that downgrade profit
+- think about space that bones consume in zoo
+- don't increase health of mamooth on antibiotick buff
+- stealing pet increase when shit on animal (mood maby too) + think about bloodthirsty
+- Decrease durability on luxury items and to repair it go to location with reparing station.
+- add field GROUP to table players. Name of groups can be chosen when in zoo management on request infive code
+- maby add ability to became owner of auction (in every location or only one) and owner receives fee for every operation of exchange
 - Add food resourses meat and grass to feed animals
+- Add shit transformator, to produce some item or profit from shit piles

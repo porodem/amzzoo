@@ -761,7 +761,7 @@ def to_zoo_management(message):
     elif re.match('Безопасность.*', message.text):
         print('- - - security selected - - - ')
         bot.send_message(message.from_user.id, "Введите только одну цифру! (0-9). Это будет пароль на открытие клетки. При взломе друой игрок попытается её угадать. Если угадает самый дешевый петомец может убежать")
-        bot.register_next_step_handler(message, set_cage_password)
+        bot.register_next_step_handler(message, process_input_numbers)
     elif re.match('ℹ️.*',message.text):
         print('info_dummy')
     elif re.match('Пригласить.*',message.text):
@@ -840,51 +840,59 @@ def stats_up_selection(message):
     else:
         echo_all(message)
 
-
-def set_cage_password(message, stype = 0, item = None):      
+# former set_cage_password
+def process_input_numbers(message, stype = 0, item = None):      
     tid = message.from_user.id    
     if not stype:
-        print(str(datetime.now()) + f";{tid} set cage pass")
+        print(str(datetime.now()) + f";{tid} Set cage pass")
         password = message.text
         if re.match('^\d$',password):
             sql_helper.db_change_zoo_pass(message.from_user.id, password)
             bot.send_message(message.from_user.id, "🔒 Защита 1 уровня включена")
         else:
             bot.send_message(message.from_user.id, "❌ только одну цифру!")
-            bot.register_next_step_handler(message, set_cage_password)
+            bot.register_next_step_handler(message, process_input_numbers)
     elif stype in  (1,2):
         print(str(datetime.now()) + f";{tid} inputs auction price")
         if re.match('^\d{1,4}$',message.text):
             minimal_price = int(item[2] / 2)
+            too_large_price = int(item[2] * 1.4) # seems like player 
             if stype == 1:
                 # save start price in by rewriting one of item parameters
                 item[6] = message.text
                 
                 bot.send_message(message.from_user.id, f"💸 Укажите цену мгновенного выкупа: ⚠️({minimal_price} - 9999)")
-                bot.register_next_step_handler(message, set_cage_password,2,item)
+                bot.register_next_step_handler(message, process_input_numbers,2,item)
             #auction_price = message.text
             print(f"auction_check price;{item};fast_price:{message.text}")
             if stype == 2:
-                auction_price = item[6]
+                start_price = item[6]
                 too_low_price = ''
+                fee_value = 8
+                fee = False
+                fee_msg = ''
                 #fast_buy_price = int(message.text) if minimal_price > int(message.text) else minimal_price
                 if minimal_price > int(message.text):
                     too_low_price = '\n⚠️Вы указали слишком низкую цену выкупа. Цена была повышена до минимально допустимой для этого товара'
                     fast_buy_price = minimal_price
                 else:
                     fast_buy_price = message.text
+                if too_large_price < int(message.text):
+                    fast_buy_price = int(int(message.text) * ((100 - fee_value) / 100)) # fee 
+                    fee = True
+                    fee_msg = f" 💰Выручка с учетом комисии {fee_value}% составит {fast_buy_price}. (Так как вы установили цену сильно превышающую рекомендованную)"
                 prop_id = item[0]
                 item_type = item[5]
                 is_animal = True if item[4] == 'animal_auc_mark' else False
                 if is_animal:
                     sql_helper.db_change_hunger(prop_id,False,2)
-                    sql_helper.auction_property_sell(auction_price,fast_buy_price,tid,prop_id,item_type,animal=True)
+                    sql_helper.auction_property_sell(start_price,fast_buy_price,tid,prop_id,item_type,animal=True)
                     sql_helper.change_property_owner(tid,10,prop_id,animal=True)
                 else:
-                    sql_helper.auction_property_sell(auction_price,fast_buy_price,tid,prop_id,item_type)
+                    sql_helper.auction_property_sell(start_price,fast_buy_price,tid,prop_id,item_type)
                     sql_helper.change_property_owner(tid,10,prop_id)
                 #sql_helper.db_remove_money(tid,int(auction_price)) # TODO maby player must pay little for auction use
-                bot.send_message(message.from_user.id, f"🏦✅ Аукцион запущен!{too_low_price}")
+                bot.send_message(message.from_user.id, f"🏦✅ Аукцион запущен!{too_low_price}{fee_msg}")
         else:
             bot.send_message(message.from_user.id, "❌ только цифры до 9999!")
             return
@@ -2934,10 +2942,10 @@ def auction_sell(query):
             return
         if action == 2:
             item = auction_list[cidx]
-            bot.send_message(tid, "🪙Введите начальную цену продажи:")
+            bot.send_message(tid, "🪙Введите размер стартовой ставки:")
             # TODO get money
             item = list(item) # cast tuple to array to modify it next
-            bot.register_next_step_handler(query.message, set_cage_password, 1, item)
+            bot.register_next_step_handler(query.message, process_input_numbers, 1, item)
             bot.delete_message(query.message.chat.id, query.message.id)  
             return
             auction_way(query)
