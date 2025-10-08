@@ -880,6 +880,7 @@ def process_input_numbers(message, stype = 0, item = None):
                 if too_large_price < int(message.text):
                     fast_buy_price = int(int(message.text) * ((100 - fee_value) / 100)) # fee 
                     fee = True
+                    #TODO maby add possibility to became owner of auction who get the fee
                     fee_msg = f" 💰Выручка с учетом комисии {fee_value}% составит {fast_buy_price}. (Так как вы установили цену сильно превышающую рекомендованную)"
                 prop_id = item[0]
                 item_type = item[5]
@@ -891,7 +892,6 @@ def process_input_numbers(message, stype = 0, item = None):
                 else:
                     sql_helper.auction_property_sell(start_price,fast_buy_price,tid,prop_id,item_type)
                     sql_helper.change_property_owner(tid,10,prop_id)
-                #sql_helper.db_remove_money(tid,int(auction_price)) # TODO maby player must pay little for auction use
                 bot.send_message(message.from_user.id, f"🏦✅ Аукцион запущен!{too_low_price}{fee_msg}")
         else:
             bot.send_message(message.from_user.id, "❌ только цифры до 9999!")
@@ -1706,10 +1706,15 @@ def search_victims(query):
             a_text = 'Вещи' if next_action == 2 else 'животные'
             #print('victim: ' + str(victim))
             v_emoji_pack = ''
+            victim_lvl = sql_helper.db_get_player_info(victim)[1]
+            today = datetime.now().day
+            evil_time = 1 if today <= 15 else 0
             if next_action == 1:
                 print(' - try evict pet')
-                if location == 5:
-                    bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+                #if location == 5:
+                if victim_lvl < 3 and evil_time:
+                    #bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Запрет на любое преступление с 15 числа до конца месяца.")
                     echo_all(query)
                     return
                 v_zoo = sql_helper.db_get_owned_pets(victim)
@@ -1717,8 +1722,10 @@ def search_victims(query):
                     v_emoji_pack += pet_emoji(pet[1])
             elif next_action == 2:
                 print(' - try broke item')
-                if location == 5:
-                    bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+                #if location == 5:
+                if victim_lvl < 3 and evil_time:
+                    #bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Запрет на любое преступление с 15 числа до конца месяца.")
                     echo_all(query)
                     return
                 v_zoo = sql_helper.db_get_owned_items_group(victim)
