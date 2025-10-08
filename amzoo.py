@@ -1714,7 +1714,7 @@ def search_victims(query):
                 #if location == 5:
                 if victim_lvl < 3 and evil_time:
                     #bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
-                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Запрет на любое преступление с 15 числа до конца месяца.")
+                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Либо запрет на любое преступление с 15 числа до конца месяца.")
                     echo_all(query)
                     return
                 v_zoo = sql_helper.db_get_owned_pets(victim)
@@ -1725,7 +1725,7 @@ def search_victims(query):
                 #if location == 5:
                 if victim_lvl < 3 and evil_time:
                     #bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
-                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Запрет на любое преступление с 15 числа до конца месяца.")
+                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Либо запрет на любое преступление с 15 числа до конца месяца.")
                     echo_all(query)
                     return
                 v_zoo = sql_helper.db_get_owned_items_group(victim)
@@ -1803,10 +1803,11 @@ def search_victims(query):
         btn_animal_steal = types.InlineKeyboardButton("🦓 Открыть клетку", callback_data='victim' + '1')
         btn_item_steal = types.InlineKeyboardButton("🧯 Сломать вещь", callback_data='victim' + '2')
         btn_tomato = types.InlineKeyboardButton("🍅 Бросить помидор -10💰", callback_data='victim' + '10')
-        if location == 5:
-            markup.add(btn_tomato)
-        else:
-            markup.add(btn_animal_steal, btn_item_steal, btn_tomato)
+        # if location == 5:
+        #     markup.add(btn_tomato)
+        # else:
+        #     markup.add(btn_animal_steal, btn_item_steal, btn_tomato)
+        markup.add(btn_animal_steal, btn_item_steal, btn_tomato)
         ask = 'Как навредить? 😈'
     if hasattr(query,'data'):
         print('HAS query data:')
