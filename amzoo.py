@@ -580,7 +580,7 @@ def show_pets(query):
             bot.send_message(query.from_user.id, f"{cleaning_text} {is_hard_cleaning}")
         elif int(extract_numbers(query.data,1)) == 5:
             shit_load = sql_helper.total_shit(query.from_user.id)
-            if shit_load > 10:
+            if shit_load > 8:
                 sql_helper.db_stamina_drain(query.from_user.id,1)
                 is_hard_cleaning = f" Это было непросто! -1💪. Уборка более 10 куч 💩 требует сил даже с калосборниками."
             bot.send_message(query.from_user.id, f"🫧 Уборка всего зоопарка завершена 🫧\n 💩x{shit_load} {is_hard_cleaning}")
@@ -2421,9 +2421,18 @@ def check_relax(tid, overpopulated: bool=False):
             bot.send_message(tid,"⚠️ Мошенничество -10💰 " )
             sql_helper.db_remove_money(tid,10)
             return
-        
-        
+              
         bot.send_message(tid,"Доход зоопарка 💰 " + str(profit))
+
+        all_active_players = sql_helper.db_get_all_tids()
+        for n in all_active_players:
+            if n == tid:
+                continue
+            try:
+                print(f"notyfy {info[11]}")
+                bot.send_message(n,f"{info[11]} возвращается к игре в {habitat_emoji(info[5])}!")
+            except apihelper.ApiTelegramException:
+                print('catch announce exception')
         
         if stamina_before == stamina_limit:
             sql_helper.db_stamina_up(tid,0,stamina_limit) # set new last_work time to prevent profit loop
@@ -2440,6 +2449,18 @@ def check_relax(tid, overpopulated: bool=False):
             relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
             #print('stamina added: ' + str(hours_rest))
             sql_helper.db_stamina_up(tid,relax,stamina_limit)
+
+            # annoucne of activity
+            all_active_players = sql_helper.db_get_all_tids()
+            for n in all_active_players:
+                if n == tid:
+                    continue
+                try:
+                    print(f"notyfy {info[11]}")
+                    bot.send_message(n,f"{info[11]} возвращается к игре в {habitat_emoji(info[5])}!")
+                except apihelper.ApiTelegramException:
+                    print('catch announce exception')
+
         elif hours_rest > 0:
             relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
             #print('stamina added: ' + str(hours_rest))
