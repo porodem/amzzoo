@@ -118,10 +118,10 @@ def db_pet_info(id):
     """
         :param id: pet id from pets table.
 
-        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating, shit, 11 bloodthirsty] of pets 
+        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating, shit, 11 bloodthirsty,12 infected] of pets 
     """
     print('SQL pet_info')
-    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating, shit, bloodthirsty from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
+    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating, shit, bloodthirsty, infected from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
     cur = con.cursor()
     cur.execute(q,(id,))
     con.commit()
@@ -1133,10 +1133,10 @@ def db_cure_pet(pet_id: int, tech_upgrade: bool=False):
     """
     print(' - - SQL pet curing - -')
     if tech_upgrade:
-        q = '''UPDATE pets SET health = max_health, max_health = max_health + (random() *1)::int where id = %s;'''
+        q = '''UPDATE pets SET health = max_health, max_health = max_health + (random() *1)::int , infected = 0 where id = %s;'''
         print(' TECH cure')
     else:
-        q = '''UPDATE pets SET health = 10 where id = %s;'''
+        q = '''UPDATE pets SET health = 10, infected = 0 where id = %s;'''
         print(' x - usual cure')
     q2 = '''SELECT animal_id from pets WHERE id = %s'''
     cur = con.cursor()
@@ -1187,9 +1187,9 @@ def db_infect_pets(game_location=0, atomic: bool=False):
             q2 = '''update pets p set health = health - 7 from (select u.telegram_id tid from players u where u.game_location <> %s) tt where tt.tid = p."owner" and  animal_id <> 0 returning owner;'''
             print('SQL ATOMIC')
         else:
-            q = '''update pets p set health = health -4  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) and mood < 50 returning owner;'''
+            q = '''update pets p set health = health -4, infected = 1  from (select u.telegram_id tid from players u where u.game_location = %s) tt where tt.tid = p."owner" and  animal_id not in (0,31) and mood < 50 returning owner;'''
     else:
-        q = '''update pets set health = health - 4 where animal_id not in (0,31) and mood < 50 and id % (random() *10 + 1)::int = 0 returning owner;'''
+        q = '''update pets set health = health - 4, infected = 1 where animal_id not in (0,31) and mood < 50 and id % (random() *10 + 1)::int = 0 returning owner;'''
     
     infected_pet_list = []
 

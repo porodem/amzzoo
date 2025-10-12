@@ -282,7 +282,7 @@ def get_hunger():
         #     print('this month asteroid was already')
 
         
-        is_epidemic = today % 9 == 0 # every 9 18 21 day of month
+        is_epidemic = today % 8 == 0 # every 9 18 21 day of month
         if previous_epidemic_day == today:
             print('epidemic today was already executed')
             is_epidemic = False
@@ -579,6 +579,7 @@ def show_pets(query):
                 is_hard_cleaning = f" Это было непросто! -1💪. Уборка более 5 куч 💩 требует сил."
             bot.send_message(query.from_user.id, f"{cleaning_text} {is_hard_cleaning}")
         elif int(extract_numbers(query.data,1)) == 5:
+            # smart shit cleaning
             shit_load = sql_helper.total_shit(query.from_user.id)
             if shit_load > 8:
                 sql_helper.db_stamina_drain(query.from_user.id,1)
@@ -642,7 +643,8 @@ def show_pets(query):
     meal_emj = "🍗" if pet_info[7] == 3 else "🥗"
     shit_meter = '💩' * pet_info[10] if pet_info[10] else ''
     bloodthirsty = '🩸' * pet_info[11] if pet_info[11] else ''
-    btn_lbl = pet_emoji(pet_info[1]) + f"{bloodthirsty}{shit_meter}\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat} \nрейтинг⭐:{pet_info[9]}"     
+    infected = '🦠' * pet_info[12] if pet_info[12] else ''
+    btn_lbl = pet_emoji(pet_info[1]) + f"{infected}{bloodthirsty}{shit_meter}\nнастроение: {mood} \nсытость {meal_emj}: " + str(pet_info[2]) + f"\nздоровье ♥: {pet_info[3]} \nобитает: {habitat} \nрейтинг⭐:{pet_info[9]}"     
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn_pack = []
     action = '_0'
@@ -2695,10 +2697,19 @@ def vet(query):
             
         else:
             healing_pet_id = extract_numbers(query.data)    
-            animal_id = sql_helper.db_buy_healing(healing_pet_id, cure_price, tid)#sql_helper.db_cure_pet(healing_pet_id)  
+            vet_reslult = sql_helper.db_buy_healing(healing_pet_id, cure_price, tid)#sql_helper.db_cure_pet(healing_pet_id)  
+            animal_id = vet_reslult[0]
+            infection = vet_reslult[1]            
+            if infection:
+                print('No help its infected')
+                lbl = str(pet_emoji(animal_id)) + ' не вылечен! Нужен антибиотик! 💰-' + str(cure_price)
+            else:
+                print('cured')
+                lbl = str(pet_emoji(animal_id)) + 'вылечен 🤗  💰-' + str(cure_price) 
+                
             print(f'Healing {pinfo[11]} animal {pet_emoji(animal_id)} pet_id: ' + healing_pet_id ) 
-            lbl = str(pet_emoji(animal_id)) + 'вылечен 🤗  💰-' + str(cure_price) 
-            bot.send_message(tid, '💊')
+            #lbl = str(pet_emoji(animal_id)) + 'вылечен 🤗  💰-' + str(cure_price) 
+            
             # TODO learn how to show notification and show it  
     else:
         print('no pet_id for now')
