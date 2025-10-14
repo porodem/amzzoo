@@ -425,7 +425,7 @@ def check_invite(message):
 
 @bot.callback_query_handler(lambda query: 'guide' in query.data)
 def game_guide(query):
-    topics = ['🐣Начало','💰Деньги','🌟Опыт','🏆Рейтинг','😈Преступления','⚠️События','💻Исследования','🗺️ Карта']
+    topics = ['🐣Начало','💰Деньги','🌟Опыт','🏆Рейтинг','😈Преступления','⚠️События','💻Исследования','🗺️ Карта','🚐Разное']
     tid = query.from_user.id
     btns = []
     if hasattr(query,'data'):
@@ -473,6 +473,11 @@ def game_guide(query):
         elif selection == 7:
             bot.delete_message(query.message.chat.id, query.message.id)
             bot.send_photo(tid,'AgACAgIAAxkBAAECu_5n7pGhSUNtRzg3Wxr3TPwk1D4g5AAC8O4xG0EVeUsRA_gpoLavAQEAAwIAA3MAAzYE')
+        elif selection == 8:
+            with open("docs/else.txt", 'r', encoding='utf-8') as f:
+                help_text = f.readlines()
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(query.from_user.id, ''.join(help_text), parse_mode='markdown' )
         else:
             bot.delete_message(query.message.chat.id, query.message.id)
             bot.send_message(query.from_user.id, 'Скоро появится' )
@@ -1710,7 +1715,7 @@ def search_victims(query):
             v_emoji_pack = ''
             victim_lvl = sql_helper.db_get_player_info(victim)[1]
             today = datetime.now().day
-            evil_time = 1 if today <= 15 else 0
+            evil_time = 1 if today <= 20 else 0
             if next_action == 1:
                 print(' - try evict pet')
                 #if location == 5:
@@ -2576,6 +2581,19 @@ def travel_new(query):
                     print('Exception_img')
                 if not minibus:
                     sql_helper.db_exp_up(tid,1)
+                else:
+                    print('minibus')
+                    minibus_info = sql_helper.db_check_owned_item(tid,31,'durability')
+                    if minibus_info[1] < 1:
+                        bot.send_message(tid,"🚐 Микроавтобус сломан!")
+                        bot.delete_message(query.message.chat.id, query.message.id) 
+                        sql_helper.db_remove_property(minibus_info[0])
+                        return
+                    if random.randrange(0,2):
+                        sql_helper.db_decay_property(minibus_info[0],1)
+                        bot.send_message(tid,"🚐 Микроавтобус получил незначительные повреждения")
+                    else:
+                        print('bus lucky')
                 bot.delete_message(query.message.chat.id, query.message.id)
                 return
             else:
