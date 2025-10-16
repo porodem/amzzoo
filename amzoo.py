@@ -2448,11 +2448,13 @@ def check_relax(tid, overpopulated: bool=False):
         sql_helper.db_stamina_up(tid,relax,stamina_limit)
     else:
         if hours_rest > 3:
-            shit_info = sql_helper.shit(tid,10,35)
-            print(f"shit_info: {shit_info[0]}")
-            if int(shit_info[0]) > 9:
-                print('shit message')
-                bot.send_message(tid,'💩 В вашем зоопарке воняет говном! 😖')
+            zoo_population = sql_helper.db_check_overgrow_zoo(tid)
+            if zoo_population[0] > 0:
+                shit_info = sql_helper.shit(tid,10,35)
+                print(f"shit_info: {shit_info[0]}")
+                if int(shit_info[0]) > 9:
+                    print('shit message')
+                    bot.send_message(tid,'💩 В вашем зоопарке воняет говном! 😖')
             relax = hours_rest if (hours_rest + stamina_before) < stamina_limit else stamina_limit - stamina_before
             #print('stamina added: ' + str(hours_rest))
             sql_helper.db_stamina_up(tid,relax,stamina_limit)

@@ -47,3 +47,6 @@
 - maby add ability to became owner of auction (in every location or only one) and owner receives fee for every operation of exchange
 - Add food resourses meat and grass to feed animals
 - Add shit transformator, to produce some item or profit from shit piles
+- Biohazard laboratory: create viruses (ex harm all zebras)
+- Total item count control for player and make travels hard after limit
+- maby add new COLUMN for items TABLE (max_coutity) to limit player from buying 144 antibiotics at once.
