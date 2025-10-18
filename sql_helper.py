@@ -135,10 +135,13 @@ def db_get_owned_pets(tid, filter=0):
 
         :return list: [id, animal_id, price, health, 4 hunger, 5 max_health,6 shit] from pets table
         :return list: auction [id, species, price, health, 4 animal_auc_mark, 5 animal_id,6 animal text] from pets table
+        :return list: spesies [pet_id, animal_id]
     """
     #print('  SQL get all players pets')
     if filter == 'auction':
         q = '''select pets.id, species, price, health, 'animal_auc_mark', animal_id, 'Животное' from pets join animal_list a on a.id = pets.animal_id where owner = %s and (habitat = 100 or catch_chance < 15);'''
+    elif filter == 'species':
+        q = '''select max(pets.id) pet_id, animal_id, price from pets join animal_list a on a.id = pets.animal_id where owner = %s group by 2,3;'''
     else:
         q = '''select pets.id, animal_id, price, health, hunger, max_health, shit from pets join animal_list a on a.id = pets.animal_id where owner = %s;'''
     pet_list = []
@@ -1204,6 +1207,14 @@ def db_infect_pets(game_location=0, atomic: bool=False):
         con.commit()
             
     return infected_pet_list
+
+def infect_species(species):
+    print(f"species epidemic {species}")
+    q = "UPDATE pets set health = health - 7 where animal_id = %s"
+    #p = con.execute(qa,(pet,)).fetchone()[0]
+    con.execute(q,(species,))
+    con.commit()
+    return 
 
 def db_change_health(pet_id: int, cure: bool=False, val: int=1):
     """  

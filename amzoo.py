@@ -831,6 +831,7 @@ def stats_up_selection(message):
         paleo = sql_helper.tech_done_check(message.from_user.id,2)
         if not paleo:
             bot.send_message(message.from_user.id, "Требуется навык палеонтологии!")
+            # TODO add return here and test
         if not m:
             bot.send_message(message.from_user.id, "У вас нет карты!")
             return
@@ -1718,12 +1719,12 @@ def search_victims(query):
             evil_time = 1 if today <= 20 else 0
             if next_action == 1:
                 print(' - try evict pet')
-                #if location == 5:
-                if victim_lvl < 3 and evil_time:
-                    #bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
-                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Либо запрет на любое преступление с 15 числа до конца месяца.")
-                    echo_all(query)
-                    return
+                if location == 5:
+                    if victim_lvl < 3 and evil_time:
+                        #bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
+                        bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Либо запрет на любое преступление с 20 числа до конца месяца.")
+                        echo_all(query)
+                        return
                 v_zoo = sql_helper.db_get_owned_pets(victim)
                 for pet in v_zoo:
                     v_emoji_pack += pet_emoji(pet[1])
@@ -1732,7 +1733,7 @@ def search_victims(query):
                 #if location == 5:
                 if victim_lvl < 3 and evil_time:
                     #bot.send_message(query.from_user.id, "❌На этой территории доступ к чужим зоопаркам запрещен")
-                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Либо запрет на любое преступление с 15 числа до конца месяца.")
+                    bot.send_message(query.from_user.id, "❌На этой территории доступ новичкам ограничен. Либо запрет на любое преступление с 20 числа до конца месяца.")
                     echo_all(query)
                     return
                 v_zoo = sql_helper.db_get_owned_items_group(victim)
@@ -2700,6 +2701,128 @@ def travel_new(query):
     else:
         bot.send_message(query.from_user.id, lbl,parse_mode='markdown', reply_markup=markup)
 
+def town_services(message):
+    tid = message.from_user.id
+    if slow_down(message.from_user.id):
+        return
+    #print(message.__dict__)
+    # anti_forward(message.from_user.id, message.forward_date)
+    if message.forward_date is not None:
+        print(f"-- ANTI CHEAT for {str(tid)} - - -- - -- - - - -")
+        #print("forward: " + str(message.forward_date))
+        penalty = 10
+        sql_helper.db_stamina_down(tid,10)
+        sql_helper.db_remove_money(tid, penalty)
+        bot.send_message(tid, f"⚠ Мошенничество! -{penalty}💰")
+        return
+    print('- - - TOWN SERVICES - - -')
+    #location =  sql_helper.db_check_location(tid)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_hospital = types.KeyboardButton("🏥 Вет.больница")
+    btn_biolab = types.KeyboardButton("⚗️ Лаборатория",)
+    btn_back = types.KeyboardButton("🔙 Назад")
+    markup.add(btn_hospital,btn_biolab,btn_back)
+    bot.send_message(tid, 'Что вас интересует?:', reply_markup=markup)  
+    bot.register_next_step_handler(message, to_town_services)
+
+def to_town_services(message):
+    print('- to town services way')
+    if re.match('^🏥 Вет.больница.*', message.text):
+        print('- - - vet clinick selected - - - ')        
+        vet(message)
+    elif re.match('⚗️ Лаборатория', message.text):
+        print('- - - biolab not ready selected - - - ')
+        biolab(message)
+        #bot.send_message(message.from_user.id, "🏗️В разработке")
+        #pet_shop(message, catch_mode=True)
+    else:
+        echo_all(message)
+
+@bot.callback_query_handler(lambda query: 'lab' in query.data )
+def biolab(query):
+    print('- - - - biolab function - - - - ')
+    tid = query.from_user.id
+    if hasattr(query,'data'):
+        print(query.data)
+        pinfo = sql_helper.db_get_player_info(tid)
+        have_ice = sql_helper.db_check_owned_item(tid, 48)
+        coins = pinfo[0]
+        virus_price = int(extract_numbers(query.data, 1))   
+        print('virus_price from data:' + str(virus_price))  
+        micro = sql_helper.db_check_owned_item(tid, 15)
+        biology = sql_helper.tech_done_check(tid,3)
+        if not biology:
+            bot.send_message(tid, "Нужны знания 🦠 биологии!")
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
+        if micro == 0:
+            bot.send_message(tid, "Нужен 🔬микроскоп!")  
+            bot.delete_message(query.message.chat.id, query.message.id) 
+            return
+        if coins < virus_price or have_ice == 0:
+            lbl = '❌ не хватает денег 💰 или ❄️'
+            bot.send_message(query.from_user.id, lbl, reply_markup=None)
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
+            
+        else:
+            # TODO degrade microscope
+            virus_pet_id = extract_numbers(query.data)   
+            animal_id = sql_helper.db_pet_info(virus_pet_id)[1]
+            # harm to experimental animal
+            #sql_helper.db_change_health(virus_pet_id, False, 9) 
+            sql_helper.infect_species(animal_id)
+            #vet_reslult = sql_helper.db_buy_healing(healing_pet_id, cure_price, tid)#sql_helper.db_cure_pet(healing_pet_id)  
+            #animal_id = vet_reslult[0]
+                
+            print(f'🦠 Lab {pinfo[11]} animal {pet_emoji(animal_id)} virus spread all over')
+            sql_helper.db_remove_properties(tid,48,1)
+            sql_helper.db_remove_money(tid, virus_price)
+            microscope_id = sql_helper.db_check_owned_item(tid,15)
+            sql_helper.db_decay_property(microscope_id, 5)
+            lbl = str(pet_emoji(animal_id)) + ' вирус распространён по всему миру  💰-' + str(virus_price) 
+            bot.delete_message(query.message.chat.id, query.message.id)
+            bot.send_message(tid, str(pet_emoji(animal_id)) + ' 💔 -7 вирус распространён по всему миру  💰-' + str(virus_price) )
+            return
+
+            
+            # TODO learn how to show notification and show it  
+    else:
+        print('xxxx')
+        lbl = '⚗️ Какой вирус нужен? Требуется ❄️ и 💰\n Ваш подопытный питомец пострадает 💔'
+        virus_pet_id = ''
+    owned_pets = sql_helper.db_get_owned_pets(tid,'species')
+    coins = sql_helper.db_get_player_info(tid)[0]
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    btn_pack = []
+    for p in owned_pets:
+        print(p)
+        #health = p[3]
+        #max_health = p[5]
+        #if p[1] == 0 or health == max_health: continue # escape corpses
+        virus_price = int((p[2] * 3))  #str(int(p[2] / 2)) # sell price its original price / 2
+        #if cure_price == 0: cure_price = 1
+        emj = str(pet_emoji(p[1]) + f" 💔 -7 💰x" + str(virus_price))
+        cb_prefix = 'lab'
+        cb_price_sfx = '_' + str(virus_price)
+        btn = types.InlineKeyboardButton(emj,callback_data=cb_prefix + str(p[0]) + cb_price_sfx)
+        # TODO fix emoji
+        
+        btn_pack.append(btn)
+        print(type(btn_pack))
+    markup.add(*btn_pack)
+    #bot.send_message(message.from_user.id, "Кого лечим?", reply_markup=markup)  
+
+    if hasattr(query,'data'):
+        bot.edit_message_text(
+            text=lbl,
+            chat_id=query.message.chat.id,
+            message_id=query.message.id,
+            reply_markup=markup
+        )
+    else:
+        bot.send_message(query.from_user.id, lbl, reply_markup=markup)
+
 
 @bot.callback_query_handler(lambda query: 'cure' in query.data )
 def vet(query):
@@ -3131,8 +3254,10 @@ def next_option(message):
     elif re.match('.*Путешествие.*',message.text):
         #bot.register_next_step_handler(message, travel)
         travel_new(message)
-    elif re.match('.*больница.*',message.text):
-        vet(message)
+    # elif re.match('.*больница.*',message.text):
+    #     vet(message)
+    elif re.match('.*Сервисы.*',message.text):
+        town_services(message)
     elif re.match('.*ТОП.*',message.text):
         show_top(message)
     elif re.match('^🏦 Аукцион.*',message.text):
@@ -3199,13 +3324,14 @@ def echo_all(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🐇 Зоопарк")
     btn2 = types.KeyboardButton("🏫 Имущество")
-    btn_hospital = types.KeyboardButton("🏥 Вет.больница")
+    #btn_hospital = types.KeyboardButton("🏥 Вет.больница")
+    btn_town = types.KeyboardButton("🏣Сервисы")
     btn3 = types.KeyboardButton("🍀 Мне повезёт")
     btn4 = types.KeyboardButton("🛒 Магазин")
     btn5 = types.KeyboardButton("✈ Путешествие")
     btn_top = types.KeyboardButton("🏆 ТОП")
     btn_mail = types.KeyboardButton("🏦 Аукцион")
-    markup.add(btn1,btn_hospital,btn3,btn4,btn5,btn_top, btn_mail)
+    markup.add(btn1,btn_town,btn3,btn4,btn5,btn_top, btn_mail)
     bot.send_message(tid, get_statistics(tid),reply_markup=markup,parse_mode='markdown')
     #bot.register_next_step_handler(message, next_option)
     next_option(message)
