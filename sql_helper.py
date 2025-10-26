@@ -118,10 +118,10 @@ def db_pet_info(id):
     """
         :param id: pet id from pets table.
 
-        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating, shit, 11 bloodthirsty,12 infected] of pets 
+        :return list: [0 id, 1 animal_id, 2 hunger, 3 health, 4 mood, 5 a.species, 6 habitat, 7 food_type,  8 price, 9 rating, shit, 11 bloodthirsty,12 infected, 13 max_health] of pets 
     """
     print('SQL pet_info')
-    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating, shit, bloodthirsty, infected from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
+    q = '''SELECT p.id, animal_id, hunger, health, mood, a.species, habitat, food_type, price, rating, shit, bloodthirsty, infected, max_health from pets p join animal_list a on a.id = p.animal_id where p.id = %s'''
     cur = con.cursor()
     cur.execute(q,(id,))
     con.commit()
@@ -373,7 +373,7 @@ def db_get_top_players(top_order):
         (select array_agg(animal_id order by rating desc) from pets p2 join animal_list aa on aa.id = p2.animal_id where p2.owner = p.telegram_id) best_animal,
             count(*) over () ttl , telegram_id, p.exp
                 from pets RIGHT JOIN players p on p.telegram_id = pets.owner 
-                JOIN animal_list al on al.id = pets.animal_id
+                LEFT JOIN animal_list al on al.id = pets.animal_id
                 --where p.last_work > current_date - interval '14 days'
                 group by username, nick_name, telegram_id order by 6 desc NULLS LAST LIMIT 10;'''
     elif top_order == 'profit':
@@ -386,6 +386,11 @@ def db_get_top_players(top_order):
                 --JOIN animal_list al on al.id = pets.animal_id
                 --where p.last_work > current_date - interval '14 days'
                 group by username, nick_name, telegram_id order by 4 desc NULLS LAST LIMIT 10;'''
+    elif top_order == 'species':
+        q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
+             telegram_id, array_length(known_animals,1)
+                from players p where array_length(known_animals,1) > 0
+                group by username, nick_name, telegram_id order by array_length(known_animals,1) desc NULLS LAST LIMIT 10;'''
     leaders = []
     with con.cursor() as cur:
           cur.execute(q)

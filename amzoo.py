@@ -1443,9 +1443,9 @@ def lucky_treasure(query):
                 sql_helper.db_exp_up(tid,2)
         else:
             if sql_helper.tech_done_check(tid,2) > 0:
-                uran_chance = 8
+                uran_chance = 7
             else:
-                uran_chance = 5
+                uran_chance = 4
             if random.randrange(1,101) <= uran_chance:
                 sql_helper.db_get_item(tid,45)
                 bot.send_message(tid,"Найден уран 🪨")
@@ -1603,7 +1603,9 @@ def stealing(query):
                             new_pass = random.randrange(1,5)
                         sql_helper.db_change_zoo_pass(victim, new_pass)
                     if chapest_pet[2] == 31: # moomoth
-                        sql_helper.db_change_health(chapest_pet[0],val=5)
+                        half_of_max_health = int(sql_helper.db_pet_info(chapest_pet[0])[13] / 2) + 1 # add one to prevent round effect
+                        print(f'half health: {half_of_max_health}')
+                        sql_helper.db_change_health(chapest_pet[0],val=half_of_max_health)
                         act = 'был повреждён вором!'
                     else:
                         sql_helper.db_remove_pet(chapest_pet[0])
@@ -2988,6 +2990,30 @@ def show_top(query):
             bot.send_message(tid, info, parse_mode='markdown')
             bot.delete_message(query.message.chat.id, query.message.id)
             return
+        elif cidx == 4:
+            leaders = sql_helper.db_get_top_players('species')
+            total_players = leaders[0][1]
+            info = f"🏆 Лучшие игроки 🦓 Виды животных\n  10 из {total_players} \n----------------------------------\n"
+            i = 1
+            
+            print("total players: " + str(total_players))
+            for player in leaders:
+                pname = 'без имени' if player[0] is None else player[0]
+                spc = f"💰{player[2]}"
+                pet_group = ''
+                show_limit = 0
+                # for pet in player[2]:
+                #     if show_limit == 3:
+                #         break
+                #     show_limit += 1
+                #     pet_group += pet_emoji(pet)
+                # animal = player[2]
+                info += f"{i}. {spc} Видов открыл *{pname}* \n"
+                i += 1
+            #print(info)
+            bot.send_message(tid, info, parse_mode='markdown')
+            bot.delete_message(query.message.chat.id, query.message.id)
+            return
     else:
         cidx = 0
 
@@ -2999,7 +3025,8 @@ def show_top(query):
     btn_top_pets = types.InlineKeyboardButton(f"🐇 Животные", callback_data='tops_1')
     btn_exit = types.InlineKeyboardButton('🌟 Опыт', callback_data='tops_2' )
     btn_profit = types.InlineKeyboardButton('📈 Доход', callback_data='tops_3' )
-    markup.add(btn_top_pets,btn_exit,btn_profit)
+    btn_unique = types.InlineKeyboardButton('🏆 Виды', callback_data='tops_4' )
+    markup.add(btn_top_pets,btn_exit,btn_profit, btn_unique)
     # if hasattr(query,'data'):
     #     bot.edit_message_text(
     #         text=lbl,
