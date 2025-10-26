@@ -387,7 +387,7 @@ def db_get_top_players(top_order):
                 --where p.last_work > current_date - interval '14 days'
                 group by username, nick_name, telegram_id order by 4 desc NULLS LAST LIMIT 10;'''
     elif top_order == 'species':
-        q = '''select case when nick_name = 'x' then p.username else nick_name end nick ,
+        q = '''select case when nick_name = 'x' then p.username else nick_name end nick , count(*) over () ttl ,
              telegram_id, array_length(known_animals,1)
                 from players p where array_length(known_animals,1) > 0
                 group by username, nick_name, telegram_id order by array_length(known_animals,1) desc NULLS LAST LIMIT 10;'''

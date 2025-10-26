@@ -2999,7 +2999,7 @@ def show_top(query):
             print("total players: " + str(total_players))
             for player in leaders:
                 pname = 'без имени' if player[0] is None else player[0]
-                spc = f"💰{player[2]}"
+                spc = f"💰{player[3]}"
                 pet_group = ''
                 show_limit = 0
                 # for pet in player[2]:
