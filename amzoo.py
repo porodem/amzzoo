@@ -2512,7 +2512,7 @@ def travel_new(query):
             # TODO think about outgoing location for calculate price
             
             travel_pay = loc_info[2] if not minibus else int(loc_info[2] / 2)            
-            if (minibus and this_location in (3,4)) or (coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1) :
+            if (minibus and this_location in (3,4) and coins >= travel_pay) or (coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1) :
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,5,travel_pay)
                 bot.send_message(tid, f"✈ Вы улетели домой 🏠! Расходы на дорогу 💰{travel_pay}")
@@ -2557,9 +2557,10 @@ def travel_new(query):
         elif destination == 3:
             #ok = sql_helper.db_buy_pet(message.from_user.id, 1)
             travel_pay = loc_info[2] if not minibus else int(loc_info[2] / 2)   
-            if minibus and this_location in (5,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+            #if minibus and this_location in (5,4) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+            if (minibus and this_location in (5,4) and coins >= travel_pay) or (coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1) :
                 sql_helper.db_change_location(tid,3,travel_pay)
-                bot.send_message(tid, f"✈ Вы отправились в лес 🌲! Расходы на дорогу 💰{travel_pay}\nℹ️Купите на рынке 🔒 чтобы защитить зоопарт от других игроков!")
+                bot.send_message(tid, f"✈ Вы отправились в лес 🌲! Расходы на дорогу 💰{travel_pay}\nℹ️Купите на рынке 🔒 чтобы защитить зоопарк от других игроков!")
                 # new location image
                 # any picture have unique id, that we receive when send this pic for the first time to telegram. See picture grabber code block in the end.
                 try:
@@ -2575,7 +2576,8 @@ def travel_new(query):
         
         elif destination == 4:
             travel_pay = loc_info[2] if not minibus else int(loc_info[2] / 2)   
-            if minibus and this_location in (3,5) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+            #if minibus and this_location in (3,5) or coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1 :
+            if (minibus and this_location in (3,5) and coins >= travel_pay) or (coins >= travel_pay and sql_helper.db_stamina_drain(tid,1) > -1) :
                 # TODO variable for ticket price
                 sql_helper.db_change_location(tid,4,travel_pay)
                 bot.send_message(tid, f"✈ Вы отправились на море 🌊! Расходы на дорогу 💰{travel_pay}")
