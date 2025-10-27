@@ -1897,9 +1897,10 @@ def bazar_shop_new(message):
                 extra_price = round(1.0 + (0.6 * total_pasports),2) # ATTENTION THIS FORMULA USED IN TWO PLACES 
             else:
                 extra_price = 1
-            buying_ok = sql_helper.db_buy_item(tid,item[0], extra_price)
+            buying_ok = sql_helper.db_buy_item(tid,item[0], extra_price)[0]
             print(f"{datetime.now()}, {tid} buying item {item[0]} in loc: {location};extra_price:{extra_price};buy_ok:{buying_ok}")    
-            if buying_ok[0]:
+            if int(buying_ok[0]):
+                print('Buying success')
                 bot.answer_callback_query(message.id, f"📦 Вы купили {item[1]}!")            
                 if item[0] == 10:
                     bot.send_message(message.from_user.id, "📔 Введите новое имя для себя в игре! (20 символов)\n⚠️ Разрешены только цифры, буквы и знак подчеркивания _.")

@@ -972,7 +972,7 @@ def remove_old_dead_pets():
     
 
 def db_buy_item(tid, item_id, extra = 0.0):
-    """ returns: row (item_id, item_name)"""
+    """ returns: row (string item_id, String item_name)"""
     print('SQL buy item - -')
     q = '''SELECT buy_item(%s,%s,%s);'''
     cur = con.cursor()
