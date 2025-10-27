@@ -2953,12 +2953,16 @@ def show_top(query):
                 exp = f"🌟{player[5]}"
                 pet_group = ''
                 show_limit = 0
-                for pet in player[2]:
-                    if show_limit == 3:
-                        break
-                    show_limit += 1
-                    pet_group += pet_emoji(pet)
-                animal = player[2]
+                if player[2] is None:
+                    print('have no pets')
+                    pet_group = ' пустой зоопарк'
+                else:
+                    for pet in player[2]:
+                        if show_limit == 3:
+                            break
+                        show_limit += 1
+                        pet_group += pet_emoji(pet)
+                #animal = player[2]
                 info += f"{i}) *{pname}* {exp} и его {pet_group}\n"
                 i += 1
             #print(info)
@@ -2999,7 +3003,7 @@ def show_top(query):
             print("total players: " + str(total_players))
             for player in leaders:
                 pname = 'без имени' if player[0] is None else player[0]
-                spc = f"💰{player[3]}"
+                spc = f"{player[3]}"
                 pet_group = ''
                 show_limit = 0
                 # for pet in player[2]:
@@ -3008,7 +3012,7 @@ def show_top(query):
                 #     show_limit += 1
                 #     pet_group += pet_emoji(pet)
                 # animal = player[2]
-                info += f"{i}. {spc} Видов открыл *{pname}* \n"
+                info += f"{i}. *{pname}* открыл видов животных: {spc} \n"
                 i += 1
             #print(info)
             bot.send_message(tid, info, parse_mode='markdown')
